@@ -4,3 +4,5 @@ seaborn
 matplotlib
 plotly
 scipy
+jupyter
+-e .
