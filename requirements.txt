@@ -5,4 +5,4 @@ matplotlib
 plotly
 scipy
 jupyter
--e .
+#-e .
