@@ -13,6 +13,7 @@ import seaborn as sns
 
 
 class TCA:
+
     def __init__(self, data, state_mapping, colors='viridis'):
         self.data = data
         self.state_label = list(state_mapping.keys())
@@ -106,10 +107,18 @@ class TCA:
         None
         """
         plt.figure(figsize=(8, 8))
-        sns.clustermap(self.data, cmap=self.colors, metric='hamming', method='ward', row_linkage=linkage_matrix, col_cluster=False, cbar_pos=None)
+        sns.clustermap(self.data,
+                       cmap=self.colors,
+                       metric='hamming',
+                       method='ward',
+                       row_linkage=linkage_matrix,
+                       row_cluster=False,
+                    #    row_colors=self.data.cluster,
+                       col_cluster=False,
+                       cbar_pos=None)
         
-        handles = [plt.Rectangle((0, 0), 1, 1, color=self.colors[i], label=self.state_label[i]) for i in range(len(self.state_label))]
-        plt.legend(handles=handles, labels=self.state_label, loc='center', bbox_to_anchor=(0.5, -0.2), ncol=len(self.state_label) // 2)
+        # handles = [plt.Rectangle((0, 0), 1, 1, color=self.colors[i], label=self.state_label[i]) for i in range(len(self.state_label))]
+        # plt.legend(handles=handles, labels=self.state_label, loc='center', bbox_to_anchor=(0.5, -0.2), ncol=len(self.state_label) // 2)
         
         plt.xlabel("Time")
         plt.ylabel("Patients")
@@ -345,19 +354,56 @@ def main():
     state_mapping = {"EM": 2, "FE": 4, "HE": 6, "JL": 8, "SC": 10, "TR": 12}
     colors = ['blue', 'orange', 'green', 'red', 'yellow', 'gray']
     df_numeriques = df.replace(state_mapping)
+
+    # print(df_numeriques.head())
+    # print(df_numeriques.columns)
+    # print(df_numeriques.shape)
+    # print(df_numeriques.info())
+    # print(df_numeriques.isnull().sum())
+    # print(df_numeriques.describe())
+    # print(df_numeriques.dtypes)
+    
     tca = TCA(df_numeriques,state_mapping,colors)
    
-    tca.plot_treatment_percentages(df_numeriques)
+    # tca.plot_treatment_percentages(df_numeriques)
+
     distance_matrix = tca.calculate_distance_matrix()
-    dis = distance_matrix
-    linkage_matrix = tca.cluster(dis)
-    tca.plot_dendrogram(linkage_matrix)
-    tca.plot_clustermap(linkage_matrix)
-    tca.plot_inertia(linkage_matrix)
+    # print(len(distance_matrix))
+
+    linkage_matrix = tca.cluster(distance_matrix)
+
+    # tca.plot_dendrogram(linkage_matrix)
+    # tca.plot_clustermap(linkage_matrix)
+    # tca.plot_inertia(linkage_matrix)
+
     clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
-    tca.plot_cluster_heatmaps(clusters)
-    tca.plot_cluster_treatment_percentage(clusters)
-    tca.bar_cluster_treatment_percentage(clusters)
-    tca.plot_stacked_bar(clusters)
+    df_numeriques['cluster'] = pd.Series(clusters).apply(lambda x : 'group_'+str(x))
+    print(df_numeriques['cluster'].value_counts())
+
+    df_cluster_1 = df_numeriques[df_numeriques['cluster'] == 'group_1']
+    df_cluster_2 = df_numeriques[df_numeriques['cluster'] == 'group_2']
+    df_cluster_3 = df_numeriques[df_numeriques['cluster'] == 'group_3']
+    df_cluster_4 = df_numeriques[df_numeriques['cluster'] == 'group_4']  
+
+    sns.displot(data=df_cluster_1, y=df_cluster_1.index)
+    plt.show()
+    
+    # for patient in df_cluster_1.index:
+    #     patient_data = df_cluster_1.loc[patient].drop('cluster')
+    #     print(patient_data)
+        # plt.figure(figsize=(8, 6))
+        # plt.bar(patient_data.index, patient_data.values, color=colors)
+        # plt.xlabel('Time')
+        # plt.ylabel('Treatment')
+        # plt.title(f'Stacked Bar for Patient {patient} in Cluster 1')
+        # plt.show()
+
+        # break
+    
+    # tca.plot_cluster_heatmaps(clusters)
+    # tca.plot_cluster_treatment_percentage(clusters)
+    # tca.bar_cluster_treatment_percentage(clusters)
+    # tca.plot_stacked_bar(clusters)
+
 if __name__ == "__main__":
     main()
