@@ -46,7 +46,7 @@ class TCA:
                 months = treatment_data.columns
                 percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
                 plot_data.append(pd.DataFrame({'Month': months, 'Percentage': percentages, 'Treatment': treatment_label}))
-                plt.bar(months, percentages, label=f'{treatment_label}', color=color)
+                plt.plot(months, percentages, label=f'{treatment_label}', color=color)
 
             plt.title('Percentage of Patients under Each State Over Time')
             plt.xlabel('Time')
@@ -308,50 +308,6 @@ class TCA:
             plt.show()
 
     
-    def bar_cluster_treatment_percentage(self, clusters):
-        """
-        Plot the percentage of patients under each treatment over time for each cluster using bar charts.
-
-        Parameters:
-        df (pd.DataFrame): The DataFrame containing the treatment data.
-        clusters (numpy.ndarray): The cluster assignments for each patient.
-        num_clusters (int): The number of clusters. Default is 4.
-
-        Returns:
-        None
-        """
-        num_clusters = len(np.unique(clusters))
-        num_rows = (num_clusters + 1) // 2  
-        num_cols = min(2, num_clusters)
-        fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10))
-        if num_clusters == 2:
-            axs = np.array([axs])
-        if num_clusters % 2 != 0:
-            fig.delaxes(axs[-1, -1])
-
-        for cluster_label in range(1, num_clusters + 1):
-            cluster_indices = np.where(clusters == cluster_label)[0]
-            cluster_data = self.data.iloc[cluster_indices]
-
-            row = (cluster_label - 1) // num_cols
-            col = (cluster_label - 1) % num_cols
-
-            ax = axs[row, col]
-
-            for treatment, treatment_label, color in zip(self.state_numeric, self.state_label, self.colors):
-                treatment_data = cluster_data[cluster_data.eq(treatment).any(axis=1)]
-                months = treatment_data.columns
-                percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
-                ax.bar(months, percentages, label=f'{treatment_label}', color=color)
-
-            ax.set_title(f'Cluster {cluster_label}')
-            ax.set_xlabel('Time')
-            ax.set_ylabel('Percentage of Patients')
-            ax.legend(title='State')
-
-        plt.tight_layout()
-        plt.show()
-
     def plot_stacked_bar(self, clusters):
         """
         Plot stacked bar charts showing the percentage of patients under each treatment over time for each cluster.
@@ -424,9 +380,8 @@ def main():
     #tca.plot_inertia(linkage_matrix)
     clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
     tca.plot_cluster_heatmaps(clusters,leaves_order,sorted=False)
-    #tca.plot_treatment_percentages(clusters)
-    #tca.bar_treatment_percentage(clusters)
-    #tca.bar_cluster_treatment_percentage(clusters)
+    tca.plot_treatment_percentages(clusters)
+    tca.bar_treatment_percentage(clusters)
     tca.plot_stacked_bar(clusters)
 if __name__ == "__main__":
     main()
