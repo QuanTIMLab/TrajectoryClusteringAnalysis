@@ -373,12 +373,14 @@ def main():
     tca.plot_treatment_percentages()
     distance_matrix = tca.calculate_distance_matrix()
     dis = distance_matrix
-    linkage_matrix = tca.cluster(dis)
+    linkage_matrix = tca.cluster(dis)  
     leaves_order = list(hierarchy.leaves_list(linkage_matrix))
+    #***trois lignes suivantes permettent de choisoir le nombre de cluster optimal***#
     #tca.plot_dendrogram(linkage_matrix)
     #tca.plot_clustermap(linkage_matrix)
     #tca.plot_inertia(linkage_matrix)
-    clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
+    num_clusters=4
+    clusters = tca.assign_clusters(linkage_matrix, num_clusters=num_clusters)
     tca.plot_cluster_heatmaps(clusters,leaves_order,sorted=False)
     tca.plot_treatment_percentages(clusters)
     tca.bar_treatment_percentage(clusters)
