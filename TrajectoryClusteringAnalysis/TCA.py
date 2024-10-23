@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 from scipy.spatial.distance import pdist
 import numpy as np
 import seaborn as sns
-
+from logger import logging
+#import logging
 
 ##########
 
@@ -18,9 +19,13 @@ class TCA:
         self.state_label = list(state_mapping.keys())
         self.state_numeric = list(state_mapping.values())
         self.colors = colors
+        logging.basicConfig(level=logging.INFO)
         
         if len(self.colors) != len(self.state_label):
+            logging.error("Number of colors and states mismatch")
             raise ValueError("The number of colors must match the number of states")
+        logging.info("TCA object initialized successfully")
+        
 
     def plot_treatment_percentages(self, clusters=None ):
         """

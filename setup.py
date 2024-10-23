@@ -18,7 +18,7 @@ def get_requirements(file_path:str)->List[str]:
 
 setup(
 name='TrajectoryClusteringAnalysis',
-version='0.0.1',
+version='0.0.3',
 author='Ndiaga',
 author_email='ndiagadiengs1@gmail.com',
 packages=find_packages(),
