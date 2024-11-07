@@ -1,12 +1,13 @@
 import pandas as pd
 import plotly.graph_objects as go
-from scipy.cluster.hierarchy import  dendrogram,linkage,cut_tree
+from scipy.cluster.hierarchy import  dendrogram,linkage,fcluster
 from scipy.cluster import hierarchy
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import pdist
 import numpy as np
 import seaborn as sns
-
+from logger import logging
+#import logging
 
 ##########
 
@@ -19,37 +20,83 @@ class TCA:
         self.state_label = list(state_mapping.keys())
         self.state_numeric = list(state_mapping.values())
         self.colors = colors
+        logging.basicConfig(level=logging.INFO)
         
         if len(self.colors) != len(self.state_label):
+            logging.error("Number of colors and states mismatch")
             raise ValueError("The number of colors must match the number of states")
+        logging.info("TCA object initialized successfully")
+        
 
-    def plot_treatment_percentages(self, df):
+    def plot_treatment_percentages(self, clusters=None ):
         """
         Plot the percentage of patients under each state over time.
+        If clusters are provided, plot the treatment percentages for each cluster.
 
-        Parameters:
-        df (pd.DataFrame): DataFrame (format STS) containing the treatment data.
 
         Returns:
         None
+         
         """
-        fig = go.Figure()
-        
-        for treatment, treatment_label, color in zip(self.state_numeric, self.state_label, self.colors):
-            treatment_data = df[df.eq(treatment).any(axis=1)]
-            months = treatment_data.columns
-            percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
-            fig.add_trace(go.Scatter(x=months, y=percentages, mode='lines', name=treatment_label, line=dict(color=color)))
+        if not isinstance(self.data, pd.DataFrame):
+            raise ValueError("self.data should be a pandas DataFrame")
+        if clusters is None:
+           
+            df = self.data.copy()
+            # Initialize an empty list to store data for plotting
+            plot_data = []
 
-        fig.update_layout(
-            title='Percentage of Patients under Each State Over Time',
-            xaxis_title='Time',
-            yaxis_title='Percentage of Patients',
-            legend_title='State',
-            yaxis=dict(tickformat=".2f")
-        )
+            # Collect data for each treatment
+            for treatment, treatment_label,color in zip(self.state_numeric, self.state_label,self.colors):
+                treatment_data = df[df.eq(treatment).any(axis=1)]
+                months = treatment_data.columns
+                percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
+                plot_data.append(pd.DataFrame({'Month': months, 'Percentage': percentages, 'Treatment': treatment_label}))
+                plt.plot(months, percentages, label=f'{treatment_label}', color=color)
 
-        fig.show()
+            plt.title('Percentage of Patients under Each State Over Time')
+            plt.xlabel('Time')
+            plt.ylabel('Percentage of Patients')
+            plt.legend(title='State')
+            plt.show()
+
+        else :
+            num_clusters = len(np.unique(clusters))
+            colors = self.colors
+            events_value = self.state_numeric
+            events_keys = self.state_label
+            num_rows = (num_clusters + 1) // 2
+            num_cols = min(2, num_clusters)
+
+            fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10))
+            if num_clusters == 2:
+                axs = np.array([axs])
+            if num_clusters % 2 != 0:
+                fig.delaxes(axs[-1, -1])
+
+            for cluster_label in range(1, num_clusters + 1):
+                cluster_indices = np.where(clusters == cluster_label)[0]
+                cluster_data = self.data.iloc[cluster_indices]
+
+                row = (cluster_label - 1) // num_cols
+                col = (cluster_label - 1) % num_cols
+
+                ax = axs[row, col]
+
+                for treatment, treatment_label, color in zip(events_value, events_keys, colors):
+                    treatment_data = cluster_data[cluster_data.eq(treatment).any(axis=1)]
+                    months = treatment_data.columns
+                    percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
+                    ax.plot(months, percentages, label=f'{treatment_label}', color=color)
+                
+                ax.set_title(f'Cluster {cluster_label}')
+                ax.set_xlabel('Time')
+                ax.set_ylabel('Percentage of Patients')
+                ax.legend(title='State')
+            
+            plt.tight_layout()
+            plt.show()
+
 
     def calculate_distance_matrix(self, metric='hamming'):
         """
@@ -157,27 +204,31 @@ class TCA:
         Returns:
         numpy.ndarray: An array of cluster labels assigned to each patient.
         """
-        clusters = cut_tree(linkage_matrix, n_clusters=num_clusters) + 1
-        return clusters.flatten()
+        clusters = fcluster(linkage_matrix, num_clusters, criterion='maxclust')
+        return clusters
     
-    def plot_cluster_heatmaps(self, clusters, sorted=True):
+    def plot_cluster_heatmaps(self, clusters, leaves_order, sorted=True):
         """
-        Plot heatmaps for each cluster.
+        Plot heatmaps for each cluster, ensuring the data is sorted by leaves_order.
 
         Parameters:
-        df (pd.DataFrame): The DataFrame containing the treatment data.
         clusters (numpy.ndarray): The cluster assignments for each patient.
-        num_clusters (int): The number of clusters.
+        leaves_order (list): The order of leaves from the hierarchical clustering.
         sorted (bool): Whether to sort the data within each cluster. Default is True.
 
         Returns:
         None
         """
+        # Reorder the data according to leaves_order
+        reordered_data = self.data.iloc[leaves_order]
+        reordered_clusters = clusters[leaves_order]
+
         num_clusters = len(np.unique(clusters))
         cluster_data = {}
+
         for cluster_label in range(1, num_clusters + 1):
-            cluster_indices = np.where(clusters == cluster_label)[0]
-            cluster_df = self.data.iloc[cluster_indices]
+            cluster_indices = np.where(reordered_clusters == cluster_label)[0]
+            cluster_df = reordered_data.iloc[cluster_indices]
             if sorted:
                 cluster_df = cluster_df.sort_values(by=cluster_df.columns.tolist())
             cluster_data[cluster_label] = cluster_df
@@ -205,96 +256,72 @@ class TCA:
         plt.tight_layout()
         plt.show()
 
-    def plot_cluster_treatment_percentage(self, clusters):
-        """
-        Plot the percentage of patients under each treatment over time for each cluster.
-
-        Parameters:
-        clusters (numpy.ndarray): The cluster assignments for each patient.
-
-        Returns:
-        None
-        """
-        num_clusters = len(np.unique(clusters))
-        colors = self.colors
-        events_value = self.state_numeric
-        events_keys = self.state_label
-        num_rows = (num_clusters + 1) // 2
-        num_cols = min(2, num_clusters)
-
-        fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10))
-        if num_clusters == 2:
-            axs = np.array([axs])
-        if num_clusters % 2 != 0:
-            fig.delaxes(axs[-1, -1])
-
-        for cluster_label in range(1, num_clusters + 1):
-            cluster_indices = np.where(clusters == cluster_label)[0]
-            cluster_data = self.data.iloc[cluster_indices]
-
-            row = (cluster_label - 1) // num_cols
-            col = (cluster_label - 1) % num_cols
-
-            ax = axs[row, col]
-
-            for treatment, treatment_label, color in zip(events_value, events_keys, colors):
-                treatment_data = cluster_data[cluster_data.eq(treatment).any(axis=1)]
-                months = treatment_data.columns
-                percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
-                ax.plot(months, percentages, label=f'{treatment_label}', color=color)
-            
-            ax.set_title(f'Cluster {cluster_label}')
-            ax.set_xlabel('Time')
-            ax.set_ylabel('Percentage of Patients')
-            ax.legend(title='State')
-        
-        plt.tight_layout()
-        plt.show()
     
-    def bar_cluster_treatment_percentage(self, clusters):
+
+    def bar_treatment_percentage(self, clusters=None):
         """
-        Plot the percentage of patients under each treatment over time for each cluster using bar charts.
+        Plot the percentage of patients under each state over time using bar plots.
+        If clusters are provided, plot the treatment percentages for each cluster.
 
         Parameters:
-        df (pd.DataFrame): The DataFrame containing the treatment data.
-        clusters (numpy.ndarray): The cluster assignments for each patient.
-        num_clusters (int): The number of clusters. Default is 4.
+        clusters (numpy.ndarray): Cluster assignments for each patient (optional).
 
         Returns:
         None
         """
-        num_clusters = len(np.unique(clusters))
-        num_rows = (num_clusters + 1) // 2  
-        num_cols = min(2, num_clusters)
-        fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10))
-        if num_clusters == 2:
-            axs = np.array([axs])
-        if num_clusters % 2 != 0:
-            fig.delaxes(axs[-1, -1])
+        if clusters is None:
+            df = self.data.copy()
+            # Initialize an empty list to store data for plotting
+            plot_data = []
 
-        for cluster_label in range(1, num_clusters + 1):
-            cluster_indices = np.where(clusters == cluster_label)[0]
-            cluster_data = self.data.iloc[cluster_indices]
-
-            row = (cluster_label - 1) // num_cols
-            col = (cluster_label - 1) % num_cols
-
-            ax = axs[row, col]
-
-            for treatment, treatment_label, color in zip(self.state_numeric, self.state_label, self.colors):
-                treatment_data = cluster_data[cluster_data.eq(treatment).any(axis=1)]
+            # Collect data for each treatment
+            for treatment, treatment_label,color in zip(self.state_numeric, self.state_label,self.colors):
+                treatment_data = df[df.eq(treatment).any(axis=1)]
                 months = treatment_data.columns
                 percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
-                ax.bar(months, percentages, label=f'{treatment_label}', color=color)
+                plot_data.append(pd.DataFrame({'Month': months, 'Percentage': percentages, 'Treatment': treatment_label}))
+                plt.bar(months, percentages, label=f'{treatment_label}', color=color)
 
-            ax.set_title(f'Cluster {cluster_label}')
-            ax.set_xlabel('Time')
-            ax.set_ylabel('Percentage of Patients')
-            ax.legend(title='State')
+            plt.title('Percentage of Patients under Each State Over Time')
+            plt.xlabel('Time')
+            plt.ylabel('Percentage of Patients')
+            plt.legend(title='State')
+            plt.show()
 
-        plt.tight_layout()
-        plt.show()
+        else:
+            num_clusters = len(np.unique(clusters))
+            num_rows = (num_clusters + 1) // 2  
+            num_cols = min(2, num_clusters)
+            fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10))
+            if num_clusters == 2:
+                axs = np.array([axs])
+            if num_clusters % 2 != 0:
+                fig.delaxes(axs[-1, -1])
 
+            for cluster_label in range(1, num_clusters + 1):
+                cluster_indices = np.where(clusters == cluster_label)[0]
+                cluster_data = self.data.iloc[cluster_indices]
+
+                row = (cluster_label - 1) // num_cols
+                col = (cluster_label - 1) % num_cols
+
+                ax = axs[row, col]
+
+                for treatment, treatment_label, color in zip(self.state_numeric, self.state_label, self.colors):
+                    treatment_data = cluster_data[cluster_data.eq(treatment).any(axis=1)]
+                    months = treatment_data.columns
+                    percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
+                    ax.bar(months, percentages, label=f'{treatment_label}', color=color)
+
+                ax.set_title(f'Cluster {cluster_label}')
+                ax.set_xlabel('Time')
+                ax.set_ylabel('Percentage of Patients')
+                ax.legend(title='State')
+
+            plt.tight_layout()
+            plt.show()
+
+    
     def plot_stacked_bar(self, clusters):
         """
         Plot stacked bar charts showing the percentage of patients under each treatment over time for each cluster.
