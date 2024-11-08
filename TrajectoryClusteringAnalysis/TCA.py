@@ -29,6 +29,7 @@ class TCA:
         self.states = states
         self.colors = colors
         self.leaf_order = None
+        self.substitution_cost_matrix = None
         logging.basicConfig(level=logging.INFO)
         
         # if len(self.colors) != len(self.state_label):
@@ -37,7 +38,7 @@ class TCA:
         
         assert(isinstance(data, pd.DataFrame)), "data must be a pandas DataFrame"
         assert(data.shape[1] > 1), "data must have more than one column"
-        assert(data.duplicated().sum() == 0), "There are duplicates in the data. Yout dataset must be in long and tidy format "
+        assert(data.id.duplicated().sum() == 0), "There are duplicates in the data. Yout dataset must be in long and tidy format "
 
         # if not set(self.state_label).issubset(data.columns):
         #     logging.error("States not found in data columns")
@@ -53,8 +54,8 @@ class TCA:
         # Convert the sequences to a NumPy array for faster processing
         # Ajouter une colonne "Sequence" qui contient la séquence de soins pour chaque individu
         data_ready_for_TCA = self.data.copy()
-        data_ready_for_TCA['Sequence'] = data_ready_for_TCA.apply(lambda x: '-'.join(x.astype(str)), axis=1)
-        data_ready_for_TCA.reset_index(inplace=True)
+        data_ready_for_TCA['Sequence'] = data_ready_for_TCA.drop(self.id, axis=1).apply(lambda x: '-'.join(x.astype(str)), axis=1)
+        # data_ready_for_TCA.reset_index(inplace=True)
         data_ready_for_TCA = data_ready_for_TCA[['id', 'Sequence']]
         self.sequences = data_ready_for_TCA['Sequence'].apply(lambda x: np.array([k for k in x.split('-') if k != 'nan'])).to_numpy()
 
@@ -126,12 +127,36 @@ class TCA:
                     if i != j:
                         substitution_matrix[i, j] = 2 - substitution_probabilities[i, j] - substitution_probabilities[j, i]
 
-        substitution_df = pd.DataFrame(substitution_matrix, index=self.alphabet, columns=self.alphabet)
+        substitution_cost_matrix = pd.DataFrame(substitution_matrix, index=self.alphabet, columns=self.alphabet)
 
-        return substitution_df
+        return substitution_cost_matrix
 
 
-    def compute_distance_matrix(self, metric='hamming'):
+    def optimal_matching(self, seq1, seq2, substitution_cost_matrix, indel_cost=None):
+        if indel_cost is None:
+            indel_cost = max(substitution_cost_matrix.values.flatten()) / 2
+        m, n = len(seq1), len(seq2)
+        score_matrix = np.zeros((m+1, n+1))
+        
+        # Initialisation de la matrice de scores
+        score_matrix[:, 0] = indel_cost * np.arange(m+1)
+        score_matrix[0, :] = indel_cost * np.arange(n+1)
+
+        for i in range(1, m+1):
+            for j in range(1, n+1):
+                cost_substitute = substitution_cost_matrix.iloc[self.alphabet.index(seq1[i - 1]), self.alphabet.index(seq2[j - 1])]
+                match = score_matrix[i-1, j-1] + cost_substitute
+                delete = score_matrix[i-1, j] + indel_cost
+                insert = score_matrix[i, j-1] + indel_cost
+                score_matrix[i, j] = min(match, delete, insert)
+
+        # Score d'alignement optimal
+        optimal_score = score_matrix[m, n]
+
+        return optimal_score
+
+
+    def compute_distance_matrix(self, metric='hamming', substitution_cost_matrix=None):
         """
         Calculate the distance matrix for the treatment sequences.
 
@@ -158,8 +183,22 @@ class TCA:
             distance_matrix = np.zeros((len(self.data), len(self.data)))
             for i in range(len(self.sequences)):
                 for j in range(i + 1, len(self.sequences)):
-                    seq1, seq2 = self.sequences[i], self.sequences[j]
+                    seq1, seq2 = self.sequences[i], self.sequences[j]                  
                     distance = Levenshtein.distance(seq1, seq2)
+                    distance_matrix[i, j] = distance
+                    distance_matrix[j, i] = distance  # Symmetric matrix
+
+        elif metric == 'optimal_matching':
+            if substitution_cost_matrix is None:
+                logging.error("Substitution cost matrix not found. Please compute the substitution cost matrix first.")
+                raise ValueError("Substitution cost matrix not found. Please compute the substitution cost matrix first.")
+            distance_matrix = np.zeros((len(self.data), len(self.data)))
+            print("substitution cost matrix: \n", substitution_cost_matrix)
+            print("indel cost: ", max(substitution_cost_matrix.values.flatten()) / 2)
+            for i in range(len(self.sequences)):
+                for j in range(i + 1, len(self.sequences)):
+                    seq1, seq2 = self.sequences[i], self.sequences[j]
+                    distance = self.optimal_matching(seq1, seq2, substitution_cost_matrix)
                     distance_matrix[i, j] = distance
                     distance_matrix[j, i] = distance  # Symmetric matrix
 
@@ -317,7 +356,7 @@ class TCA:
         None
         """
         plt.figure(figsize=(8, 8))
-        sns.clustermap(self.data,
+        sns.clustermap(self.data.drop(self.id, axis=1).replace(self.label_to_encoded),
                        cmap=self.colors,
                        metric='hamming',
                        method='ward',
@@ -326,9 +365,6 @@ class TCA:
                     #    row_colors=self.data.cluster,
                        col_cluster=False,
                        cbar_pos=None)
-        
-        # handles = [plt.Rectangle((0, 0), 1, 1, color=self.colors[i], label=self.state_label[i]) for i in range(len(self.state_label))]
-        # plt.legend(handles=handles, labels=self.state_label, loc='center', bbox_to_anchor=(0.5, -0.2), ncol=len(self.state_label) // 2)
         
         plt.xlabel("Time")
         plt.ylabel("Patients")
@@ -400,17 +436,19 @@ class TCA:
             row = i // num_cols
             # col = i % num_cols
             sns.heatmap(cluster_df.drop(self.id, axis=1).replace(self.label_to_encoded), cmap=self.colors, cbar=False, ax=axs[row], yticklabels=False)
-            axs[row].set_title(f'Heatmap du cluster {cluster_label}')
-            axs[row].set_ylabel('Patients id')
+            for _, spine in axs[row].spines.items():
+                spine.set_edgecolor('black')
+            axs[row].text(1.05, 0.5, f'cluster {cluster_label} (n={len(cluster_df)})', transform=axs[row].transAxes, ha='left', va='center')
+            # axs[row].set_ylabel('Patients id')
         axs[-1].set_xlabel('Time in months')
 
         # convert viridis colors as a list
-        list_colors = [plt.cm.viridis(i) for i in range(plt.cm.viridis.N)]
-        for i in range(len(self.alphabet)):
-            print(self.alphabet[i], list_colors[i])
+        viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(self.alphabet))]
+        # for alphabet, color in zip(self.alphabet, viridis_colors_list):
+        #     print(alphabet, color)
 
-        handles = [plt.Rectangle((0, 0), 1, 1, color=list_colors[i], label=self.alphabet[i]) for i in range(len(self.alphabet))]
-        plt.legend(handles=handles, labels=self.states, loc='center', ncol=1)
+        legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=self.alphabet[i]) for i in range(len(self.alphabet))]
+        plt.legend(handles=legend_handles, labels=self.states, loc='center', ncol=1, bbox_to_anchor=(1.1, -0), title='Statuts')
 
         plt.tight_layout()
         plt.show()
@@ -528,8 +566,10 @@ class TCA:
         plt.show()
 
 
-
-
+####################################### MAIN #######################################
+####################################### MAIN #######################################
+####################################### MAIN #######################################
+####################################### MAIN #######################################
 
 def main():
     df = pd.read_csv('data/dataframe_test.csv')
@@ -563,19 +603,26 @@ def main():
     # Sélectionner un échantillon aléatoire de 10% des données
     pivoted_data_random_sample = pivoted_data.sample(frac=0.1, random_state=42).reset_index(drop=True)
 
+    # Filter individuals observed for at least 18 months
+    valid_18months_individuals = pivoted_data.dropna(thresh=19).reset_index(drop=True)
+
+    # Select only the first 18 months for analysis
+    valid_18months_individuals = valid_18months_individuals[['id'] + [f'month_{i}' for i in range(1, 19)]]
+
     # print(pivoted_data_random_sample.head())
     # print(data_ready_for_TCA.duplicated().sum())
 
-    
     # tca = TCA(df_numeriques,state_mapping,colors)
-    tca = TCA(data=pivoted_data_random_sample,
+    tca = TCA(data=valid_18months_individuals,
               id='id',
               alphabet=['D', 'C', 'T', 'S'],
               states=["diagnostiqué", "en soins", "sous traitement", "inf. contrôlée"])
    
     # tca.plot_treatment_percentages(df_numeriques)
 
-    distance_matrix = tca.compute_distance_matrix(metric='levenshtein')
+    custom_costs = {'D:C': 1, 'D:T': 2, 'D:S': 3, 'C:T': 1, 'C:S': 2, 'T:S': 1}
+    costs = tca.compute_substitution_cost_matrix(method='custom', custom_costs=custom_costs)
+    distance_matrix = tca.compute_distance_matrix(metric='levenshtein', substitution_cost_matrix=costs)
     print("distance matrix :\n",distance_matrix)
 
     linkage_matrix = tca.hierarchical_clustering(distance_matrix)
