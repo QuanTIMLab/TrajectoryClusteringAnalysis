@@ -406,14 +406,11 @@ class TCA:
         """
         # Reorder the data according to leaves_order
         leaves_order = self.leaf_order
-        # print(len(leaves_order))
         reordered_data = self.data.iloc[leaves_order]
-        # print(reordered_data)
         reordered_clusters = clusters[leaves_order]
 
         num_clusters = len(np.unique(clusters))
         cluster_data = {}
-
         for cluster_label in range(1, num_clusters + 1):
             cluster_indices = np.where(reordered_clusters == cluster_label)[0]
             cluster_df = reordered_data.iloc[cluster_indices]
@@ -421,31 +418,43 @@ class TCA:
                 cluster_df = cluster_df.sort_values(by=cluster_df.columns.tolist())
             cluster_data[cluster_label] = cluster_df
 
-        # print(cluster_data[cluster_label])    
+        # Determine the size of each cluster
+        heights = [len(cluster_df)*0.5 for cluster_df in cluster_data.values()]
 
         num_rows = num_clusters
         num_cols = min(1, num_clusters)
-        fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10), sharex=True)
+        fig, axs = plt.subplots(num_rows, num_cols, figsize=(10, sum(heights)* 0.1), sharex=True, gridspec_kw={'height_ratios': heights})
         
         if num_clusters == 2:
             axs = np.array([axs])
         if num_clusters % 2 != 0:
             fig.delaxes(axs[-1, -1])            
 
-        for i, (cluster_label, cluster_df) in enumerate(cluster_data.items()):
-            row = i // num_cols
-            # col = i % num_cols
-            sns.heatmap(cluster_df.drop(self.id, axis=1).replace(self.label_to_encoded), cmap=self.colors, cbar=False, ax=axs[row], yticklabels=False)
-            for _, spine in axs[row].spines.items():
-                spine.set_edgecolor('black')
-            axs[row].text(1.05, 0.5, f'cluster {cluster_label} (n={len(cluster_df)})', transform=axs[row].transAxes, ha='left', va='center')
+        # print(cluster_data.items())
+        
+        for cluster_label, (cluster_df, ax) in enumerate(zip(cluster_data.items(), axs)):
+            # print(cluster_df[1])
+            # print(cluster_df)
+            # print(ax)
+            sns.heatmap(cluster_df[1].drop(self.id, axis=1).replace(self.label_to_encoded), cmap=self.colors, cbar=False, ax=ax, yticklabels=False)
+            ax.tick_params(axis='x', rotation=45)
+            ax.text(1.05, 0.5, f'cluster {cluster_label} (n={len(cluster_df[1])})', transform=ax.transAxes, ha='left', va='center')
             # axs[row].set_ylabel('Patients id')
         axs[-1].set_xlabel('Time in months')
 
+        # for i, (cluster_label, cluster_df) in enumerate(cluster_data.items()):
+        #     row = i // num_cols
+        #     # col = i % num_cols
+        #     height = len(cluster_df) / 2  # Adjust the height based on the number of patients
+        #     fig, ax = plt.subplots(figsize=(15, height))
+        #     sns.heatmap(cluster_df.drop(self.id, axis=1).replace(self.label_to_encoded), cmap=self.colors, cbar=False, ax=ax, yticklabels=False)
+        #     ax.tick_params(axis='x', rotation=45)
+        #     ax.text(1.05, 0.5, f'cluster {cluster_label} (n={len(cluster_df)})', transform=ax.transAxes, ha='left', va='center')
+        #     ax.tick_params(axis='y', size=height)
+        #     ax.set_xlabel('Time in months')
+
         # convert viridis colors as a list
         viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(self.alphabet))]
-        # for alphabet, color in zip(self.alphabet, viridis_colors_list):
-        #     print(alphabet, color)
 
         legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=self.alphabet[i]) for i in range(len(self.alphabet))]
         plt.legend(handles=legend_handles, labels=self.states, loc='center', ncol=1, bbox_to_anchor=(1.1, -0), title='Statuts')
@@ -613,7 +622,7 @@ def main():
     # print(data_ready_for_TCA.duplicated().sum())
 
     # tca = TCA(df_numeriques,state_mapping,colors)
-    tca = TCA(data=valid_18months_individuals,
+    tca = TCA(data=pivoted_data_random_sample,
               id='id',
               alphabet=['D', 'C', 'T', 'S'],
               states=["diagnostiqué", "en soins", "sous traitement", "inf. contrôlée"])
