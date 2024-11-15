@@ -11,6 +11,9 @@ from scipy.spatial.distance import pdist
 import scipy.cluster.hierarchy as sch
 
 import Levenshtein
+from tslearn.metrics import dtw, dtw_path_from_metric, gak
+
+import tqdm
 
 import timeit
 from logger import logging
@@ -156,6 +159,11 @@ class TCA:
         return optimal_score
 
 
+    def replace_labels(self, sequence, label_to_encoded):
+        vectorized_replace = np.vectorize(label_to_encoded.get)
+        return vectorized_replace(sequence)
+
+
     def compute_distance_matrix(self, metric='hamming', substitution_cost_matrix=None):
         """
         Calculate the distance matrix for the treatment sequences.
@@ -177,39 +185,84 @@ class TCA:
         start_time = timeit.default_timer()
 
         if metric == 'hamming':
-            distance_matrix = pdist(self.data, metric)
+            self.distance_matrix = np.array(pdist(self.data.replace(self.label_to_encoded), metric=metric))
 
         elif metric == 'levenshtein':
-            distance_matrix = np.zeros((len(self.data), len(self.data)))
-            for i in range(len(self.sequences)):
+            self.distance_matrix = np.zeros((len(self.data), len(self.data)))
+            # self.distance_matrix = pdist(self.data, lambda x, y: Levenshtein.distance(x, y))
+            for i in tqdm.tqdm(range(len(self.sequences))):
                 for j in range(i + 1, len(self.sequences)):
                     seq1, seq2 = self.sequences[i], self.sequences[j]                  
                     distance = Levenshtein.distance(seq1, seq2)
-                    distance_matrix[i, j] = distance
-                    distance_matrix[j, i] = distance  # Symmetric matrix
+                    self.distance_matrix[i, j] = distance
+                    self.distance_matrix[j, i] = distance  # Symmetric matrix
 
         elif metric == 'optimal_matching':
             if substitution_cost_matrix is None:
                 logging.error("Substitution cost matrix not found. Please compute the substitution cost matrix first.")
                 raise ValueError("Substitution cost matrix not found. Please compute the substitution cost matrix first.")
-            distance_matrix = np.zeros((len(self.data), len(self.data)))
+            self.distance_matrix = np.zeros((len(self.data), len(self.data)))
             print("substitution cost matrix: \n", substitution_cost_matrix)
             print("indel cost: ", max(substitution_cost_matrix.values.flatten()) / 2)
-            for i in range(len(self.sequences)):
+            
+            # self.distance_matrix = np.array(pdist(self.data.drop(self.id, axis=1), metric= lambda x, y: self.optimal_matching(x, y, substitution_cost_matrix)/max(len(x), len(y))))
+            
+            for i in tqdm.tqdm(range(len(self.sequences))):
                 for j in range(i + 1, len(self.sequences)):
                     seq1, seq2 = self.sequences[i], self.sequences[j]
                     distance = self.optimal_matching(seq1, seq2, substitution_cost_matrix)
-                    distance_matrix[i, j] = distance
-                    distance_matrix[j, i] = distance  # Symmetric matrix
+                    max_length = max(len(seq1), len(seq2))
+                    normalized_dist = distance / max_length
+                    self.distance_matrix[i, j] = normalized_dist
+                    self.distance_matrix[j, i] = normalized_dist  # Symmetric matrix
+
+        elif metric == 'dtw':
+            self.distance_matrix = np.zeros((len(self.data), len(self.data)))
+            for i in tqdm.tqdm(range(len(self.sequences))):
+                for j in range(i + 1, len(self.sequences)):
+                    seq1, seq2 = self.replace_labels(self.sequences[i], self.label_to_encoded), self.replace_labels(self.sequences[j], self.label_to_encoded)
+                    # print(seq1)
+                    # print(seq2)
+                    distance = dtw(seq1, seq2)
+                    max_length = max(len(seq1), len(seq2))
+                    normalized_dist = distance / max_length
+                    self.distance_matrix[i, j] = normalized_dist
+                    self.distance_matrix[j, i] = normalized_dist
+
+        elif metric == 'dtw_path_from_metric':
+            self.distance_matrix = np.zeros((len(self.data), len(self.data)))
+            for i in tqdm.tqdm(range(len(self.sequences))):
+                for j in range(i + 1, len(self.sequences)):
+                    seq1, seq2 = self.replace_labels(self.sequences[i], self.label_to_encoded), self.replace_labels(self.sequences[j], self.label_to_encoded)
+                    # print(seq1)
+                    # print(seq2)
+                    distance = dtw_path_from_metric(seq1, seq2, metric=np.abs(seq1 - seq2))
+                    max_length = max(len(seq1), len(seq2))
+                    normalized_dist = distance / max_length
+                    self.distance_matrix[i, j] = normalized_dist
+                    self.distance_matrix[j, i] = normalized_dist
+        
+        elif metric == 'gak':
+            self.distance_matrix = np.zeros((len(self.data), len(self.data)))
+            for i in tqdm.tqdm(range(len(self.sequences))):
+                for j in range(i + 1, len(self.sequences)):
+                    seq1, seq2 = self.replace_labels(self.sequences[i], self.label_to_encoded), self.replace_labels(self.sequences[j], self.label_to_encoded)
+                    # print(seq1)
+                    # print(seq2)
+                    distance = gak(seq1, seq2)
+                    max_length = max(len(seq1), len(seq2))
+                    normalized_dist = distance / max_length
+                    self.distance_matrix[i, j] = normalized_dist
+                    self.distance_matrix[j, i] = normalized_dist
 
         c_time = timeit.default_timer() - start_time
         logging.info(f"Time taken for computation: {c_time:.2f} seconds")
 
         # Distance matrix must be symetric
-        assert(np.allclose(distance_matrix, distance_matrix.T)), "Distance matrix is not symmetric"
+        assert(np.allclose(self.distance_matrix, self.distance_matrix.T)), "Distance matrix is not symmetric"
 
 
-        return distance_matrix
+        return self.distance_matrix
     
     def hierarchical_clustering(self, distance_matrix, method='ward', optimal_ordering=True):
         """
@@ -233,8 +286,8 @@ class TCA:
         # cophenetic correlation coefficient for a given hierarchical clustering
         # measures how faithfully the hierarchical clustering preserves the pairwise distances between the original observations
         # a value of c close to 1 indicates a good fit between the clustering and the original distances.
-        c, _ = cophenet(linkage_matrix, condensed_distance_matrix)
-        logging.info(f"Cophenetic correlation coefficient: {c:.2f}")
+        # c, _ = cophenet(linkage_matrix, condensed_distance_matrix)
+        # logging.info(f"Cophenetic correlation coefficient: {c:.2f}")
 
         self.leaf_order = leaves_list(linkage_matrix)
 
@@ -358,18 +411,30 @@ class TCA:
         plt.figure(figsize=(8, 8))
         sns.clustermap(self.data.drop(self.id, axis=1).replace(self.label_to_encoded),
                        cmap=self.colors,
-                       metric='hamming',
+                       metric='precomputed',
                        method='ward',
                        row_linkage=linkage_matrix,
-                       row_cluster=False,
-                    #    row_colors=self.data.cluster,
+                       row_cluster=True, 
                        col_cluster=False,
+                       dendrogram_ratio=(.1, .2),
                        cbar_pos=None)
         
         plt.xlabel("Time")
-        plt.ylabel("Patients")
-        plt.title("Trajectory of Temporal Vectors")
+        plt.xticks(rotation=45)
+        plt.yticks([])
+        plt.title("Clustermap of Treatment Sequences")
+
+        # convert viridis colors as a list
+        viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(self.alphabet))]
+
+        legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=self.alphabet[i]) for i in range(len(self.alphabet))]
+        plt.legend(handles=legend_handles, labels=self.states, loc='upper right', ncol=1, title='Statuts')
+
+        # plt.tight_layout()
         plt.show()
+
+    # def get_clustermap_function(self):
+        
 
     def plot_inertia(self, linkage_matrix):
         """
@@ -419,11 +484,12 @@ class TCA:
             cluster_data[cluster_label] = cluster_df
 
         # Determine the size of each cluster
-        heights = [len(cluster_df)*0.5 for cluster_df in cluster_data.values()]
+        heights = [len(cluster_df)*0.2 for cluster_df in cluster_data.values()]
+        print("heights: ", heights)
 
         num_rows = num_clusters
         num_cols = min(1, num_clusters)
-        fig, axs = plt.subplots(num_rows, num_cols, figsize=(10, sum(heights)* 0.1), sharex=True, gridspec_kw={'height_ratios': heights})
+        fig, axs = plt.subplots(num_rows, num_cols, figsize=(10, sum(heights)* 0.01), sharex=True, gridspec_kw={'height_ratios': heights})
         
         if num_clusters == 2:
             axs = np.array([axs])
@@ -457,7 +523,7 @@ class TCA:
         viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(self.alphabet))]
 
         legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=self.alphabet[i]) for i in range(len(self.alphabet))]
-        plt.legend(handles=legend_handles, labels=self.states, loc='center', ncol=1, bbox_to_anchor=(1.1, -0), title='Statuts')
+        plt.legend(handles=legend_handles, labels=self.states, loc='lower right', ncol=1, title='Statuts')
 
         plt.tight_layout()
         plt.show()
@@ -622,7 +688,7 @@ def main():
     # print(data_ready_for_TCA.duplicated().sum())
 
     # tca = TCA(df_numeriques,state_mapping,colors)
-    tca = TCA(data=pivoted_data_random_sample,
+    tca = TCA(data=pivoted_data,
               id='id',
               alphabet=['D', 'C', 'T', 'S'],
               states=["diagnostiqué", "en soins", "sous traitement", "inf. contrôlée"])
@@ -631,41 +697,16 @@ def main():
 
     custom_costs = {'D:C': 1, 'D:T': 2, 'D:S': 3, 'C:T': 1, 'C:S': 2, 'T:S': 1}
     costs = tca.compute_substitution_cost_matrix(method='custom', custom_costs=custom_costs)
-    distance_matrix = tca.compute_distance_matrix(metric='levenshtein', substitution_cost_matrix=costs)
+    distance_matrix = tca.compute_distance_matrix(metric='optimal_matching', substitution_cost_matrix=costs)
     print("distance matrix :\n",distance_matrix)
 
     linkage_matrix = tca.hierarchical_clustering(distance_matrix)
 
-    tca.plot_dendrogram(linkage_matrix)
-    # tca.plot_clustermap(linkage_matrix)
+    # tca.plot_dendrogram(linkage_matrix)
+    tca.plot_clustermap(linkage_matrix)
     # tca.plot_inertia(linkage_matrix)
 
     clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
-    # print(len(clusters))
-
-
-    # df_numeriques['cluster'] = pd.Series(clusters).apply(lambda x : 'group_'+str(x))
-    # print(df_numeriques['cluster'].value_counts())
-
-    # df_cluster_1 = df_numeriques[df_numeriques['cluster'] == 'group_1']
-    # df_cluster_2 = df_numeriques[df_numeriques['cluster'] == 'group_2']
-    # df_cluster_3 = df_numeriques[df_numeriques['cluster'] == 'group_3']
-    # df_cluster_4 = df_numeriques[df_numeriques['cluster'] == 'group_4']  
-
-    # sns.displot(data=df_cluster_1, y=df_cluster_1.index)
-    # plt.show()
-    
-    # for patient in df_cluster_1.index:
-    #     patient_data = df_cluster_1.loc[patient].drop('cluster')
-    #     print(patient_data)
-        # plt.figure(figsize=(8, 6))
-        # plt.bar(patient_data.index, patient_data.values, color=colors)
-        # plt.xlabel('Time')
-        # plt.ylabel('Treatment')
-        # plt.title(f'Stacked Bar for Patient {patient} in Cluster 1')
-        # plt.show()
-
-        # break
     
     tca.plot_cluster_heatmaps(clusters, sorted=False)
     # tca.plot_cluster_treatment_percentage(clusters)
