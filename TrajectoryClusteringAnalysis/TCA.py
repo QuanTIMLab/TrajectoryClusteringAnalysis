@@ -16,7 +16,7 @@ from tslearn.metrics import dtw, dtw_path_from_metric, gak
 import tqdm
 
 import timeit
-from logger import logging
+import logging
 #import logging
 
 ##########
@@ -688,7 +688,7 @@ def main():
     # print(data_ready_for_TCA.duplicated().sum())
 
     # tca = TCA(df_numeriques,state_mapping,colors)
-    tca = TCA(data=pivoted_data,
+    tca = TCA(data=pivoted_data_random_sample,
               id='id',
               alphabet=['D', 'C', 'T', 'S'],
               states=["diagnostiqué", "en soins", "sous traitement", "inf. contrôlée"])
@@ -697,7 +697,7 @@ def main():
 
     custom_costs = {'D:C': 1, 'D:T': 2, 'D:S': 3, 'C:T': 1, 'C:S': 2, 'T:S': 1}
     costs = tca.compute_substitution_cost_matrix(method='custom', custom_costs=custom_costs)
-    distance_matrix = tca.compute_distance_matrix(metric='optimal_matching', substitution_cost_matrix=costs)
+    distance_matrix = tca.compute_distance_matrix(metric='dtw', substitution_cost_matrix=costs)
     print("distance matrix :\n",distance_matrix)
 
     linkage_matrix = tca.hierarchical_clustering(distance_matrix)
