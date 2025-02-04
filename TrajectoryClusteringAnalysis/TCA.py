@@ -134,7 +134,7 @@ class TCA:
 
         return substitution_cost_matrix
 
-
+    
     def optimal_matching(self, seq1, seq2, substitution_cost_matrix, indel_cost=None):
         if indel_cost is None:
             indel_cost = max(substitution_cost_matrix.values.flatten()) / 2
@@ -696,8 +696,8 @@ def main():
     # tca.plot_treatment_percentages(df_numeriques)
 
     custom_costs = {'D:C': 1, 'D:T': 2, 'D:S': 3, 'C:T': 1, 'C:S': 2, 'T:S': 1}
-    costs = tca.compute_substitution_cost_matrix(method='custom', custom_costs=custom_costs)
-    distance_matrix = tca.compute_distance_matrix(metric='dtw', substitution_cost_matrix=costs)
+    #costs = tca.compute_substitution_cost_matrix(method='custom', custom_costs=custom_costs)
+    distance_matrix = tca.compute_distance_matrix(metric='hamming', substitution_cost_matrix=None)
     print("distance matrix :\n",distance_matrix)
 
     linkage_matrix = tca.hierarchical_clustering(distance_matrix)
