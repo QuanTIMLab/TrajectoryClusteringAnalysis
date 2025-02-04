@@ -384,7 +384,7 @@ def main():
     tca.plot_dendrogram(linkage_matrix)
     tca.plot_clustermap(linkage_matrix)
     tca.plot_inertia(linkage_matrix)
-    num_clusters=4
+    num_clusters=3
     clusters = tca.assign_clusters(linkage_matrix, num_clusters=num_clusters)
     tca.plot_cluster_heatmaps(clusters,leaves_order,sorted=False)
     tca.plot_treatment_percentages(clusters)
@@ -392,4 +392,3 @@ def main():
     tca.plot_stacked_bar(clusters)
 if __name__ == "__main__":
     main()
-    
