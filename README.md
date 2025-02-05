@@ -51,7 +51,7 @@ Trajectory Clustering Analysis (TCA) is a Python package for analyzing and visua
 ## ⚙️ Utilisation de base
 
 ```python
-from TrajectoryClusteringAnalysis import TCA
+from TrajectoryClusteringAnalysis.TCA import TCA
 
 # Exemple de données
 trajectories = [
@@ -60,9 +60,9 @@ trajectories = [
     ["Chirurgie", "Radiothérapie"]
 ]
 ## Preporocessing data
-
+![data_format](image/format_data.png)
 # Initialisation et clustering
-model = TCA.TCA(data=df,
+model = TCA(data=df,
               id='id',
               alphabet=["Chirurgie", "Chimiothérapie", "Radiothérapie"],
               states=["Chirurgie", "Chimiothérapie", "Radiothérapie"])
@@ -85,6 +85,7 @@ TrajectoryClusteringAnalysis/
 ├── data/                   # Données d'exemple ou de test
 ├── Notebook/               # Notebooks d'analyse et de démonstration
 ├── TrajectoryClusteringAnalysis/
+│   ├── __init__.py         # Initialisation du package
 │   ├── TCA.py              # Méthodes de clustering des trajectoires
 │   └── logger.py           # Module de gestion des logs
 ├── venv/                   # Environnement virtuel
@@ -107,9 +108,9 @@ Des notebooks d'exemple sont disponibles dans le dossier `Notebook` pour illustr
 
 ## 📧 Contact
 
-**Auteur :** Nicolas & Ndiaga  
-**Email :** ndiagadiengs1@gmail.com
-
+**Auteur :** GREVET Nicolas & DIENG Ndiaga
+**Email :** nicolas.GREVET@univ-amu.fr
+**Email :** ndiaga.diengs1@univ-amu.fr
 ---
 
 © 2024 - Trajectory Clustering Analysis (TCA). Tous droits réservés.
