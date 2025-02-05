@@ -4,115 +4,112 @@
 
 Trajectory Clustering Analysis (TCA) is a Python package for analyzing and visualizing temporal treatment sequences in a dataset.
 
-## Installation
-
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/ndiaga21/TrajectoryClusteringAnalysis.git
-
-
-   # Trajectory Clustering Analysis (TCA)
-
 ## 🚀 Introduction
 
-**Trajectory Clustering Analysis (TCA)** est un package Python conçu pour l'analyse des trajectoires de soins à l'aide de techniques de clustering. Il permet de modéliser, regrouper et visualiser des séquences de traitements médicaux afin d'identifier des patterns et des profils de patients similaires.
+**Trajectory Clustering Analysis (TCA)** is a Python package designed for the analysis of care trajectories using clustering techniques. It allows modeling, grouping, and visualizing medical treatment sequences to identify patterns and similar patient profiles.
 
-## 🔍 Fonctionnalités principales
+## 🔍 Main Features
 
-- **Modélisation des trajectoires de soins** : Représentation des patients par des séquences chronologiques de traitements.
-- **Clustering des trajectoires** : Utilisation de mesures de dissimilarité (comme la distance de Hamming, OM,dtw) combinées à des méthodes de clustering hiérarchique (CAH).
-- **Visualisation des trajectoires** : Représentation graphique des trajectoires pour une meilleure interprétation des résultats.
-- **Gestion des logs** : Suivi des exécutions grâce au module `logger.py`.
+- **Modeling Care Trajectories:** Representation of patients through chronological sequences of treatments.
+- **Trajectory Clustering:** Utilization of dissimilarity measures (such as Hamming distance, OM, DTW) combined with hierarchical clustering methods (CAH).
+- **Trajectory Visualization:** Graphical representation of trajectories for better interpretation of results.
+- **Log Management:** Tracking executions using the `logger.py` module.
 
 ## 📦 Installation
 
-1. Clonez le dépôt :
+1. Clone the repository:
    ```bash
-   git clone <lien_du_repo>
+   git clone <repository_link>
    cd TrajectoryClusteringAnalysis
    ```
 
-2. Créez un environnement virtuel (optionnel mais recommandé) :
+2. Create a virtual environment (optional but recommended):
    ```bash
    python -m venv venv
-   source venv/bin/activate  # Sur Windows : venv\Scripts\activate
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. Installez les dépendances :
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. Installez le package :
+4. Install the package:
    ```bash
    pip install .
    ```
 
-## ⚙️ Utilisation de base
+## ⚙️ Basic Usage
 
 ```python
 from TrajectoryClusteringAnalysis.TCA import TCA
 
-# Exemple de données
+# Example data
 trajectories = [
-    ["Chirurgie", "Chimiothérapie", "Radiothérapie"],
-    ["Chimiothérapie", "Radiothérapie"],
-    ["Chirurgie", "Radiothérapie"]
+    ["Surgery", "Chemotherapy", "Radiotherapy"],
+    ["Chemotherapy", "Radiotherapy"],
+    ["Surgery", "Radiotherapy"]
 ]
-## Preporocessing data
-![data_format](image/format_data.png)
-# Initialisation et clustering
+
+# Preprocessing data
+# (Assuming an image named format_data.png exists in the specified path)
+![data_format](TrajectoryClusteringAnalysis/image/format_data.png)
+
+# Initialization and clustering
 model = TCA(data=df,
-              id='id',
-              alphabet=["Chirurgie", "Chimiothérapie", "Radiothérapie"],
-              states=["Chirurgie", "Chimiothérapie", "Radiothérapie"])
-#compute distance
+            id='id',
+            alphabet=["Surgery", "Chemotherapy", "Radiotherapy"],
+            states=["Surgery", "Chemotherapy", "Radiotherapy"])
+
+# Compute distance
 model.compute_distance_matrix(metric='hamming', substitution_cost_matrix=None)
-## Clustering CAH:
+
+# Hierarchical Clustering (CAH)
 linkage_matrix = model.hierarchical_clustering(distance_matrix)
 model.plot_dendrogram(linkage_matrix)
-# Visualisation
+
+# Visualization
 model.plot_clustermap(linkage_matrix)
-#assigne clusters
-clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
+
+# Assign clusters
+clusters = model.assign_clusters(linkage_matrix, num_clusters=4)
 model.plot_cluster_heatmaps(clusters)
 ```
 
-## 📊 Structure du projet
+## 📊 Project Structure
 
 ```
 TrajectoryClusteringAnalysis/
-├── data/                   # Données d'exemple ou de test
-├── Notebook/               # Notebooks d'analyse et de démonstration
+├── data/                   # Example or test data
+├── Notebook/               # Analysis and demonstration notebooks
 ├── TrajectoryClusteringAnalysis/
-│   ├── __init__.py         # Initialisation du package
-│   ├── TCA.py              # Méthodes de clustering des trajectoires
-│   └── logger.py           # Module de gestion des logs
-├── venv/                   # Environnement virtuel
-├── setup.py                # Script d'installation
-├── requirements.txt        # Dépendances
+│   ├── __init__.py         # Package initialization
+│   ├── TCA.py              # Trajectory clustering methods
+│   └── logger.py           # Log management module
+├── venv/                   # Virtual environment
+├── setup.py                # Installation script
+├── requirements.txt        # Dependencies
 └── README.md               # Documentation
 ```
 
-## 🧪 Exemples
+## 🧪 Examples
 
-Des notebooks d'exemple sont disponibles dans le dossier `Notebook` pour illustrer différentes analyses de trajectoires.
+Example notebooks are available in the `Notebook` folder to illustrate different trajectory analyses.
 
-## 🤝 Contribuer
+## 🤝 Contributing
 
-1. Fork le projet
-2. Créez votre branche de fonctionnalité (`git checkout -b feature/AmazingFeature`)
-3. Commitez vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Poussez la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrez une Pull Request
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📧 Contact
 
-**Auteur :** GREVET Nicolas & DIENG Ndiaga
-**Email :** nicolas.GREVET@univ-amu.fr
-**Email :** ndiaga.diengs1@univ-amu.fr
+**Authors:** GREVET Nicolas & DIENG Ndiaga  
+**Email:** nicolas.GREVET@univ-amu.fr  
+**Email:** ndiaga.diengs1@univ-amu.fr
+
 ---
 
-© 2024 - Trajectory Clustering Analysis (TCA). Tous droits réservés.
-
-
+© 2024 - Trajectory Clustering Analysis (TCA). All rights reserved.
