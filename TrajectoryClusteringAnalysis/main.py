@@ -51,15 +51,17 @@ def main():
     linkage_matrix = tca.hierarchical_clustering(distance_matrix)
 
     # tca.plot_dendrogram(linkage_matrix)
-    tca.plot_clustermap(linkage_matrix)
+    #tca.plot_clustermap(linkage_matrix)
     # tca.plot_inertia(linkage_matrix)
 
     clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
     
-    tca.plot_cluster_heatmaps(clusters, sorted=False)
+    #tca.plot_cluster_heatmaps(clusters, sorted=False)
     # tca.plot_cluster_treatment_percentage(clusters)
-    # tca.bar_cluster_treatment_percentage(clusters)
-    # tca.plot_stacked_bar(clusters)
+    tca.plot_treatment_percentage()
+    tca.plot_treatment_percentage(clusters)
+    tca.bar_treatment_percentage()
+    tca.bar_treatment_percentage(clusters)
 
 if __name__ == "__main__":
     main()

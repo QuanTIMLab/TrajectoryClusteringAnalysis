@@ -13,7 +13,6 @@ Trajectory Clustering Analysis (TCA) is a Python package for analyzing and visua
 - **Modeling Care Trajectories:** Representation of patients through chronological sequences of treatments.
 - **Trajectory Clustering:** Utilization of dissimilarity measures (such as Hamming distance, OM, DTW) combined with hierarchical clustering methods (CAH).
 - **Trajectory Visualization:** Graphical representation of trajectories for better interpretation of results.
-- **Log Management:** Tracking executions using the `logger.py` module.
 
 ## 📦 Installation
 

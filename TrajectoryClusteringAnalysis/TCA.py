@@ -311,76 +311,6 @@ class TCA:
 
 ####################################### Plot methods #######################################
 
-
-    def plot_treatment_percentages(self, clusters=None ):
-        """
-        Plot the percentage of patients under each state over time.
-        If clusters are provided, plot the treatment percentages for each cluster.
-
-
-        Returns:
-        None
-         
-        """
-        if not isinstance(self.data, pd.DataFrame):
-            raise ValueError("self.data should be a pandas DataFrame")
-        if clusters is None:
-           
-            df = self.data.copy()
-            # Initialize an empty list to store data for plotting
-            plot_data = []
-
-            # Collect data for each treatment
-            for treatment, treatment_label,color in zip(self.state_numeric, self.state_label,self.colors):
-                treatment_data = df[df.eq(treatment).any(axis=1)]
-                months = treatment_data.columns
-                percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
-                plot_data.append(pd.DataFrame({'Month': months, 'Percentage': percentages, 'Treatment': treatment_label}))
-                plt.plot(months, percentages, label=f'{treatment_label}', color=color)
-
-            plt.title('Percentage of Patients under Each State Over Time')
-            plt.xlabel('Time')
-            plt.ylabel('Percentage of Patients')
-            plt.legend(title='State')
-            plt.show()
-
-        else :
-            num_clusters = len(np.unique(clusters))
-            colors = self.colors
-            events_value = self.state_numeric
-            events_keys = self.state_label
-            num_rows = (num_clusters + 1) // 2
-            num_cols = min(2, num_clusters)
-
-            fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10))
-            if num_clusters == 2:
-                axs = np.array([axs])
-            if num_clusters % 2 != 0:
-                fig.delaxes(axs[-1, -1])
-
-            for cluster_label in range(1, num_clusters + 1):
-                cluster_indices = np.where(clusters == cluster_label)[0]
-                cluster_data = self.data.iloc[cluster_indices]
-
-                row = (cluster_label - 1) // num_cols
-                col = (cluster_label - 1) % num_cols
-
-                ax = axs[row, col]
-
-                for treatment, treatment_label, color in zip(events_value, events_keys, colors):
-                    treatment_data = cluster_data[cluster_data.eq(treatment).any(axis=1)]
-                    months = treatment_data.columns
-                    percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
-                    ax.plot(months, percentages, label=f'{treatment_label}', color=color)
-                
-                ax.set_title(f'Cluster {cluster_label}')
-                ax.set_xlabel('Time')
-                ax.set_ylabel('Percentage of Patients')
-                ax.legend(title='State')
-            
-            plt.tight_layout()
-            plt.show()
-
     def plot_dendrogram(self, linkage_matrix):
         """
         Plot a dendrogram based on the hierarchical clustering of treatment sequences.
@@ -527,6 +457,84 @@ class TCA:
 
         plt.tight_layout()
         plt.show()
+    
+    def plot_treatment_percentage(self, clusters=None):
+        """
+        Plot the percentage of patients under each state over time using line plots.
+        If clusters are provided, plot the treatment percentages for each cluster.
+
+        Parameters:
+        clusters (numpy.ndarray): Cluster assignments for each patient (optional).
+
+        Returns:
+        None
+        """
+        viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(self.alphabet))]
+
+        if clusters is None:
+            df = self.data.drop('id', axis=1, errors='ignore').copy()
+            plt.figure(figsize=(15, 8))
+
+            for treatment, treatment_label, color in zip(self.alphabet, self.states, viridis_colors_list):
+                treatment_data = df[df.eq(treatment).any(axis=1)]
+                months = treatment_data.columns
+                percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
+                percentages = percentages.fillna(0)
+
+                # Tracer la courbe
+                plt.plot(months, percentages, label=f'{treatment_label}', color=color, marker='o')
+
+            plt.xticks(months[::2], rotation=90, ha='right')  # Afficher un label sur deux
+            plt.title('Percentage of Patients under Each State Over Time (Curve)')
+            plt.xlabel('Time')
+            plt.ylabel('Percentage of Patients')
+            plt.legend(title='State')
+            plt.grid(True, linestyle='--', alpha=0.6)
+            plt.tight_layout()
+            plt.show()
+
+        else:
+            num_clusters = len(np.unique(clusters))
+            num_rows = (num_clusters + 1) // 2  
+            num_cols = min(2, num_clusters)
+            fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10))
+
+            if num_clusters == 2:
+                axs = np.array([axs])
+            if num_clusters % 2 != 0:
+                fig.delaxes(axs[-1, -1])
+
+            for cluster_label in range(num_clusters):
+                cluster_indices = np.where(clusters == cluster_label)[0]
+                cluster_data = self.data.iloc[cluster_indices].drop('id', axis=1, errors='ignore')
+
+                row = cluster_label // num_cols
+                col = cluster_label % num_cols
+                ax = axs[row, col]
+
+                for treatment, treatment_label, color in zip(self.alphabet, self.states, viridis_colors_list):
+                    treatment_data = cluster_data[cluster_data.eq(treatment).any(axis=1)]
+                    months = treatment_data.columns
+                    percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
+                    percentages = percentages.fillna(0)
+
+                    # Tracer la courbe pour chaque état
+                    ax.plot(months, percentages, label=f'{treatment_label}', color=color, marker='o')
+
+                ax.set_title(f'Cluster {cluster_label}')
+                ax.set_xlabel('Time')
+                ax.set_ylabel('Percentage of Patients')
+                ax.legend(title='State')
+                ax.grid(True, linestyle='--', alpha=0.6)
+
+                # Afficher un label sur deux
+                xticks_positions = range(0, len(months), 2)
+                ax.set_xticks(xticks_positions)
+                ax.set_xticklabels([months[i] for i in xticks_positions], rotation=45, ha='right')
+
+            plt.tight_layout()
+            plt.show()
+
 
     def bar_treatment_percentage(self, clusters=None):
         """
@@ -539,106 +547,71 @@ class TCA:
         Returns:
         None
         """
+        viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(self.alphabet))]
         if clusters is None:
-            df = self.data.copy()
-            # Initialize an empty list to store data for plotting
-            plot_data = []
+            df = self.data.drop('id', axis=1).copy()
+            cumulative_values = np.zeros(len(df.columns))
+            # Création du graphique
+            plt.figure(figsize=(15, 10))
 
-            # Collect data for each treatment
-            for treatment, treatment_label,color in zip(self.state_numeric, self.state_label,self.colors):
+            for treatment,treatment_label, color in zip(self.alphabet,self.states, viridis_colors_list):
                 treatment_data = df[df.eq(treatment).any(axis=1)]
                 months = treatment_data.columns
                 percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
-                plot_data.append(pd.DataFrame({'Month': months, 'Percentage': percentages, 'Treatment': treatment_label}))
-                plt.bar(months, percentages, label=f'{treatment_label}', color=color)
+                percentages = percentages.fillna(0)
+                # Empilement des barres
+                plt.bar(months, percentages, bottom=cumulative_values, label=f'{treatment_label}', color=color,)
+                plt.xticks(months[::2], rotation=90)
+                cumulative_values += percentages
 
-            plt.title('Percentage of Patients under Each State Over Time')
+            # Mise en forme du graphique
+            plt.title('Percentage of Patients under Each State Over Time (Stacked)')
             plt.xlabel('Time')
             plt.ylabel('Percentage of Patients')
             plt.legend(title='State')
+            plt.tight_layout()
             plt.show()
 
         else:
             num_clusters = len(np.unique(clusters))
             num_rows = (num_clusters + 1) // 2  
             num_cols = min(2, num_clusters)
-            fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10))
-            if num_clusters == 2:
-                axs = np.array([axs])
+
+            fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10), squeeze=False)
+
             if num_clusters % 2 != 0:
-                fig.delaxes(axs[-1, -1])
-
-            for cluster_label in range(1, num_clusters + 1):
+                            fig.delaxes(axs[-1, -1])
+            for cluster_label in range(1,num_clusters+1):
                 cluster_indices = np.where(clusters == cluster_label)[0]
-                cluster_data = self.data.iloc[cluster_indices]
+                cluster_data = self.data.iloc[cluster_indices].drop('id', axis=1, errors='ignore')
 
-                row = (cluster_label - 1) // num_cols
-                col = (cluster_label - 1) % num_cols
-
+                row = (cluster_label-1) // num_cols
+                col = (cluster_label-1) % num_cols
                 ax = axs[row, col]
 
-                for treatment, treatment_label, color in zip(self.state_numeric, self.state_label, self.colors):
+                cumulative_values = np.zeros(len(cluster_data.columns))  # Réinitialisation des valeurs cumulées
+
+                for treatment, treatment_label, color in zip(self.alphabet, self.states, viridis_colors_list):
                     treatment_data = cluster_data[cluster_data.eq(treatment).any(axis=1)]
                     months = treatment_data.columns
                     percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
-                    ax.bar(months, percentages, label=f'{treatment_label}', color=color)
+                    percentages = percentages.fillna(0)
+
+                    ax.bar(months, percentages, bottom=cumulative_values, label=f'{treatment_label}', color=color)
+                    cumulative_values += percentages  # Mise à jour pour empilement
 
                 ax.set_title(f'Cluster {cluster_label}')
                 ax.set_xlabel('Time')
                 ax.set_ylabel('Percentage of Patients')
                 ax.legend(title='State')
+                xticks_positions = range(0, len(months), 2)
+                ax.set_xticks(xticks_positions)
+                ax.set_xticklabels([months[i] for i in xticks_positions], rotation=90)
 
             plt.tight_layout()
             plt.show()
 
-    def plot_stacked_bar(self, clusters):
-        """
-        Plot stacked bar charts showing the percentage of patients under each treatment over time for each cluster.
-
-        Parameters:
-        clusters (numpy.ndarray): The cluster assignments for each patient.
-
-        Returns:
-        None
-        """
-        num_clusters = len(np.unique(clusters))
-        num_rows = (num_clusters + 1) // 2  
-        num_cols = min(2, num_clusters)
-        fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10))
-        if num_clusters == 2:
-            axs = np.array([axs])
-        if num_clusters % 2 != 0:
-            fig.delaxes(axs[-1, -1])
-
-        for cluster_label in range(1, num_clusters + 1):
-            cluster_indices = np.where(clusters == cluster_label)[0]
-            cluster_data = self.data.iloc[cluster_indices]
-            
-            row = (cluster_label - 1) // num_cols
-            col = (cluster_label - 1) % num_cols
-            
-            ax = axs[row, col]
-            
-            stacked_data = []
-            for treatment in self.state_numeric:
-                treatment_data = cluster_data[cluster_data.eq(treatment).any(axis=1)]
-                months = treatment_data.columns
-                percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
-                stacked_data.append(percentages.values)
-            
-            months = range(len(months))
-            bottom = np.zeros(len(months))
-            for i, data in enumerate(stacked_data):
-                ax.bar(months, data, bottom=bottom, label=self.state_label[i], color=self.colors[i])
-                bottom += data
-            
-            ax.set_title(f'Cluster {cluster_label}')
-            ax.set_xlabel('Time')
-            ax.set_ylabel('Percentage of Patients')
-            ax.legend(title='Treatment')
-        
-        plt.tight_layout()
-        plt.show()
+    
 
 
 ####################################### MAIN #######################################
@@ -648,18 +621,6 @@ class TCA:
 
 def main():
     df = pd.read_csv('data/dataframe_test.csv')
-
-    # tranformer vos données en format large si c'est n'est pas le cas 
-    # state_mapping = {"EM": 2, "FE": 4, "HE": 6, "JL": 8, "SC": 10, "TR": 12}
-    # colors = ['blue', 'orange', 'green', 'red', 'yellow', 'gray']
-    # df_numeriques = df.replace(state_mapping)
-    # print(df_numeriques.head())
-    # print(df_numeriques.columns)
-    # print(df_numeriques.shape)
-    # print(df_numeriques.info())
-    # print(df_numeriques.isnull().sum())
-    # print(df_numeriques.describe())
-    # print(df_numeriques.dtypes) 
 
     # Sélectionner les colonnes pertinentes pour l'analyse
     selected_cols = df[['id', 'month', 'care_status']]
@@ -708,9 +669,9 @@ def main():
 
     clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
     
-    tca.plot_cluster_heatmaps(clusters, sorted=False)
+    #tca.plot_cluster_heatmaps(clusters, sorted=False)
     # tca.plot_cluster_treatment_percentage(clusters)
-    # tca.bar_cluster_treatment_percentage(clusters)
+    tca.bar_treatment_percentage()
     # tca.plot_stacked_bar(clusters)
 
 if __name__ == "__main__":
