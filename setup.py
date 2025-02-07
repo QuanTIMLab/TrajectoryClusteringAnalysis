@@ -18,7 +18,7 @@ def get_requirements(file_path: str) -> List[str]:
 
 setup(
     name='TrajectoryClusteringAnalysis',
-    version='0.0.4',
+    version='0.0.1',
     author='Nicolas and Ndiaga',
     author_email='ndiagadiengs1@gmail.com',
     description='Un package pour l’analyse des trajectoires de soins par clustering',

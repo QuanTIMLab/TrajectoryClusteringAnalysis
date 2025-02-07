@@ -1,5 +1,5 @@
 import pandas as pd
-from TCA import TCA
+from tca import TCA
 
 
 ####################################### MAIN #######################################

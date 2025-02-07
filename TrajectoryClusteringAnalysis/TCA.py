@@ -504,12 +504,12 @@ class TCA:
             if num_clusters % 2 != 0:
                 fig.delaxes(axs[-1, -1])
 
-            for cluster_label in range(num_clusters):
+            for cluster_label in range(1,num_clusters+1):
                 cluster_indices = np.where(clusters == cluster_label)[0]
                 cluster_data = self.data.iloc[cluster_indices].drop('id', axis=1, errors='ignore')
 
-                row = cluster_label // num_cols
-                col = cluster_label % num_cols
+                row = (cluster_label-1) // num_cols
+                col = (cluster_label-1) % num_cols
                 ax = axs[row, col]
 
                 for treatment, treatment_label, color in zip(self.alphabet, self.states, viridis_colors_list):
