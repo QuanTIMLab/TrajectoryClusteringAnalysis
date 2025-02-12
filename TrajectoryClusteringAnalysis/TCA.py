@@ -65,7 +65,7 @@ class TCA:
         # Create a dictionary mapping labels to encoded values
         self.label_to_encoded = mapping_df.set_index('alphabet')['label encoded'].to_dict()
         # print("label_to_encoded:\n", self.label_to_encoded)
-        
+        logging.getLogger("matplotlib").setLevel(logging.WARNING)
         logging.info("TCA object initialized successfully")
 
 
@@ -185,7 +185,7 @@ class TCA:
         start_time = timeit.default_timer()
 
         if metric == 'hamming':
-            self.distance_matrix = np.array(pdist(self.data.replace(self.label_to_encoded), metric=metric))
+            self.distance_matrix = squareform(np.array(pdist(self.data.replace(self.label_to_encoded).drop(columns=['id']), metric=metric)))
 
         elif metric == 'levenshtein':
             self.distance_matrix = np.zeros((len(self.data), len(self.data)))
@@ -434,7 +434,7 @@ class TCA:
             # print(ax)
             sns.heatmap(cluster_df[1].drop(self.id, axis=1).replace(self.label_to_encoded), cmap=self.colors, cbar=False, ax=ax, yticklabels=False)
             ax.tick_params(axis='x', rotation=45)
-            ax.text(1.05, 0.5, f'cluster {cluster_label} (n={len(cluster_df[1])})', transform=ax.transAxes, ha='left', va='center')
+            ax.text(1.05, 0.5, f'cluster {cluster_label+1} (n={len(cluster_df[1])})', transform=ax.transAxes, ha='left', va='center')
             # axs[row].set_ylabel('Patients id')
         axs[-1].set_xlabel('Time in months')
 
@@ -474,7 +474,7 @@ class TCA:
         if clusters is None:
             df = self.data.drop('id', axis=1, errors='ignore').copy()
             plt.figure(figsize=(15, 8))
-
+            
             for treatment, treatment_label, color in zip(self.alphabet, self.states, viridis_colors_list):
                 treatment_data = df[df.eq(treatment).any(axis=1)]
                 months = treatment_data.columns
@@ -482,6 +482,8 @@ class TCA:
                 percentages = percentages.fillna(0)
 
                 # Tracer la courbe
+                
+                #logging.getLogger("matplotlib").setLevel(logging.WARNING)
                 plt.plot(months, percentages, label=f'{treatment_label}', color=color, marker='o')
 
             plt.xticks(months[::2], rotation=90, ha='right')  # Afficher un label sur deux

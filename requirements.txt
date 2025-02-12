@@ -9,4 +9,5 @@ Levenshtein
 tslearn
 tqdm
 h5py 
+rpy2
 #-e .
