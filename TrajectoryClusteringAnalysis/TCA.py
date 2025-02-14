@@ -414,12 +414,12 @@ class TCA:
             cluster_data[cluster_label] = cluster_df
 
         # Determine the size of each cluster
-        heights = [len(cluster_df)*0.2 for cluster_df in cluster_data.values()]
+        heights = [len(cluster_df) for cluster_df in cluster_data.values()]
         print("heights: ", heights)
-
+        
         num_rows = num_clusters
         num_cols = min(1, num_clusters)
-        fig, axs = plt.subplots(num_rows, num_cols, figsize=(10, sum(heights)* 0.01), sharex=True, gridspec_kw={'height_ratios': heights})
+        fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, sum(heights)* 0.02), sharex=True, gridspec_kw={'height_ratios': heights})
         
         if num_clusters == 2:
             axs = np.array([axs])

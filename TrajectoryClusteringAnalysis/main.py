@@ -56,12 +56,12 @@ def main():
 
     clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
     
-    #tca.plot_cluster_heatmaps(clusters, sorted=False)
+    tca.plot_cluster_heatmaps(clusters, sorted=False)
     # tca.plot_cluster_treatment_percentage(clusters)
-    tca.plot_treatment_percentage()
-    tca.plot_treatment_percentage(clusters)
-    tca.bar_treatment_percentage()
-    tca.bar_treatment_percentage(clusters)
+    #tca.plot_treatment_percentage()
+    #tca.plot_treatment_percentage(clusters)
+    #tca.bar_treatment_percentage()
+    #tca.bar_treatment_percentage(clusters)
 
 if __name__ == "__main__":
     main()
