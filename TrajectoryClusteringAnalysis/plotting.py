@@ -29,7 +29,7 @@ def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, li
         Returns:
         None
     """
-    plt.figure(figsize=(8, 8))
+    #plt.figure(figsize=(8, 8))
     sns.clustermap(data.drop(id_col, axis=1).replace(label_to_encoded),
                    cmap=colors,
                    metric='precomputed',
@@ -50,24 +50,32 @@ def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, li
     plt.legend(handles=legend_handles, labels=states, loc='upper right', ncol=1, title='Statuts')
     plt.show()
 
-def plot_inertia(linkage_matrix):
+def plot_inertia(linkage_matrix, n_points=10):
     """
-     Plot the inertia diagram to help determine the optimal number of clusters.
+        Plot the inertia diagram to help determine the optimal number of clusters.
 
-     Parameters:
-     linkage_matrix (numpy.ndarray): The linkage matrix containing the hierarchical clustering information.
+        Parameters:
+        linkage_matrix (numpy.ndarray): The linkage matrix from hierarchical clustering.
+        n_points (int): Number of last merges to plot (default is 10).
 
-     Returns: None
+        Returns:None
     """
-    last = linkage_matrix[-10:, 2]
-    last_rev = last[::-1]
-    idxs = np.arange(2, len(last) + 2)
+    num_merges = linkage_matrix.shape[0]
+    n_points = min(n_points, num_merges)
+
+    last = linkage_matrix[-n_points:, 2] 
+    last_rev = last[::-1] 
+    idxs = np.arange(2, len(last) + 2) 
 
     plt.figure(figsize=(10, 6))
-    plt.step(idxs, last_rev, c="black")
+    plt.step(idxs, last_rev, c="black", linewidth=2)
+    plt.scatter(idxs, last_rev, c="red", label="Inertia points")
+
     plt.xlabel("Number of clusters")
-    plt.ylabel("Inertia")
-    plt.title("Inertia Diagram")
+    plt.ylabel("Inertia (distance)")
+    plt.title("Inertia Diagram (Elbow Method)")
+    plt.legend()
+    plt.grid(True, linestyle="--", alpha=0.6)
     plt.show()
 
 def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, states, clusters, leaf_order, sorted=True):
