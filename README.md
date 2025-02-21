@@ -83,8 +83,15 @@ TrajectoryClusteringAnalysis/
 ├── Notebook/               # Analysis and demonstration notebooks
 ├── TrajectoryClusteringAnalysis/
 │   ├── __init__.py         # Package initialization
-│   ├── TCA.py              # Trajectory clustering methods
-│   └── logger.py           # Log management module
+│   ├── tca.py              # Trajectory clustering methods
+│   ├── clustering.py       # Clustering algorithms
+│   ├── plotting.py         # Plotting functions
+│   └── utils.py            # Utility functions
+├── tests/                  # Unit tests
+│   ├── __init__.py
+│   ├── test_tca.py
+│   ├── test_plotting.py
+│   └── test_utils.py
 ├── venv/                   # Virtual environment
 ├── setup.py                # Installation script
 ├── requirements.txt        # Dependencies
@@ -94,6 +101,12 @@ TrajectoryClusteringAnalysis/
 ## 🧪 Examples
 
 Example notebooks are available in the `Notebook` folder to illustrate different trajectory analyses.
+
+## 🧪 Running Tests
+To run the tests, use the following command:
+```python
+python -m unittest discover -s tests
+```
 
 ## 🤝 Contributing
 

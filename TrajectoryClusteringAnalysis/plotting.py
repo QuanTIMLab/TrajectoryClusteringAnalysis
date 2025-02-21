@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from scipy.cluster.hierarchy import dendrogram
+import pandas as pd
+#pd.set_option('future.no_silent_downcasting', True)
 
 def plot_dendrogram(linkage_matrix):
     """
@@ -114,7 +116,10 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
         fig.delaxes(axs[-1, -1])            
 
     for cluster_label, (cluster_df, ax) in enumerate(zip(cluster_data.items(), axs)):
-        sns.heatmap(cluster_df[1].drop(id_col, axis=1).replace(label_to_encoded), cmap=colors, cbar=False, ax=ax, yticklabels=False)
+        #sns.heatmap(cluster_df[1].drop(id_col, axis=1).replace(label_to_encoded), cmap=colors, cbar=False, ax=ax, yticklabels=False)
+        heatmap_data = cluster_df[1].drop(id_col, axis=1).replace(label_to_encoded)
+        heatmap_data = heatmap_data.infer_objects(copy=True)
+        sns.heatmap(heatmap_data, cmap=colors, cbar=False, ax=ax, yticklabels=False)
         ax.tick_params(axis='x', rotation=45)
         ax.text(1.05, 0.5, f'cluster {cluster_label+1} (n={len(cluster_df[1])})', transform=ax.transAxes, ha='left', va='center')
     axs[-1].set_xlabel('Time in months')
@@ -122,7 +127,7 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
     viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
     legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
     plt.legend(handles=legend_handles, labels=states, loc='lower right', ncol=1, title='Statuts')
-    plt.tight_layout()
+    #plt.tight_layout()
     plt.show()
 
 def plot_treatment_percentage(data, id_col, alphabet, states, clusters=None):

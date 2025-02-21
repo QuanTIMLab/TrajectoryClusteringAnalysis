@@ -8,6 +8,7 @@ import tqdm
 import logging
 import timeit
 
+
 def compute_substitution_cost_matrix(sequences, alphabet, method='constant', custom_costs=None):
     num_states = len(alphabet)
     substitution_matrix = np.zeros((num_states, num_states))
