@@ -7,6 +7,7 @@ from tslearn.metrics import dtw, dtw_path_from_metric, gak
 import tqdm
 import logging
 import timeit
+from TrajectoryClusteringAnalysis.optimal_matching import   optimal_matching_fast # Import de la version Cython optimisée
 
 
 def compute_substitution_cost_matrix(sequences, alphabet, method='constant', custom_costs=None):
@@ -53,25 +54,6 @@ def compute_substitution_cost_matrix(sequences, alphabet, method='constant', cus
     substitution_cost_matrix = pd.DataFrame(substitution_matrix, index=alphabet, columns=alphabet)
     return substitution_cost_matrix
 
-def optimal_matching(seq1, seq2, substitution_cost_matrix, indel_cost, alphabet):
-    if indel_cost is None:
-        indel_cost = max(substitution_cost_matrix.values.flatten()) / 2
-    m, n = len(seq1), len(seq2)
-    score_matrix = np.zeros((m+1, n+1))
-    score_matrix[:, 0] = indel_cost * np.arange(m+1)
-    score_matrix[0, :] = indel_cost * np.arange(n+1)
-
-    for i in range(1, m+1):
-        for j in range(1, n+1):
-            cost_substitute = substitution_cost_matrix.iloc[alphabet.index(seq1[i - 1]), alphabet.index(seq2[j - 1])]
-            match = score_matrix[i-1, j-1] + cost_substitute
-            delete = score_matrix[i-1, j] + indel_cost
-            insert = score_matrix[i, j-1] + indel_cost
-            score_matrix[i, j] = min(match, delete, insert)
-
-    optimal_score = score_matrix[m, n]
-    return optimal_score
-
 def replace_labels(sequence, label_to_encoded):
         vectorized_replace = np.vectorize(label_to_encoded.get)
         return vectorized_replace(sequence)
@@ -80,7 +62,7 @@ def replace_labels(sequence, label_to_encoded):
 def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming', substitution_cost_matrix=None, alphabet=None):
     logging.info(f"Calculating distance matrix using metric: {metric}...")
     start_time = timeit.default_timer()
-
+    n = len(sequences)
     if metric == 'hamming':
         distance_matrix = squareform(np.array(pdist(data.replace(label_to_encoded).drop(columns=['id']), metric=metric)))
 
@@ -99,13 +81,14 @@ def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming',
             raise ValueError("Substitution cost matrix not found. Please compute the substitution cost matrix first.")
         distance_matrix = np.zeros((len(data), len(data)))
         print("substitution cost matrix: \n", substitution_cost_matrix)
-        print("indel cost: ", max(substitution_cost_matrix.values.flatten()) / 2)
+        print("indel cost: ", np.max(substitution_cost_matrix.values)/2)
+        alphabet_dict = {char: i for i, char in enumerate(alphabet)}
+        indel_cost = np.max(substitution_cost_matrix.values)/2
+        sequences_idx = [np.array([alphabet_dict[s] for s in seq], dtype=np.int32) for seq in sequences]
         for i in tqdm.tqdm(range(len(sequences))):
             for j in range(i + 1, len(sequences)):
-                seq1, seq2 = sequences[i], sequences[j]
-                distance = optimal_matching(seq1, seq2, substitution_cost_matrix, indel_cost=None, alphabet=alphabet)
-                max_length = max(len(seq1), len(seq2))
-                normalized_dist = distance / max_length
+                seq1_idx, seq2_idx = sequences_idx[i], sequences_idx[j]
+                normalized_dist = optimal_matching_fast(seq1_idx, seq2_idx, substitution_cost_matrix.values, indel_cost=indel_cost)           
                 distance_matrix[i, j] = normalized_dist
                 distance_matrix[j, i] = normalized_dist
 

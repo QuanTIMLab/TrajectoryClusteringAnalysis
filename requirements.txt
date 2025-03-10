@@ -10,4 +10,6 @@ tslearn
 tqdm
 h5py 
 rpy2
+numba
+cython
 #-e .

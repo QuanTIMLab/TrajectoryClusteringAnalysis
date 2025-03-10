@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import logging
-from TrajectoryClusteringAnalysis.clustering import compute_substitution_cost_matrix, optimal_matching, compute_distance_matrix, hierarchical_clustering, assign_clusters
+from TrajectoryClusteringAnalysis.clustering import compute_substitution_cost_matrix, compute_distance_matrix, hierarchical_clustering, assign_clusters
 from TrajectoryClusteringAnalysis.plotting import plot_dendrogram, plot_clustermap, plot_inertia, plot_cluster_heatmaps, plot_treatment_percentage, bar_treatment_percentage
 
 class TCA:
@@ -36,8 +36,8 @@ class TCA:
     def compute_substitution_cost_matrix(self, method='constant', custom_costs=None):
         return compute_substitution_cost_matrix(self.sequences, self.alphabet, method, custom_costs)
 
-    def optimal_matching(self, seq1, seq2, substitution_cost_matrix, indel_cost=None):
-        return optimal_matching(seq1, seq2, substitution_cost_matrix, indel_cost, self.alphabet)
+    #def optimal_matching(self, seq1, seq2, substitution_cost_matrix, indel_cost=None):
+     #   return optimal_matching(seq1, seq2, substitution_cost_matrix, indel_cost, self.alphabet)
 
     def compute_distance_matrix(self, metric='hamming', substitution_cost_matrix=None):
         return compute_distance_matrix(self.data, self.sequences, self.label_to_encoded, metric, substitution_cost_matrix,self.alphabet)
