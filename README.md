@@ -120,7 +120,7 @@ python -m unittest discover -s tests
 
 **Authors:** DIENG Ndiaga & GREVET Nicolas   
 **Email:** ndiaga.diengs1@univ-amu.fr
-**Email:** nicolas.GREVET@univ-amu.fr  
+**Email:** nicolas.GREVET@univ-amu.fr
 
 ---
 
