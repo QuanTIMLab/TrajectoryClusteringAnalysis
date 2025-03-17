@@ -118,9 +118,9 @@ python -m unittest discover -s tests
 
 ## 📧 Contact
 
-**Authors:** GREVET Nicolas & DIENG Ndiaga  
-**Email:** nicolas.GREVET@univ-amu.fr  
+**Authors:** DIENG Ndiaga & GREVET Nicolas   
 **Email:** ndiaga.diengs1@univ-amu.fr
+**Email:** nicolas.GREVET@univ-amu.fr  
 
 ---
 
