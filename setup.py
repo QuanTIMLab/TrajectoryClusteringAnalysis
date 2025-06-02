@@ -27,7 +27,7 @@ extensions = [
         language="c",  # Compilation en C pour plus de rapidité
         extra_compile_args=['-O3','-march=native', '-ffast-math'],  # Optimisation du compilateur
         extra_link_args=['-O3'],
-         py_limited_api=True,
+        py_limited_api=True,
     )
 ]
 

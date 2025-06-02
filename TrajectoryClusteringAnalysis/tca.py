@@ -36,8 +36,8 @@ class TCA:
     def compute_substitution_cost_matrix(self, method='constant', custom_costs=None):
         return compute_substitution_cost_matrix(self.sequences, self.alphabet, method, custom_costs)
 
-    #def optimal_matching(self, seq1, seq2, substitution_cost_matrix, indel_cost=None):
-     #   return optimal_matching(seq1, seq2, substitution_cost_matrix, indel_cost, self.alphabet)
+    # def optimal_matching(self, seq1, seq2, substitution_cost_matrix, indel_cost=None):
+    #    return optimal_matching(seq1, seq2, substitution_cost_matrix, indel_cost, self.alphabet)
 
     def compute_distance_matrix(self, metric='hamming', substitution_cost_matrix=None):
         return compute_distance_matrix(self.data, self.sequences, self.label_to_encoded, metric, substitution_cost_matrix,self.alphabet)
@@ -58,7 +58,7 @@ class TCA:
         plot_inertia(linkage_matrix)
 
     def plot_cluster_heatmaps(self, clusters, sorted=True):
-        plot_cluster_heatmaps(self.data, self.id, self.label_to_encoded, self.colors, self.alphabet, self.states, clusters, self.leaf_order, sorted)
+        return plot_cluster_heatmaps(self.data, self.id, self.label_to_encoded, self.colors, self.alphabet, self.states, clusters, self.leaf_order, sorted)
 
     def plot_treatment_percentage(self, clusters=None):
         plot_treatment_percentage(self.data, self.id, self.alphabet, self.states, clusters)

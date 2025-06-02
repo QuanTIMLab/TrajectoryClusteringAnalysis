@@ -112,9 +112,14 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
     
     if num_clusters == 2:
         axs = np.array([axs])
-    if num_clusters % 2 != 0:
-        fig.delaxes(axs[-1, -1])            
+    # if num_clusters % 2 != 0:
+    #     fig.delaxes(axs[-1, -1])  
+    # elif     
 
+
+    # plt.figure(figsize=(10, 15))
+    plt.subplots_adjust(hspace=2, wspace=0.5)
+    plt.suptitle('Heatmaps of Treatment Sequences by Cluster', fontsize=16, y=1.02)
     for cluster_label, (cluster_df, ax) in enumerate(zip(cluster_data.items(), axs)):
         #sns.heatmap(cluster_df[1].drop(id_col, axis=1).replace(label_to_encoded), cmap=colors, cbar=False, ax=ax, yticklabels=False)
         heatmap_data = cluster_df[1].drop(id_col, axis=1).replace(label_to_encoded)
@@ -127,7 +132,7 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
     viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
     legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
     plt.legend(handles=legend_handles, labels=states, loc='lower right', ncol=1, title='Statuts')
-    #plt.tight_layout()
+    plt.tight_layout()
     plt.show()
 
 def plot_treatment_percentage(data, id_col, alphabet, states, clusters=None):
@@ -155,10 +160,11 @@ def plot_treatment_percentage(data, id_col, alphabet, states, clusters=None):
             plt.plot(months, percentages, label=f'{treatment_label}', color=color, marker='o')
 
         plt.xticks(months[::2], rotation=90, ha='right')
-        plt.title('Percentage of Patients under Each State Over Time (Curve)')
+        plt.title('Percentage of Patients under Each State Over Time')
         plt.xlabel('Time')
         plt.ylabel('Percentage of Patients')
-        plt.legend(title='State')
+        plt.legend(title=None)
+
         plt.grid(True, linestyle='--', alpha=0.6)
         plt.tight_layout()
         plt.show()
@@ -203,7 +209,6 @@ def plot_treatment_percentage(data, id_col, alphabet, states, clusters=None):
         plt.tight_layout()
         plt.show()
 
-
 def bar_treatment_percentage(data, id_col, alphabet, states, clusters=None):
     """
     Plot the percentage of patients under each state over time using bar plots.
@@ -215,13 +220,20 @@ def bar_treatment_percentage(data, id_col, alphabet, states, clusters=None):
     Returns:
     None
     """
-    viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
+    # viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
+    
     if clusters is None:
         df = data.drop(id_col, axis=1).copy()
-        cumulative_values = np.zeros(len(df.columns))  # Initialisation des valeurs cumulées
-        plt.figure(figsize=(15, 10))
 
-        for treatment,treatment_label, color in zip(alphabet,states, viridis_colors_list):
+        status_counts = df.apply(pd.Series.value_counts).fillna(0)
+
+        status_counts.T.plot.bar(stacked=True, color=[viridis_colors_list[i] for i in range(len(alphabet))], ax=ax)
+
+
+        cumulative_values = np.zeros(len(df.columns))  # Initialisation des valeurs cumulées
+        # plt.figure(figsize=(15, 10))
+
+        for treatment, treatment_label, color in zip(alphabet,states, viridis_colors_list):
             treatment_data = df[df.eq(treatment).any(axis=1)]
             months = treatment_data.columns
             percentages = (treatment_data.apply(lambda x: x.value_counts().get(treatment, 0)) / len(treatment_data)) * 100
@@ -231,10 +243,10 @@ def bar_treatment_percentage(data, id_col, alphabet, states, clusters=None):
             cumulative_values += percentages
 
      
-        plt.title('Percentage of Patients under Each State Over Time (Stacked)')
+        plt.title('Number of Patients under Each State Over Time')
         plt.xlabel('Time')
-        plt.ylabel('Percentage of Patients')
-        plt.legend(title='State')
+        plt.ylabel('Number of Patients')
+        plt.legend(title=None)
         plt.tight_layout()
         plt.show()
 

@@ -7,7 +7,7 @@ from tslearn.metrics import dtw, dtw_path_from_metric, gak
 import tqdm
 import logging
 import timeit
-from TrajectoryClusteringAnalysis.optimal_matching import   optimal_matching_fast # Import de la version Cython optimisée
+from TrajectoryClusteringAnalysis.optimal_matching import optimal_matching_fast # Import de la version Cython optimisée
 
 
 def compute_substitution_cost_matrix(sequences, alphabet, method='constant', custom_costs=None):
@@ -57,7 +57,6 @@ def compute_substitution_cost_matrix(sequences, alphabet, method='constant', cus
 def replace_labels(sequence, label_to_encoded):
         vectorized_replace = np.vectorize(label_to_encoded.get)
         return vectorized_replace(sequence)
-
 
 def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming', substitution_cost_matrix=None, alphabet=None):
     logging.info(f"Calculating distance matrix using metric: {metric}...")
