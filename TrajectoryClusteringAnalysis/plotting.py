@@ -3,35 +3,44 @@ import seaborn as sns
 import numpy as np
 from scipy.cluster.hierarchy import dendrogram
 import pandas as pd
-#pd.set_option('future.no_silent_downcasting', True)
 
+# Function to plot a dendrogram for hierarchical clustering
 def plot_dendrogram(linkage_matrix):
     """
-       Plot a dendrogram based on the hierarchical clustering of treatment sequences.
+    Plot a dendrogram based on the hierarchical clustering of treatment sequences.
 
-        Parameters:
-        linkage_matrix (numpy.ndarray): The linkage matrix containing the hierarchical clustering information.
+    Parameters:
+    linkage_matrix (numpy.ndarray): The linkage matrix containing the hierarchical clustering information.
 
-        Returns: None
+    Returns:
+    None
     """
+    # Create a figure for the dendrogram
     plt.figure(figsize=(10, 6))
-    dendrogram(linkage_matrix)
-    plt.title('Dendrogram of Treatment Sequences')
-    plt.xlabel('Patients')
-    plt.ylabel('Distance')
-    plt.show()
+    dendrogram(linkage_matrix)  # Plot the dendrogram
+    plt.title('Dendrogram of Treatment Sequences')  # Add a title
+    plt.xlabel('Patients')  # Label for the x-axis
+    plt.ylabel('Distance')  # Label for the y-axis
+    plt.show()  # Display the plot
 
+# Function to plot a clustermap with a custom legend
 def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, linkage_matrix):
     """
-        Plot a clustermap of the treatment sequences with a custom legend.
+    Plot a clustermap of the treatment sequences with a custom legend.
 
-        Parameters:
-        linkage_matrix (numpy.ndarray): The linkage matrix containing the hierarchical clustering information.
+    Parameters:
+    data (pd.DataFrame): The dataset containing treatment sequences.
+    id_col (str): The column name for patient IDs.
+    label_to_encoded (dict): Mapping of labels to encoded values.
+    colors (str): Colormap for the heatmap.
+    alphabet (list): List of unique treatment states.
+    states (list): List of state labels corresponding to the alphabet.
+    linkage_matrix (numpy.ndarray): The linkage matrix containing the hierarchical clustering information.
 
-        Returns:
-        None
+    Returns:
+    None
     """
-    #plt.figure(figsize=(8, 8))
+    # Generate the clustermap
     sns.clustermap(data.drop(id_col, axis=1).replace(label_to_encoded),
                    cmap=colors,
                    metric='precomputed',
@@ -42,60 +51,75 @@ def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, li
                    dendrogram_ratio=(.1, .2),
                    cbar_pos=None)
     
-    plt.xlabel("Time")
-    plt.xticks(rotation=45)
-    plt.yticks([])
-    plt.title("Clustermap of Treatment Sequences")
+    # Customize the plot
+    plt.xlabel("Time")  # Label for the x-axis
+    plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
+    plt.yticks([])  # Remove y-axis ticks
+    plt.title("Clustermap of Treatment Sequences")  # Add a title
 
+    # Add a legend for treatment states
     viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
     legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
     plt.legend(handles=legend_handles, labels=states, loc='upper right', ncol=1, title='Statuts')
     plt.show()
 
+# Function to plot the inertia diagram for determining the optimal number of clusters
 def plot_inertia(linkage_matrix, n_points=10):
     """
-        Plot the inertia diagram to help determine the optimal number of clusters.
+    Plot the inertia diagram to help determine the optimal number of clusters.
 
-        Parameters:
-        linkage_matrix (numpy.ndarray): The linkage matrix from hierarchical clustering.
-        n_points (int): Number of last merges to plot (default is 10).
+    Parameters:
+    linkage_matrix (numpy.ndarray): The linkage matrix from hierarchical clustering.
+    n_points (int): Number of last merges to plot (default is 10).
 
-        Returns:None
+    Returns:
+    None
     """
+    # Extract the last n_points merges
     num_merges = linkage_matrix.shape[0]
     n_points = min(n_points, num_merges)
+    last = linkage_matrix[-n_points:, 2]  # Distances of the last merges
+    last_rev = last[::-1]  # Reverse the order for plotting
+    idxs = np.arange(2, len(last) + 2)  # Cluster indices
 
-    last = linkage_matrix[-n_points:, 2] 
-    last_rev = last[::-1] 
-    idxs = np.arange(2, len(last) + 2) 
-
+    # Plot the inertia diagram
     plt.figure(figsize=(10, 6))
-    plt.step(idxs, last_rev, c="black", linewidth=2)
-    plt.scatter(idxs, last_rev, c="red", label="Inertia points")
+    plt.step(idxs, last_rev, c="black", linewidth=2)  # Step plot for inertia
+    plt.scatter(idxs, last_rev, c="red", label="Inertia points")  # Highlight points
 
-    plt.xlabel("Number of clusters")
-    plt.ylabel("Inertia (distance)")
-    plt.title("Inertia Diagram (Elbow Method)")
-    plt.legend()
-    plt.grid(True, linestyle="--", alpha=0.6)
+    # Customize the plot
+    plt.xlabel("Number of clusters")  # Label for the x-axis
+    plt.ylabel("Inertia (distance)")  # Label for the y-axis
+    plt.title("Inertia Diagram (Elbow Method)")  # Add a title
+    plt.legend()  # Add a legend
+    plt.grid(True, linestyle="--", alpha=0.6)  # Add a grid for better readability
     plt.show()
 
+# Function to plot heatmaps for each cluster
 def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, states, clusters, leaf_order, sorted=True):
     """
-        Plot heatmaps for each cluster, ensuring the data is sorted by leaves_order.
+    Plot heatmaps for each cluster, ensuring the data is sorted by leaves_order.
 
-        Parameters:
-        clusters (numpy.ndarray): The cluster assignments for each patient.
-        leaves_order (list): The order of leaves from the hierarchical clustering.
-        sorted (bool): Whether to sort the data within each cluster. Default is True.
+    Parameters:
+    data (pd.DataFrame): The dataset containing treatment sequences.
+    id_col (str): The column name for patient IDs.
+    label_to_encoded (dict): Mapping of labels to encoded values.
+    colors (str): Colormap for the heatmap.
+    alphabet (list): List of unique treatment states.
+    states (list): List of state labels corresponding to the alphabet.
+    clusters (numpy.ndarray): The cluster assignments for each patient.
+    leaf_order (list): The order of leaves from the hierarchical clustering.
+    sorted (bool): Whether to sort the data within each cluster. Default is True.
 
-        Returns:
-        None
+    Returns:
+    None
     """
+    # Reorder data based on leaf order
     leaves_order = leaf_order
     reordered_data = data.iloc[leaves_order]
     reordered_clusters = clusters[leaves_order]
 
+    # Group data by clusters
     num_clusters = len(np.unique(clusters))
     cluster_data = {}
     for cluster_label in range(1, num_clusters + 1):
@@ -129,26 +153,36 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
         ax.text(1.05, 0.5, f'cluster {cluster_label+1} (n={len(cluster_df[1])})', transform=ax.transAxes, ha='left', va='center')
     axs[-1].set_xlabel('Time in months')
 
+    # Add a legend for treatment states
     viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
     legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
     plt.legend(handles=legend_handles, labels=states, loc='lower right', ncol=1, title='Statuts')
+<<<<<<< Updated upstream
     plt.tight_layout()
+=======
+>>>>>>> Stashed changes
     plt.show()
 
+# Function to plot the percentage of patients under each state over time
 def plot_treatment_percentage(data, id_col, alphabet, states, clusters=None):
     """
-        Plot the percentage of patients under each state over time using line plots.
-        If clusters are provided, plot the treatment percentages for each cluster.
+    Plot the percentage of patients under each state over time using line plots.
+    If clusters are provided, plot the treatment percentages for each cluster.
 
-        Parameters:
-        clusters (numpy.ndarray): Cluster assignments for each patient (optional).
+    Parameters:
+    data (pd.DataFrame): The dataset containing treatment sequences.
+    id_col (str): The column name for patient IDs.
+    alphabet (list): List of unique treatment states.
+    states (list): List of state labels corresponding to the alphabet.
+    clusters (numpy.ndarray): Cluster assignments for each patient (optional).
 
-        Returns:
-        None
+    Returns:
+    None
     """
     viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
 
     if clusters is None:
+        # Plot for the entire dataset
         df = data.drop(id_col, axis=1, errors='ignore').copy()
         plt.figure(figsize=(15, 8))
         
@@ -209,12 +243,20 @@ def plot_treatment_percentage(data, id_col, alphabet, states, clusters=None):
         plt.tight_layout()
         plt.show()
 
+<<<<<<< Updated upstream
+=======
+# Function to plot the percentage of patients under each state over time using bar plots
+>>>>>>> Stashed changes
 def bar_treatment_percentage(data, id_col, alphabet, states, clusters=None):
     """
     Plot the percentage of patients under each state over time using bar plots.
     If clusters are provided, plot the treatment percentages for each cluster.
 
     Parameters:
+    data (pd.DataFrame): The dataset containing treatment sequences.
+    id_col (str): The column name for patient IDs.
+    alphabet (list): List of unique treatment states.
+    states (list): List of state labels corresponding to the alphabet.
     clusters (numpy.ndarray): Cluster assignments for each patient (optional).
 
     Returns:

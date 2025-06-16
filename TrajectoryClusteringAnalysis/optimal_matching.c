@@ -16994,7 +16994,11 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
   } else {
     __pyx_t_20 = __pyx_t_11;
   }
+<<<<<<< Updated upstream
   __pyx_r = (__pyx_v_result / ((double)__pyx_t_20));
+=======
+  __pyx_r = (__pyx_v_result / ((double)__pyx_t_17));
+>>>>>>> Stashed changes
   goto __pyx_L0;
 
   /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":3

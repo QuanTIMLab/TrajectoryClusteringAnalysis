@@ -1,3 +1,10 @@
+"""
+Module pour les algorithmes de clustering de trajectoires.
+
+Ce module contient des fonctions pour calculer les matrices de substitution,
+les matrices de distances, et effectuer un clustering hiérarchique.
+"""
+
 import numpy as np
 import pandas as pd
 from scipy.cluster.hierarchy import linkage, fcluster, leaves_list
@@ -7,10 +14,26 @@ from tslearn.metrics import dtw, dtw_path_from_metric, gak
 import tqdm
 import logging
 import timeit
+<<<<<<< Updated upstream
 from TrajectoryClusteringAnalysis.optimal_matching import optimal_matching_fast # Import de la version Cython optimisée
 
+=======
+from TrajectoryClusteringAnalysis.optimal_matching import optimal_matching_fast  # Optimized Cython implementation
+>>>>>>> Stashed changes
 
 def compute_substitution_cost_matrix(sequences, alphabet, method='constant', custom_costs=None):
+    """
+    Calcule une matrice de coûts de substitution pour les séquences.
+
+    Args:
+        sequences (list): Liste des séquences à analyser.
+        alphabet (list): Liste des états possibles.
+        method (str): Méthode pour calculer les coûts ('constant', 'custom', 'frequency').
+        custom_costs (dict): Coûts personnalisés pour les substitutions (optionnel).
+
+    Returns:
+        pd.DataFrame: Matrice de coûts de substitution.
+    """
     num_states = len(alphabet)
     substitution_matrix = np.zeros((num_states, num_states))
 
@@ -55,17 +78,46 @@ def compute_substitution_cost_matrix(sequences, alphabet, method='constant', cus
     return substitution_cost_matrix
 
 def replace_labels(sequence, label_to_encoded):
-        vectorized_replace = np.vectorize(label_to_encoded.get)
-        return vectorized_replace(sequence)
+    """
+    Replaces sequence labels with their encoded values.
 
+<<<<<<< Updated upstream
+=======
+    Parameters:
+    - sequence: Sequence to be encoded.
+    - label_to_encoded: Dictionary mapping labels to encoded values.
+
+    Returns:
+    - Encoded sequence.
+    """
+    vectorized_replace = np.vectorize(label_to_encoded.get)
+    return vectorized_replace(sequence)
+
+>>>>>>> Stashed changes
 def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming', substitution_cost_matrix=None, alphabet=None):
+    """
+    Calcule une matrice de distances entre les séquences.
+
+    Args:
+        data (pd.DataFrame): Données d'entrée.
+        sequences (list): Liste des séquences.
+        label_to_encoded (dict): Mapping des labels vers des valeurs encodées.
+        metric (str): Métrique de distance ('hamming', 'levenshtein', etc.).
+        substitution_cost_matrix (pd.DataFrame): Matrice de coûts de substitution (optionnel).
+        alphabet (list): Liste des états possibles (optionnel).
+
+    Returns:
+        np.ndarray: Matrice de distances.
+    """
     logging.info(f"Calculating distance matrix using metric: {metric}...")
     start_time = timeit.default_timer()
     n = len(sequences)
     if metric == 'hamming':
+        # Compute Hamming distance
         distance_matrix = squareform(np.array(pdist(data.replace(label_to_encoded).drop(columns=['id']), metric=metric)))
 
     elif metric == 'levenshtein':
+        # Compute Levenshtein distance
         distance_matrix = np.zeros((len(data), len(data)))
         for i in tqdm.tqdm(range(len(sequences))):
             for j in range(i + 1, len(sequences)):
@@ -75,6 +127,7 @@ def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming',
                 distance_matrix[j, i] = distance
 
     elif metric == 'optimal_matching':
+        # Compute Optimal Matching distance
         if substitution_cost_matrix is None:
             logging.error("Substitution cost matrix not found. Please compute the substitution cost matrix first.")
             raise ValueError("Substitution cost matrix not found. Please compute the substitution cost matrix first.")
@@ -92,6 +145,7 @@ def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming',
                 distance_matrix[j, i] = normalized_dist
 
     elif metric == 'dtw':
+        # Compute Dynamic Time Warping (DTW) distance
         distance_matrix = np.zeros((len(data), len(data)))
         for i in tqdm.tqdm(range(len(sequences))):
             for j in range(i + 1, len(sequences)):
@@ -103,6 +157,7 @@ def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming',
                 distance_matrix[j, i] = normalized_dist
 
     elif metric == 'dtw_path_from_metric':
+        # Compute DTW distance using a custom metric
         distance_matrix = np.zeros((len(data), len(data)))
         for i in tqdm.tqdm(range(len(sequences))):
             for j in range(i + 1, len(sequences)):
@@ -114,6 +169,7 @@ def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming',
                 distance_matrix[j, i] = normalized_dist
 
     elif metric == 'gak':
+        # Compute Global Alignment Kernel (GAK) distance
         distance_matrix = np.zeros((len(data), len(data)))
         for i in tqdm.tqdm(range(len(sequences))):
             for j in range(i + 1, len(sequences)):
@@ -129,7 +185,19 @@ def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming',
     assert(np.allclose(distance_matrix, distance_matrix.T)), "Distance matrix is not symmetric"
     return distance_matrix
 
-def hierarchical_clustering(tca_instance,distance_matrix, method='ward', optimal_ordering=True):
+def hierarchical_clustering(tca_instance, distance_matrix, method='ward', optimal_ordering=True):
+    """
+    Effectue un clustering hiérarchique sur une matrice de distances.
+
+    Args:
+        tca_instance (TCA): Instance de la classe TCA.
+        distance_matrix (np.ndarray): Matrice de distances.
+        method (str): Méthode de linkage ('ward', 'single', etc.).
+        optimal_ordering (bool): Optimiser l'ordre des feuilles (par défaut: True).
+
+    Returns:
+        np.ndarray: Matrice de linkage.
+    """
     logging.info(f"Computing the linkage matrix using method: {method}...")
     condensed_distance_matrix = squareform(distance_matrix)
     linkage_matrix = linkage(condensed_distance_matrix, method=method, optimal_ordering=optimal_ordering)
@@ -138,5 +206,15 @@ def hierarchical_clustering(tca_instance,distance_matrix, method='ward', optimal
     return linkage_matrix
 
 def assign_clusters(linkage_matrix, num_clusters):
+    """
+    Assigne des étiquettes de clusters aux données.
+
+    Args:
+        linkage_matrix (np.ndarray): Matrice de linkage.
+        num_clusters (int): Nombre de clusters à assigner.
+
+    Returns:
+        np.ndarray: Étiquettes des clusters.
+    """
     clusters = fcluster(linkage_matrix, num_clusters, criterion='maxclust')
     return clusters
