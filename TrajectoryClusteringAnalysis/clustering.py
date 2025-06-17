@@ -14,12 +14,7 @@ from tslearn.metrics import dtw, dtw_path_from_metric, gak
 import tqdm
 import logging
 import timeit
-<<<<<<< Updated upstream
-from TrajectoryClusteringAnalysis.optimal_matching import optimal_matching_fast # Import de la version Cython optimisée
-
-=======
 from TrajectoryClusteringAnalysis.optimal_matching import optimal_matching_fast  # Optimized Cython implementation
->>>>>>> Stashed changes
 
 def compute_substitution_cost_matrix(sequences, alphabet, method='constant', custom_costs=None):
     """
@@ -81,8 +76,6 @@ def replace_labels(sequence, label_to_encoded):
     """
     Replaces sequence labels with their encoded values.
 
-<<<<<<< Updated upstream
-=======
     Parameters:
     - sequence: Sequence to be encoded.
     - label_to_encoded: Dictionary mapping labels to encoded values.
@@ -93,7 +86,6 @@ def replace_labels(sequence, label_to_encoded):
     vectorized_replace = np.vectorize(label_to_encoded.get)
     return vectorized_replace(sequence)
 
->>>>>>> Stashed changes
 def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming', substitution_cost_matrix=None, alphabet=None):
     """
     Calcule une matrice de distances entre les séquences.

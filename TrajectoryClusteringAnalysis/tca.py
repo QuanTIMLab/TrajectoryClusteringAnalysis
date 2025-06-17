@@ -84,12 +84,9 @@ class TCA:
         """
         return compute_substitution_cost_matrix(self.sequences, self.alphabet, method, custom_costs)
 
-<<<<<<< Updated upstream
     # def optimal_matching(self, seq1, seq2, substitution_cost_matrix, indel_cost=None):
     #    return optimal_matching(seq1, seq2, substitution_cost_matrix, indel_cost, self.alphabet)
 
-=======
->>>>>>> Stashed changes
     def compute_distance_matrix(self, metric='hamming', substitution_cost_matrix=None):
         """
         Compute the distance matrix for the sequences.
@@ -158,18 +155,7 @@ class TCA:
         plot_inertia(linkage_matrix)
 
     def plot_cluster_heatmaps(self, clusters, sorted=True):
-<<<<<<< Updated upstream
         return plot_cluster_heatmaps(self.data, self.id, self.label_to_encoded, self.colors, self.alphabet, self.states, clusters, self.leaf_order, sorted)
-=======
-        """
-        Plot heatmaps for each cluster.
-
-        Args:
-            clusters (np.ndarray): Cluster assignments for each individual.
-            sorted (bool): Whether to sort the data within each cluster (default: True).
-        """
-        plot_cluster_heatmaps(self.data, self.id, self.label_to_encoded, self.colors, self.alphabet, self.states, clusters, self.leaf_order, sorted)
->>>>>>> Stashed changes
 
     def plot_treatment_percentage(self, clusters=None):
         """
@@ -224,7 +210,8 @@ def main():
 
     # Perform clustering and visualization
     custom_costs = {'D:C': 1, 'D:T': 2, 'D:S': 3, 'C:T': 1, 'C:S': 2, 'T:S': 1}
-    distance_matrix = tca.compute_distance_matrix(metric='hamming', substitution_cost_matrix=None)
+    substitution_cost_matrix=tca.compute_substitution_cost_matrix(method='custom', custom_costs=custom_costs)
+    distance_matrix = tca.compute_distance_matrix(metric='optimal_matching', substitution_cost_matrix=substitution_cost_matrix)
     print("distance matrix :\n", distance_matrix)
     linkage_matrix = tca.hierarchical_clustering(distance_matrix)
     tca.plot_dendrogram(linkage_matrix)
