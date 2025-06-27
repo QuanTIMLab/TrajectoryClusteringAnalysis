@@ -12,4 +12,5 @@ h5py
 rpy2
 numba
 cython
+kmedoids
 #-e .

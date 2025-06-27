@@ -34,6 +34,8 @@ cpdef double optimal_matching_fast(const int[:] seq1,
             score_matrix[idx_i_j] = min(match, delete, insert)
     cdef double result = score_matrix[m * (n + 1) + n]
     free(score_matrix)
+    if m == 0 and n == 0:
+        return 0.0
     #return result
     return result / max(m, n)  # Normalisation
 

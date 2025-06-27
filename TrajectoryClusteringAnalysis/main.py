@@ -36,19 +36,26 @@ def main():
         alphabet=['D', 'C', 'T', 'S'],  # États possibles
         states=["diagnostiqué", "en soins", "sous traitement", "inf. contrôlée"]
     )
-
+   
     # Calcul de la matrice de distances avec la métrique Hamming
-    distance_matrix = tca.compute_distance_matrix(metric='hamming', substitution_cost_matrix=None)
+    distance_matrix = tca.compute_distance_matrix(metric='dtw', substitution_cost_matrix=None)
     print("distance matrix :\n", distance_matrix)
-
+    kmedoids_labels, medoid_indices, inertia = tca.kmedoids_clustering(distance_matrix, num_clusters=4,method='pamsil')
+    print("kmedoids_labels :\n", kmedoids_labels)
+    print("medoid_indices :\n", medoid_indices)
+    print("inertia :\n", inertia)
     # Clustering hiérarchique
-    linkage_matrix = tca.hierarchical_clustering(distance_matrix)
+    #linkage_matrix = tca.hierarchical_clustering(distance_matrix)
 
     # Attribution des clusters
-    clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
+   # clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
 
     # Visualisation des résultats
-    tca.plot_cluster_heatmaps(clusters, sorted=False)
+    tca.plot_cluster_heatmaps(kmedoids_labels, sorted=True)
+    tca.plot_treatment_percentage()
+    tca.plot_treatment_percentage(kmedoids_labels)
+    tca.bar_treatment_percentage()
+    tca.bar_treatment_percentage(kmedoids_labels)
 
 if __name__ == "__main__":
     # Exécution du script principal

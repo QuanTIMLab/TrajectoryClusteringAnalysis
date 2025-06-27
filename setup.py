@@ -39,6 +39,7 @@ setup(
     description='Un package pour l’analyse des trajectoires de soins par clustering',
     long_description=open('README.md', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
+    license='MIT',
     packages=find_packages(),
     install_requires=get_requirements('requirements.txt'),
     ext_modules=cythonize(

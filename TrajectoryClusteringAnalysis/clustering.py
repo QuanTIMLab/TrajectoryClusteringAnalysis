@@ -5,16 +5,20 @@ Ce module contient des fonctions pour calculer les matrices de substitution,
 les matrices de distances, et effectuer un clustering hiérarchique.
 """
 
+import kmedoids.kmedoids
 import numpy as np
 import pandas as pd
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)  # Ignore FutureWarnings from pandas
 from scipy.cluster.hierarchy import linkage, fcluster, leaves_list
-from scipy.spatial.distance import squareform, pdist
+from scipy.spatial.distance import squareform, pdist,cityblock
 import Levenshtein
 from tslearn.metrics import dtw, dtw_path_from_metric, gak
 import tqdm
 import logging
 import timeit
 from TrajectoryClusteringAnalysis.optimal_matching import optimal_matching_fast  # Optimized Cython implementation
+import kmedoids# Added import
 
 def compute_substitution_cost_matrix(sequences, alphabet, method='constant', custom_costs=None):
     """
@@ -83,10 +87,15 @@ def replace_labels(sequence, label_to_encoded):
     Returns:
     - Encoded sequence.
     """
-    vectorized_replace = np.vectorize(label_to_encoded.get)
-    return vectorized_replace(sequence)
+    try:
+        vectorized_replace = np.vectorize(label_to_encoded.__getitem__)
+        return vectorized_replace(sequence)
+    except KeyError as e:
+        raise ValueError(f"Label {e} not found in label_to_encoded mapping.")
+    #vectorized_replace = np.vectorize(label_to_encoded.get)
+    #return vectorized_replace(sequence)
 
-def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming', substitution_cost_matrix=None, alphabet=None):
+def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming', substitution_cost_matrix=None, alphabet=None,indel_cost=None):
     """
     Calcule une matrice de distances entre les séquences.
 
@@ -124,15 +133,25 @@ def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming',
             logging.error("Substitution cost matrix not found. Please compute the substitution cost matrix first.")
             raise ValueError("Substitution cost matrix not found. Please compute the substitution cost matrix first.")
         distance_matrix = np.zeros((len(data), len(data)))
+         # Ensure substitution_cost_matrix is a NumPy array for .values access
+        sub_matrix_values = substitution_cost_matrix.values if isinstance(substitution_cost_matrix, pd.DataFrame) else substitution_cost_matrix
+        
+        current_indel_cost = indel_cost
+        if current_indel_cost is None:
+            # Heuristic: indel cost is half the max substitution cost
+            current_indel_cost = np.max(sub_matrix_values) / 2
+            print(f"Calculated indel cost: {current_indel_cost} (from max sub_cost: {np.max(sub_matrix_values)})")
+        else:
+            print(f"User-provided indel cost: {current_indel_cost}")
+
         print("substitution cost matrix: \n", substitution_cost_matrix)
-        print("indel cost: ", np.max(substitution_cost_matrix.values)/2)
         alphabet_dict = {char: i for i, char in enumerate(alphabet)}
-        indel_cost = np.max(substitution_cost_matrix.values)/2
+        #indel_cost = np.max(substitution_cost_matrix.values)/2
         sequences_idx = [np.array([alphabet_dict[s] for s in seq], dtype=np.int32) for seq in sequences]
         for i in tqdm.tqdm(range(len(sequences))):
             for j in range(i + 1, len(sequences)):
                 seq1_idx, seq2_idx = sequences_idx[i], sequences_idx[j]
-                normalized_dist = optimal_matching_fast(seq1_idx, seq2_idx, substitution_cost_matrix.values, indel_cost=indel_cost)           
+                normalized_dist = optimal_matching_fast(seq1_idx, seq2_idx, sub_matrix_values, indel_cost=current_indel_cost)           
                 distance_matrix[i, j] = normalized_dist
                 distance_matrix[j, i] = normalized_dist
 
@@ -154,7 +173,8 @@ def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming',
         for i in tqdm.tqdm(range(len(sequences))):
             for j in range(i + 1, len(sequences)):
                 seq1, seq2 = replace_labels(sequences[i], label_to_encoded), replace_labels(sequences[j], label_to_encoded)
-                distance = dtw_path_from_metric(seq1, seq2, metric=np.abs(seq1 - seq2))
+                #distance = dtw_path_from_metric(seq1, seq2, metric=np.abs(seq1 - seq2))
+                distance, _ = dtw_path_from_metric(seq1, seq2, metric=cityblock)
                 max_length = max(len(seq1), len(seq2))
                 normalized_dist = distance / max_length
                 distance_matrix[i, j] = normalized_dist
@@ -210,3 +230,52 @@ def assign_clusters(linkage_matrix, num_clusters):
     """
     clusters = fcluster(linkage_matrix, num_clusters, criterion='maxclust')
     return clusters
+
+def k_medoids_clustering_faster(distance_matrix, num_clusters, method='fasterpam', init='random', max_iter=300, random_state=None, **kwargs):
+    '''
+    Performs K-Medoids clustering on a precomputed distance matrix.
+
+    Args:
+        distance_matrix (np.ndarray): Square distance matrix.
+        num_clusters (int): The desired number of clusters.
+        method (str, optional): The method to use for KMedoids.
+            "fasterpam" (default), "fastpam1", "pam", "alternate", "fastermsc", "fastmsc", "pamsil" or "pammedsil".
+        init (string, "random" (default), "first" or "build") – initialization method.
+        max_iter (int, optional): Maximum number of iterations. Defaults to 300.
+        random_state (int, RandomState instance or None, optional):
+            Determines random number generation for centroid initialization.
+            Use an int to make the randomness deterministic. Defaults to None.
+        **kwargs: Additional keyword arguments to pass to KMedoids.
+
+    Returns:
+        kmedoids.KMedoids: the results containing:
+            - cluster_centers : None for 'precomputed'
+            - medoid_indices : The indices of the medoid rows in X.
+            - labels : Labels of each point.
+            - inertia : Sum of distances of samples to their closest cluster center.
+    '''
+    if not isinstance(distance_matrix, np.ndarray):
+        raise TypeError("distance_matrix must be a NumPy array.")
+    if distance_matrix.shape[0] != distance_matrix.shape[1]:
+        distance_matrix = squareform(distance_matrix)  # Ensure it's a square matrix
+    if not isinstance(num_clusters, int) or num_clusters <= 0: # Ensure num_clusters is positive int
+        raise ValueError("num_clusters must be a positive integer.")
+    if num_clusters > distance_matrix.shape[0]:
+        raise ValueError("num_clusters cannot be greater than the number of samples.")
+
+    logging.info(f"Performing K-Medoids clustering with {num_clusters} clusters...")
+    kmedoids_model = kmedoids.KMedoids(
+        n_clusters=num_clusters,
+        metric='precomputed',  # Crucial for using a distance matrix
+        method=method,
+        init=init,
+        max_iter=max_iter,
+        random_state=random_state,
+        **kwargs
+    ).fit(distance_matrix)  # Fit the model to the distance matrix
+    # KMedoids expects the distance matrix itself as input to fit/fit_predict
+    labels = kmedoids_model.labels_ + 1  # Adjust labels to start from 1
+    medoid_indices = kmedoids_model.medoid_indices_
+    inertia = kmedoids_model.inertia_
+    logging.info("K-Medoids clustering completed.")
+    return labels, medoid_indices, inertia

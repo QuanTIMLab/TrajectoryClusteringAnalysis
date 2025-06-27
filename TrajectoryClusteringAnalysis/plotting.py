@@ -3,7 +3,8 @@ import seaborn as sns
 import numpy as np
 from scipy.cluster.hierarchy import dendrogram
 import pandas as pd
-
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)  # Ignore FutureWarnings from pandas
 # Function to plot a dendrogram for hierarchical clustering
 def plot_dendrogram(linkage_matrix):
     """
@@ -115,9 +116,13 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
     None
     """
     # Reorder data based on leaf order
-    leaves_order = leaf_order
-    reordered_data = data.iloc[leaves_order]
-    reordered_clusters = clusters[leaves_order]
+    if leaf_order is None or len(leaf_order) == 0:
+        reordered_data = data.copy()
+        reordered_clusters = clusters
+    else:
+        leaves_order = leaf_order
+        reordered_data = data.iloc[leaves_order]
+        reordered_clusters = clusters[leaves_order]
 
     # Group data by clusters
     num_clusters = len(np.unique(clusters))
@@ -157,10 +162,7 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
     viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
     legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
     plt.legend(handles=legend_handles, labels=states, loc='lower right', ncol=1, title='Statuts')
-<<<<<<< Updated upstream
     plt.tight_layout()
-=======
->>>>>>> Stashed changes
     plt.show()
 
 # Function to plot the percentage of patients under each state over time
@@ -242,11 +244,8 @@ def plot_treatment_percentage(data, id_col, alphabet, states, clusters=None):
 
         plt.tight_layout()
         plt.show()
-
-<<<<<<< Updated upstream
-=======
+        
 # Function to plot the percentage of patients under each state over time using bar plots
->>>>>>> Stashed changes
 def bar_treatment_percentage(data, id_col, alphabet, states, clusters=None):
     """
     Plot the percentage of patients under each state over time using bar plots.
@@ -262,18 +261,15 @@ def bar_treatment_percentage(data, id_col, alphabet, states, clusters=None):
     Returns:
     None
     """
-    # viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
+    viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
     
     if clusters is None:
         df = data.drop(id_col, axis=1).copy()
 
         status_counts = df.apply(pd.Series.value_counts).fillna(0)
-
-        status_counts.T.plot.bar(stacked=True, color=[viridis_colors_list[i] for i in range(len(alphabet))], ax=ax)
-
-
+        #status_counts.T.plot.bar(stacked=True, color=[viridis_colors_list[i] for i in range(len(alphabet))], ax=ax)
         cumulative_values = np.zeros(len(df.columns))  # Initialisation des valeurs cumulées
-        # plt.figure(figsize=(15, 10))
+        plt.figure(figsize=(15, 8))
 
         for treatment, treatment_label, color in zip(alphabet,states, viridis_colors_list):
             treatment_data = df[df.eq(treatment).any(axis=1)]
@@ -285,7 +281,7 @@ def bar_treatment_percentage(data, id_col, alphabet, states, clusters=None):
             cumulative_values += percentages
 
      
-        plt.title('Number of Patients under Each State Over Time')
+        plt.title('Percentage  of Patients under Each State Over Time')
         plt.xlabel('Time')
         plt.ylabel('Number of Patients')
         plt.legend(title=None)

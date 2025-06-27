@@ -1,11 +1,15 @@
 import pandas as pd
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)  # Ignore FutureWarnings from pandas
 import numpy as np
 import logging
 from TrajectoryClusteringAnalysis.clustering import (
     compute_substitution_cost_matrix,
     compute_distance_matrix,
     hierarchical_clustering,
-    assign_clusters
+    assign_clusters,
+    k_medoids_clustering_faster
+
 )
 from TrajectoryClusteringAnalysis.plotting import (
     plot_dendrogram,
@@ -87,7 +91,7 @@ class TCA:
     # def optimal_matching(self, seq1, seq2, substitution_cost_matrix, indel_cost=None):
     #    return optimal_matching(seq1, seq2, substitution_cost_matrix, indel_cost, self.alphabet)
 
-    def compute_distance_matrix(self, metric='hamming', substitution_cost_matrix=None):
+    def compute_distance_matrix(self, metric='hamming', substitution_cost_matrix=None,indel_cost=None):
         """
         Compute the distance matrix for the sequences.
 
@@ -98,7 +102,7 @@ class TCA:
         Returns:
             np.ndarray: Distance matrix.
         """
-        return compute_distance_matrix(self.data, self.sequences, self.label_to_encoded, metric, substitution_cost_matrix, self.alphabet)
+        return compute_distance_matrix(self.data, self.sequences, self.label_to_encoded, metric, substitution_cost_matrix, self.alphabet, indel_cost)
 
     def hierarchical_clustering(self, distance_matrix, method='ward', optimal_ordering=True):
         """
@@ -113,6 +117,47 @@ class TCA:
             np.ndarray: Linkage matrix.
         """
         return hierarchical_clustering(self, distance_matrix, method, optimal_ordering)
+    
+    def kmedoids_clustering(self, distance_matrix, num_clusters=4, method='fasterpam', init='random', max_iter=300, random_state=None, **kwargs):
+        '''
+        Performs K-Medoids clustering on a precomputed distance matrix.
+
+        This method wraps the k_medoids_clustering function from clustering.py.
+
+        Args:
+            num_clusters (int): The desired number of clusters.
+            distance_matrix (np.ndarray): A precomputed square distance matrix.
+                                          This matrix must be computed beforehand, e.g., using
+                                          TCA.compute_distance_matrix().
+            method (str, optional): The KMedoids method ( "fasterpam" (default), "fastpam1", "pam", "alternate", "fastermsc", "fastmsc", "pamsil" or "pammedsil")
+            init (string, "random" (default), "first" or "build") – initialization method.
+            max_iter (int, optional): Maximum number of iterations for KMedoids. Defaults to 300.
+            random_state (int, RandomState instance or None, optional):
+                Determines random number generation for KMedoids. Defaults to None.
+            **kwargs: Additional keyword arguments passed to KMedoids.
+
+        Returns:
+             kmedoids.KMedoids: the results containing:
+                - cluster_centers : None for 'precomputed'
+                - medoid_indices : The indices of the medoid rows in X.
+                - labels : Labels of each point.
+                - inertia : Sum of distances of samples to their closest cluster center.
+        '''
+        if distance_matrix is None:
+            raise ValueError("A precomputed distance_matrix must be provided.")
+        
+
+        return k_medoids_clustering_faster(
+            distance_matrix,
+            num_clusters,
+            method=method,
+            init=init,
+            max_iter=max_iter,
+            random_state=random_state,
+            **kwargs
+        )
+        
+         
 
     def assign_clusters(self, linkage_matrix, num_clusters):
         """
@@ -218,7 +263,7 @@ def main():
     tca.plot_clustermap(linkage_matrix)
     tca.plot_inertia(linkage_matrix)
     clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
-    tca.plot_cluster_heatmaps(clusters, sorted=False)
+    tca.plot_cluster_heatmaps(clusters, sorted=True)
     tca.plot_treatment_percentage()
     tca.plot_treatment_percentage(clusters)
     tca.bar_treatment_percentage()
