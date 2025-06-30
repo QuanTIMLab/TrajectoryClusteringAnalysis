@@ -12,6 +12,7 @@ h5py
 rpy2
 numba
 cython
+kmedoids
 torch
 SWoTTeD==1.0.2a4
 omegaconf
