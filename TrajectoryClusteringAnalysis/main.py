@@ -40,7 +40,7 @@ def main():
     # Calcul de la matrice de distances avec la métrique Hamming
     distance_matrix = tca.compute_distance_matrix(metric='dtw', substitution_cost_matrix=None)
     print("distance matrix :\n", distance_matrix)
-    kmedoids_labels, medoid_indices, inertia = tca.kmedoids_clustering(distance_matrix, num_clusters=4,method='fasterpam')
+    kmedoids_labels, medoid_indices, inertia = tca.kmedoids_clustering(distance_matrix, num_clusters=4,method='pamsil')
     print("kmedoids_labels :\n", kmedoids_labels)
     print("medoid_indices :\n", medoid_indices)
     print("inertia :\n", inertia)
@@ -56,8 +56,6 @@ def main():
     tca.plot_treatment_percentage(kmedoids_labels)
     tca.bar_treatment_percentage()
     tca.bar_treatment_percentage(kmedoids_labels)
-    tca.plot_filtered_heatmap(labels=kmedoids_labels, kernel_size=(0, 0))  # Pas de filtre modal
-    tca.plot_filtered_heatmap(labels=kmedoids_labels, kernel_size=(10, 7))  
 
 if __name__ == "__main__":
     # Exécution du script principal

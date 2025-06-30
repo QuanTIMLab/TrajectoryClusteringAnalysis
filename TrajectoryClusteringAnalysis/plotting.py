@@ -4,9 +4,7 @@ import numpy as np
 from scipy.cluster.hierarchy import dendrogram
 import pandas as pd
 import warnings
-from scipy.cluster import hierarchy
 warnings.filterwarnings("ignore", category=FutureWarning)  # Ignore FutureWarnings from pandas
-from .utils import modal_filter_numba
 # Function to plot a dendrogram for hierarchical clustering
 def plot_dendrogram(linkage_matrix):
     """
@@ -324,56 +322,3 @@ def bar_treatment_percentage(data, id_col, alphabet, states, clusters=None):
 
         plt.tight_layout()
         plt.show()
-
-
-def plot_filtered_heatmap(data, id_col, label_to_encoded, cmap, alphabet, states, labels=None, linkage_matrix=None, kernel_size=(10, 7)):
-    """
-    Display a heatmap of numerical sequences, optionally filtered with a modal filter,
-    and optionally reordered using K-Medoids or hierarchical clustering.
-
-    Parameters:
-    - data (pd.DataFrame): Original dataset with patient sequences.
-    - id_col (str): Name of the patient ID column.
-    - label_to_encoded (dict): Dictionary mapping labels to numerical codes.
-    - cmap (str): Colormap to use for heatmap (e.g., "viridis").
-    - alphabet (list): List of state letters (for legend).
-    - states (list): List of full state names (for legend).
-    - labels (np.ndarray, optional): Cluster labels from K-Medoids.
-    - linkage_matrix (np.ndarray, optional): Linkage matrix from hierarchical clustering.
-    - kernel_size (tuple): Size of modal filter kernel; (0,0) disables filtering.
-
-    Returns:
-    - None
-    """
-    df_numeriques = data.drop(id_col, axis=1).replace(label_to_encoded)
-
-    if labels is not None:
-        df_numeriques['cluster_kmedoids'] = labels
-        df_reordered = df_numeriques.sort_values(by='cluster_kmedoids').drop(columns='cluster_kmedoids')
-    elif linkage_matrix is not None:
-        from scipy.cluster import hierarchy
-        leaves_order = list(hierarchy.leaves_list(linkage_matrix))
-        df_reordered = df_numeriques.iloc[leaves_order]
-    else:
-        raise ValueError("Either 'labels' or 'linkage_matrix' must be provided to reorder the data.")
-
-    if kernel_size != (0, 0):
-        df_to_plot = modal_filter_numba(df_reordered, kernel_size)
-        title = f"Heatmap of Numerical Sequences (modal filter, kernel={kernel_size})"
-    else:
-        df_to_plot = df_reordered.copy()
-        title = "Heatmap of Numerical Sequences"
-
-    plt.figure(figsize=(15, 8))
-    sns.heatmap(df_to_plot, cmap=cmap, cbar=False)
-    plt.xlabel("Time")
-    plt.ylabel("Patients")
-    plt.xticks(rotation=90)
-    plt.yticks([])
-    plt.title(title)
-
-    viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
-    legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
-    plt.legend(handles=legend_handles, labels=states, loc='upper right', ncol=1, title='Statuts')
-    plt.tight_layout()
-    plt.show()

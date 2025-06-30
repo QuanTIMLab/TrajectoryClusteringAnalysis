@@ -17,8 +17,7 @@ from TrajectoryClusteringAnalysis.plotting import (
     plot_inertia,
     plot_cluster_heatmaps,
     plot_treatment_percentage,
-    bar_treatment_percentage,
-    plot_filtered_heatmap
+    bar_treatment_percentage
 )
 
 class TCA:
@@ -220,27 +219,6 @@ class TCA:
             clusters (np.ndarray): Cluster assignments for each individual (optional).
         """
         bar_treatment_percentage(self.data, self.id, self.alphabet, self.states, clusters)
-    
-    def plot_filtered_heatmap(self,labels=None, linkage_matrix=None, kernel_size=(10, 7)):
-        """
-        Plot a heatmap of patient treatment sequences, optionally filtered using a modal filter.
-
-        Reordering of the sequences is based on the clustering method used:
-        - If K-Medoids was used, provide the cluster labels via `labels`.
-        - If Hierarchical Clustering (CAH) was used, provide the linkage matrix via `linkage_matrix`.
-
-        Parameters:
-        - labels (np.ndarray, optional): Cluster labels from K-Medoids clustering.
-        - linkage_matrix (np.ndarray, optional): Linkage matrix from hierarchical clustering.
-        - kernel_size (tuple of int, optional): Size of the modal filter kernel (rows, cols).
-                                                Use (0, 0) to disable filtering. Default is (10, 7).
-
-        Returns:
-        - None. Displays a heatmap using matplotlib
-        """
-        if (labels is None and linkage_matrix is None) or (labels is not None and linkage_matrix is not None):
-            raise ValueError("You must provide exactly one of 'labels' (K-Medoids) or 'linkage_matrix' (CAH).")
-        plot_filtered_heatmap(self.data, self.id, self.label_to_encoded, self.colors, self.alphabet, self.states,labels=labels, linkage_matrix=linkage_matrix,kernel_size=kernel_size)
 
 ####################################### MAIN #######################################
 def main():
@@ -290,8 +268,6 @@ def main():
     tca.plot_treatment_percentage(clusters)
     tca.bar_treatment_percentage()
     tca.bar_treatment_percentage(clusters)
-    tca.plot_filtered_heatmap(linkage_matrix=linkage_matrix, kernel_size=(0, 0))  # Pas de filtre modal
-    tca.plot_filtered_heatmap(linkage_matrix=linkage_matrix, kernel_size=(10, 7)) 
 
 if __name__ == "__main__":
     main()
