@@ -5,7 +5,7 @@ Ce module contient des fonctions pour calculer les matrices de substitution,
 les matrices de distances, et effectuer un clustering hiérarchique.
 """
 
-import kmedoids.kmedoids
+
 import numpy as np
 import pandas as pd
 import warnings
@@ -17,8 +17,10 @@ from tslearn.metrics import dtw, dtw_path_from_metric, gak
 import tqdm
 import logging
 import timeit
-from TrajectoryClusteringAnalysis.optimal_matching import optimal_matching_fast  # Optimized Cython implementation
-import kmedoids# Added import
+# from src.trajectoryclusteringanalysis.optimal_matching import optimal_matching_fast # Import de la version Cython optimisée
+import kmedoids
+import kmedoids.kmedoids
+
 
 def compute_substitution_cost_matrix(sequences, alphabet, method='constant', custom_costs=None):
     """

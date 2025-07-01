@@ -1,5 +1,5 @@
 import pandas as pd
-from tca import TCA
+from trajectoryclusteringanalysis.tca import TCA
 
 ####################################### MAIN #######################################
 
