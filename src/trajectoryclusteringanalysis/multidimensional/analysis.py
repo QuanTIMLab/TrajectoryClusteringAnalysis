@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import torch
 from torch.utils.data import DataLoader
 from omegaconf import OmegaConf
@@ -7,7 +8,7 @@ from swotted import swottedModule, swottedTrainer
 from swotted.loss_metrics import *
 from swotted.utils import Subset, success_rate
 
-from src.trajectoryclusteringanalysis.plotting import plot_discovered_phenotypes
+from src.trajectoryclusteringanalysis.plotting import *
 
 class MultidimensionalAnalyzer:
 
@@ -113,30 +114,50 @@ class MultidimensionalAnalyzer:
         )
 
         trainer.fit(model=self.model, train_dataloaders=train_loader)
+        self.W = self.model(self.X)
 
-    def get_decomposition_result(self):  
+    def get_decomposition_results(self, labels, id):  
         """
         Returns the decomposition result.
         """
         if hasattr(self, 'model') and self.model is not None:
-            W = self.model(self.X)
-            Ph = self.model.Ph
-
-            rPh, rW = self.model.reorderPhenotypes(gen_pheno=torch.tensor(Ph), Wk=W[0], tw=self.model.twl)
+            
+            print(f"Decomposed into {len(self.W)} pathways with rank {self.model.rank} and time window length {self.model.twl}")
+            Ph = self.model.Ph.detach().clone().requires_grad_(True)
+            rPh, rW = self.model.reorderPhenotypes(gen_pheno=Ph, Wk=None, tw=self.model.twl)
 
             X_pred = []
             for p in range(self.K):
-                X_pred.append(self.model.model.reconstruct(W[p], Ph)) 
+                X_pred.append(self.model.model.reconstruct(self.W[p], Ph)) 
             X_pred = torch.stack(X_pred)
+            
             fit_metric = 1 - (torch.norm(self.X - X_pred) / torch.norm(self.X))
-
             print(f"FIT metric for the entire dataset: {fit_metric.item():.4f}")
 
-            plot_discovered_phenotypes(rPh, rank=self.model.rank, states=self.data[self.event_col].unique())
+            print(f"success_rate :{success_rate(self.X, X_pred)}")
+
+            plot_discovered_phenotypes(rPh, self.model.rank, labels)
+            plot_discovered_pathways(rW, id)
+            plot_reconstructed_matrix(X_pred, id, labels)
 
         else:
             raise ValueError("Decomposition has not been performed. Please call fit_swotted_decomposition first.")
         
+    def to_phenotype_intensity(self, scaler=MinMaxScaler()):
+        """
+        Converts the decomposition result to phenotype intensity.
+        """
+        if hasattr(self, 'model') and self.W is not None:
+            W_all = torch.stack(self.W)
+            phenotype_intensity = W_all.sum(axis=2).detach().numpy()
+
+            phenotype_summary = pd.DataFrame(phenotype_intensity, columns=[f'Phenotype_{i+1}' for i in range(phenotype_intensity.shape[1])])
+            phenotype_summary = pd.DataFrame(scaler.fit_transform(phenotype_summary), columns=phenotype_summary.columns)
+            phenotype_summary[self.index_col] = self.data[self.index_col].unique()
+            
+            return phenotype_summary
+        else:
+            raise ValueError("Decomposition has not been performed. Please call fit_swotted_decomposition first.")
 
 def main():
     # Example usage
@@ -161,10 +182,12 @@ def main():
 
         
         analyzer.fit_swotted_decomposition(tensor, rank, time_window_length, reg_term_ns, reg_term_s, metric, learning_rate, n_epochs)
-        result = analyzer.get_decomposition_result()
-        print(result)
+        analyzer.get_decomposition_result()
+        
 
         # Plotting the discovered phenotypes
+        id = 100
+        plot_input_matrix(tensor, id, analyzer.data['Lib_traitement'].unique())
         
         # plot_discovered_phenotypes(analyzer.model, rank)
 

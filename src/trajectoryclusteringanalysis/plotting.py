@@ -330,7 +330,7 @@ def bar_treatment_percentage(data, id_col, alphabet, states, clusters=None):
         plt.tight_layout()
         plt.show()
 
-def plot_discovered_phenotypes(reordered_phenotypes, rank, states, colors=['#E81313', '#54C45E', '#1071E5']):
+def plot_discovered_phenotypes(reordered_phenotypes, rank, labels, colors=['#E81313', '#54C45E', '#1071E5']):
     """
     Plot the discovered phenotypes with a custom legend.
 
@@ -347,6 +347,8 @@ def plot_discovered_phenotypes(reordered_phenotypes, rank, states, colors=['#E81
             # Create a colormap based on the base color
             base_color = colors[i % len(colors)]
             cmap = mcolors.LinearSegmentedColormap.from_list(f"custom_cmap_{i}", ["white", base_color])
+        else:
+            cmap = 'binary' 
 
         # Plot the phenotype matrix with the custom colormap
         plt.imshow(reordered_phenotypes[i].detach().numpy(), vmin=0, vmax=1, cmap=cmap, interpolation='none')
@@ -354,9 +356,85 @@ def plot_discovered_phenotypes(reordered_phenotypes, rank, states, colors=['#E81
         plt.xticks(range(reordered_phenotypes[i].shape[1]), range(reordered_phenotypes[i].shape[1]))
         plt.xlabel("Time")
         plt.title(f"Discovered phenotype {i + 1}")
-        plt.yticks(range(reordered_phenotypes[i].shape[0]), states)
-        # plt.colorbar(label="Intensity")
+        plt.yticks(range(reordered_phenotypes[i].shape[0]), labels)
         plt.show()
+
+def plot_input_matrix(tensor, id, labels, figsize=(12, 8), fontsize=12):
+    """
+    Plot the input matrix of a tensor with patient IDs as labels.
+
+    Parameters:
+    tensor (torch.Tensor): The input tensor to be plotted.
+    id (list): List of patient IDs corresponding to the rows of the tensor.
+    figsize (tuple): Size of the figure for the plot.
+    fontsize (int): Font size for the labels.
+
+    Returns:
+    None
+    """
+
+    plt.figure(figsize=figsize)
+    plt.imshow(tensor[id], vmin=0, vmax=1, cmap="binary", interpolation='none')
+    plt.title("Input matrix of one individual", fontsize=fontsize)
+    plt.xlabel("Time", fontsize=fontsize)
+    plt.ylabel("Events", fontsize=fontsize)
+    plt.xticks(np.arange(0, tensor[id].shape[1], 2))
+    plt.yticks(range(tensor[id].shape[0]), labels, fontsize=fontsize-2)
+    plt.tight_layout()  
+    # fig, axs = plt.subplots(figsize=figsize)
+    # axs.imshow(tensor[id], vmin=0, vmax=1, cmap="binary", interpolation='none')
+    # axs.set_title("Input matrix of one individual", fontsize=fontsize) 
+    # axs.set_xlabel("Time", fontsize=fontsize)
+    # axs.set_ylabel("Events", fontsize=fontsize)
+    # axs.set_xticks(np.arange(0, tensor[id].shape[1], 2)) 
+    # axs.set_yticks(range(tensor[id].shape[0]))
+    # axs.set_yticklabels(labels, fontsize=fontsize-2)
+    # plt.tight_layout()
+    plt.show()
+
+def plot_discovered_pathways(reordered_pathways, id, figsize=(12, 8), fontsize=12): 
+    """
+    """
+    plt.figure(figsize=figsize) 
+    plt.imshow(reordered_pathways[id].detach().numpy(), vmin=0, vmax=1, cmap="binary", interpolation="nearest")
+    plt.ylabel("Phenotypes", fontsize=fontsize)
+    plt.yticks(range(reordered_pathways[0].shape[0]), range(1, reordered_pathways[0].shape[0]+1), fontsize=fontsize-2)
+    plt.xlabel("Time", fontsize=fontsize)
+    plt.xticks(np.arange(0, reordered_pathways[id].shape[1], 2))
+    plt.title("Discovered pathway of one individual", fontsize=fontsize)
+    plt.show()   
+    
+def plot_reconstructed_matrix(reconstructed_matrix, id, labels, figsize=(12, 8), fontsize=12):
+    """
+    Plot the reconstructed matrix of a tensor with patient IDs as labels.
+
+    Parameters:
+    reconstructed_matrix (torch.Tensor): The reconstructed matrix to be plotted.
+    id (list): List of patient IDs corresponding to the rows of the tensor.
+    labels (list): List of event labels corresponding to the rows of the tensor.
+    figsize (tuple): Size of the figure for the plot.
+    fontsize (int): Font size for the labels.
+
+    Returns:
+    None
+    """
+    plt.figure(figsize=figsize)
+    plt.imshow(reconstructed_matrix[id].detach().numpy(), vmin=0, vmax=1, cmap="binary", interpolation='none')
+    plt.title("Reconstructed matrix of one individual", fontsize=fontsize)
+    plt.xlabel("Time", fontsize=fontsize)
+    plt.ylabel("Events", fontsize=fontsize)
+    plt.xticks(np.arange(0, reconstructed_matrix[id].shape[1], 2))
+    plt.yticks(range(reconstructed_matrix[id].shape[0]), labels, fontsize=fontsize-2)
+    # fig, axs = plt.subplots(figsize=(16, 12))
+    # axs.imshow(X_pred.detach().numpy(), vmin=0, vmax=1, cmap="binary", interpolation='none')
+    # axs.set_title("Reconstructed matrix of one patient", fontsize=12) 
+    # axs.set_xlabel("Time", fontsize=12)
+    # axs.set_ylabel("Care Events", fontsize=12)
+    # axs.set_xticks(np.arange(0, T, 2)) 
+    # axs.set_yticks(range(X[id].shape[0]))
+    # axs.set_yticklabels(label_encoder.inverse_transform(range(X[id].shape[0])), fontsize=10)
+    plt.tight_layout()
+    plt.show()
 
 def plot_filtered_heatmap(data, id_col, label_to_encoded, cmap, alphabet, states, labels=None, linkage_matrix=None, kernel_size=(10, 7)):
     """
@@ -409,3 +487,6 @@ def plot_filtered_heatmap(data, id_col, label_to_encoded, cmap, alphabet, states
     plt.legend(handles=legend_handles, labels=states, loc='upper right', ncol=1, title='Statuts')
     plt.tight_layout()
     plt.show()
+
+
+

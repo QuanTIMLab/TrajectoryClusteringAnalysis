@@ -11,7 +11,7 @@ import pandas as pd
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)  # Ignore FutureWarnings from pandas
 from scipy.cluster.hierarchy import linkage, fcluster, leaves_list
-from scipy.spatial.distance import squareform, pdist, cityblock
+from scipy.spatial.distance import squareform, pdist,cityblock
 import Levenshtein
 from tslearn.metrics import dtw, dtw_path_from_metric, gak
 import tqdm
@@ -97,7 +97,7 @@ def replace_labels(sequence, label_to_encoded):
     #vectorized_replace = np.vectorize(label_to_encoded.get)
     #return vectorized_replace(sequence)
 
-def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming', substitution_cost_matrix=None, alphabet=None, indel_cost=None, id=None):
+def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming', substitution_cost_matrix=None, alphabet=None,indel_cost=None):
     """
     Calcule une matrice de distances entre les séquences.
 
@@ -114,18 +114,8 @@ def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming',
     """
     logging.info(f"Calculating distance matrix using metric: {metric}...")
     start_time = timeit.default_timer()
-    if sequences is None:
-        pass
-    else: 
-        n = len(sequences)
-    
-    if metric == 'euclidean':   
-        # Compute Euclidean distance
-        if id in data.columns:
-            data = data.drop(columns=[id])  # Drop the 'id' column if it exists
-        distance_matrix = pdist(data, metric=metric)
-
-    elif metric == 'hamming':
+    n = len(sequences)
+    if metric == 'hamming':
         # Compute Hamming distance
         distance_matrix = squareform(np.array(pdist(data.replace(label_to_encoded).drop(columns=['id']), metric=metric)))
 
