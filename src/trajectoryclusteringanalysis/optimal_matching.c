@@ -16,12 +16,12 @@
             "c:\\Users\\ndiaga.dieng\\Documents\\TrajectoryClusteringAnalysis\\venv\\lib\\site-packages\\numpy\\core\\include"
         ],
         "language": "c",
-        "name": "TrajectoryClusteringAnalysis.optimal_matching",
+        "name": "trajectoryclusteringanalysis.optimal_matching",
         "sources": [
-            "TrajectoryClusteringAnalysis/optimal_matching.pyx"
+            "src/trajectoryclusteringanalysis/optimal_matching.pyx"
         ]
     },
-    "module_name": "TrajectoryClusteringAnalysis.optimal_matching"
+    "module_name": "trajectoryclusteringanalysis.optimal_matching"
 }
 END: Cython Metadata */
 
@@ -1241,8 +1241,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__TrajectoryClusteringAnalysis__optimal_matching
-#define __PYX_HAVE_API__TrajectoryClusteringAnalysis__optimal_matching
+#define __PYX_HAVE__trajectoryclusteringanalysis__optimal_matching
+#define __PYX_HAVE_API__trajectoryclusteringanalysis__optimal_matching
 /* Early includes */
 #include <string.h>
 #include <stdlib.h>
@@ -1496,7 +1496,7 @@ static const char *__pyx_filename;
 /* #### Code section: filename_table ### */
 
 static const char *__pyx_f[] = {
-  "TrajectoryClusteringAnalysis\\\\optimal_matching.pyx",
+  "src\\\\trajectoryclusteringanalysis\\\\optimal_matching.pyx",
   "<stringsource>",
 };
 /* #### Code section: utility_code_proto_before_types ### */
@@ -2731,7 +2731,7 @@ static PyObject *__pyx_memoryviewslice__get_base(struct __pyx_memoryviewslice_ob
 
 /* Module declarations from "libc.math" */
 
-/* Module declarations from "TrajectoryClusteringAnalysis.optimal_matching" */
+/* Module declarations from "trajectoryclusteringanalysis.optimal_matching" */
 static PyObject *__pyx_collections_abc_Sequence = 0;
 static PyObject *generic = 0;
 static PyObject *strided = 0;
@@ -2740,7 +2740,7 @@ static PyObject *contiguous = 0;
 static PyObject *indirect_contiguous = 0;
 static int __pyx_memoryview_thread_locks_used;
 static PyThread_type_lock __pyx_memoryview_thread_locks[8];
-static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_matching_fast(__Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice, double, int __pyx_skip_dispatch); /*proto*/
+static double __pyx_f_28trajectoryclusteringanalysis_16optimal_matching_optimal_matching_fast(__Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice, double, int __pyx_skip_dispatch); /*proto*/
 static int __pyx_array_allocate_buffer(struct __pyx_array_obj *); /*proto*/
 static struct __pyx_array_obj *__pyx_array_new(PyObject *, Py_ssize_t, char *, char *, char *); /*proto*/
 static PyObject *__pyx_memoryview_new(PyObject *, int, int, __Pyx_TypeInfo *); /*proto*/
@@ -2779,11 +2779,11 @@ static PyObject *__pyx_unpickle_Enum__set_state(struct __pyx_MemviewEnum_obj *, 
 static __Pyx_TypeInfo __Pyx_TypeInfo_int__const__ = { "const int", NULL, sizeof(int const ), { 0 }, 0, __PYX_IS_UNSIGNED(int const ) ? 'U' : 'I', __PYX_IS_UNSIGNED(int const ), 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_double__const__ = { "const double", NULL, sizeof(double const ), { 0 }, 0, 'R', 0, 0 };
 /* #### Code section: before_global_var ### */
-#define __Pyx_MODULE_NAME "TrajectoryClusteringAnalysis.optimal_matching"
-extern int __pyx_module_is_main_TrajectoryClusteringAnalysis__optimal_matching;
-int __pyx_module_is_main_TrajectoryClusteringAnalysis__optimal_matching = 0;
+#define __Pyx_MODULE_NAME "trajectoryclusteringanalysis.optimal_matching"
+extern int __pyx_module_is_main_trajectoryclusteringanalysis__optimal_matching;
+int __pyx_module_is_main_trajectoryclusteringanalysis__optimal_matching = 0;
 
-/* Implementation of "TrajectoryClusteringAnalysis.optimal_matching" */
+/* Implementation of "trajectoryclusteringanalysis.optimal_matching" */
 /* #### Code section: global_var ### */
 static PyObject *__pyx_builtin_MemoryError;
 static PyObject *__pyx_builtin_range;
@@ -2913,12 +2913,12 @@ static const char __pyx_k_Incompatible_checksums_0x_x_vs_0[] = "Incompatible che
 static const char __pyx_k_Indirect_dimensions_not_supporte[] = "Indirect dimensions not supported";
 static const char __pyx_k_Invalid_mode_expected_c_or_fortr[] = "Invalid mode, expected 'c' or 'fortran', got ";
 static const char __pyx_k_Out_of_bounds_on_buffer_access_a[] = "Out of bounds on buffer access (axis ";
-static const char __pyx_k_TrajectoryClusteringAnalysis_opt[] = "TrajectoryClusteringAnalysis\\optimal_matching.pyx";
 static const char __pyx_k_Unable_to_convert_item_to_object[] = "Unable to convert item to object";
 static const char __pyx_k_got_differing_extents_in_dimensi[] = "got differing extents in dimension ";
 static const char __pyx_k_no_default___reduce___due_to_non[] = "no default __reduce__ due to non-trivial __cinit__";
+static const char __pyx_k_src_trajectoryclusteringanalysis[] = "src\\trajectoryclusteringanalysis\\optimal_matching.pyx";
+static const char __pyx_k_trajectoryclusteringanalysis_opt[] = "trajectoryclusteringanalysis.optimal_matching";
 static const char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
-static const char __pyx_k_TrajectoryClusteringAnalysis_opt_2[] = "TrajectoryClusteringAnalysis.optimal_matching";
 /* #### Code section: decls ### */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array_2__getbuffer__(struct __pyx_array_obj *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
@@ -2961,7 +2961,7 @@ static void __pyx_memoryviewslice___pyx_pf_15View_dot_MemoryView_16_memoryviewsl
 static PyObject *__pyx_pf___pyx_memoryviewslice___reduce_cython__(CYTHON_UNUSED struct __pyx_memoryviewslice_obj *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf___pyx_memoryviewslice_2__setstate_cython__(CYTHON_UNUSED struct __pyx_memoryviewslice_obj *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
 static PyObject *__pyx_pf_15View_dot_MemoryView___pyx_unpickle_Enum(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v___pyx_type, long __pyx_v___pyx_checksum, PyObject *__pyx_v___pyx_state); /* proto */
-static PyObject *__pyx_pf_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_matching_fast(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_seq1, __Pyx_memviewslice __pyx_v_seq2, __Pyx_memviewslice __pyx_v_substitution_cost_matrix, double __pyx_v_indel_cost); /* proto */
+static PyObject *__pyx_pf_28trajectoryclusteringanalysis_16optimal_matching_optimal_matching_fast(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_seq1, __Pyx_memviewslice __pyx_v_seq2, __Pyx_memviewslice __pyx_v_substitution_cost_matrix, double __pyx_v_indel_cost); /* proto */
 static PyObject *__pyx_tp_new_array(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_Enum(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_memoryview(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
@@ -3037,8 +3037,6 @@ typedef struct {
   PyObject *__pyx_n_s_PickleError;
   PyObject *__pyx_n_s_Sequence;
   PyObject *__pyx_kp_s_Step_may_not_be_zero_axis_d;
-  PyObject *__pyx_kp_s_TrajectoryClusteringAnalysis_opt;
-  PyObject *__pyx_n_s_TrajectoryClusteringAnalysis_opt_2;
   PyObject *__pyx_n_s_TypeError;
   PyObject *__pyx_kp_s_Unable_to_convert_item_to_object;
   PyObject *__pyx_n_s_ValueError;
@@ -3118,6 +3116,7 @@ typedef struct {
   PyObject *__pyx_n_s_shape;
   PyObject *__pyx_n_s_size;
   PyObject *__pyx_n_s_spec;
+  PyObject *__pyx_kp_s_src_trajectoryclusteringanalysis;
   PyObject *__pyx_n_s_start;
   PyObject *__pyx_n_s_step;
   PyObject *__pyx_n_s_stop;
@@ -3129,6 +3128,7 @@ typedef struct {
   PyObject *__pyx_n_s_substitution_cost_matrix;
   PyObject *__pyx_n_s_sys;
   PyObject *__pyx_n_s_test;
+  PyObject *__pyx_n_s_trajectoryclusteringanalysis_opt;
   PyObject *__pyx_kp_s_unable_to_allocate_array_data;
   PyObject *__pyx_kp_s_unable_to_allocate_shape_and_str;
   PyObject *__pyx_n_s_unpack;
@@ -3236,8 +3236,6 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_PickleError);
   Py_CLEAR(clear_module_state->__pyx_n_s_Sequence);
   Py_CLEAR(clear_module_state->__pyx_kp_s_Step_may_not_be_zero_axis_d);
-  Py_CLEAR(clear_module_state->__pyx_kp_s_TrajectoryClusteringAnalysis_opt);
-  Py_CLEAR(clear_module_state->__pyx_n_s_TrajectoryClusteringAnalysis_opt_2);
   Py_CLEAR(clear_module_state->__pyx_n_s_TypeError);
   Py_CLEAR(clear_module_state->__pyx_kp_s_Unable_to_convert_item_to_object);
   Py_CLEAR(clear_module_state->__pyx_n_s_ValueError);
@@ -3317,6 +3315,7 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_shape);
   Py_CLEAR(clear_module_state->__pyx_n_s_size);
   Py_CLEAR(clear_module_state->__pyx_n_s_spec);
+  Py_CLEAR(clear_module_state->__pyx_kp_s_src_trajectoryclusteringanalysis);
   Py_CLEAR(clear_module_state->__pyx_n_s_start);
   Py_CLEAR(clear_module_state->__pyx_n_s_step);
   Py_CLEAR(clear_module_state->__pyx_n_s_stop);
@@ -3328,6 +3327,7 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_substitution_cost_matrix);
   Py_CLEAR(clear_module_state->__pyx_n_s_sys);
   Py_CLEAR(clear_module_state->__pyx_n_s_test);
+  Py_CLEAR(clear_module_state->__pyx_n_s_trajectoryclusteringanalysis_opt);
   Py_CLEAR(clear_module_state->__pyx_kp_s_unable_to_allocate_array_data);
   Py_CLEAR(clear_module_state->__pyx_kp_s_unable_to_allocate_shape_and_str);
   Py_CLEAR(clear_module_state->__pyx_n_s_unpack);
@@ -3413,8 +3413,6 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_PickleError);
   Py_VISIT(traverse_module_state->__pyx_n_s_Sequence);
   Py_VISIT(traverse_module_state->__pyx_kp_s_Step_may_not_be_zero_axis_d);
-  Py_VISIT(traverse_module_state->__pyx_kp_s_TrajectoryClusteringAnalysis_opt);
-  Py_VISIT(traverse_module_state->__pyx_n_s_TrajectoryClusteringAnalysis_opt_2);
   Py_VISIT(traverse_module_state->__pyx_n_s_TypeError);
   Py_VISIT(traverse_module_state->__pyx_kp_s_Unable_to_convert_item_to_object);
   Py_VISIT(traverse_module_state->__pyx_n_s_ValueError);
@@ -3494,6 +3492,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_shape);
   Py_VISIT(traverse_module_state->__pyx_n_s_size);
   Py_VISIT(traverse_module_state->__pyx_n_s_spec);
+  Py_VISIT(traverse_module_state->__pyx_kp_s_src_trajectoryclusteringanalysis);
   Py_VISIT(traverse_module_state->__pyx_n_s_start);
   Py_VISIT(traverse_module_state->__pyx_n_s_step);
   Py_VISIT(traverse_module_state->__pyx_n_s_stop);
@@ -3505,6 +3504,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_substitution_cost_matrix);
   Py_VISIT(traverse_module_state->__pyx_n_s_sys);
   Py_VISIT(traverse_module_state->__pyx_n_s_test);
+  Py_VISIT(traverse_module_state->__pyx_n_s_trajectoryclusteringanalysis_opt);
   Py_VISIT(traverse_module_state->__pyx_kp_s_unable_to_allocate_array_data);
   Py_VISIT(traverse_module_state->__pyx_kp_s_unable_to_allocate_shape_and_str);
   Py_VISIT(traverse_module_state->__pyx_n_s_unpack);
@@ -3606,8 +3606,6 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_PickleError __pyx_mstate_global->__pyx_n_s_PickleError
 #define __pyx_n_s_Sequence __pyx_mstate_global->__pyx_n_s_Sequence
 #define __pyx_kp_s_Step_may_not_be_zero_axis_d __pyx_mstate_global->__pyx_kp_s_Step_may_not_be_zero_axis_d
-#define __pyx_kp_s_TrajectoryClusteringAnalysis_opt __pyx_mstate_global->__pyx_kp_s_TrajectoryClusteringAnalysis_opt
-#define __pyx_n_s_TrajectoryClusteringAnalysis_opt_2 __pyx_mstate_global->__pyx_n_s_TrajectoryClusteringAnalysis_opt_2
 #define __pyx_n_s_TypeError __pyx_mstate_global->__pyx_n_s_TypeError
 #define __pyx_kp_s_Unable_to_convert_item_to_object __pyx_mstate_global->__pyx_kp_s_Unable_to_convert_item_to_object
 #define __pyx_n_s_ValueError __pyx_mstate_global->__pyx_n_s_ValueError
@@ -3687,6 +3685,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_shape __pyx_mstate_global->__pyx_n_s_shape
 #define __pyx_n_s_size __pyx_mstate_global->__pyx_n_s_size
 #define __pyx_n_s_spec __pyx_mstate_global->__pyx_n_s_spec
+#define __pyx_kp_s_src_trajectoryclusteringanalysis __pyx_mstate_global->__pyx_kp_s_src_trajectoryclusteringanalysis
 #define __pyx_n_s_start __pyx_mstate_global->__pyx_n_s_start
 #define __pyx_n_s_step __pyx_mstate_global->__pyx_n_s_step
 #define __pyx_n_s_stop __pyx_mstate_global->__pyx_n_s_stop
@@ -3698,6 +3697,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_substitution_cost_matrix __pyx_mstate_global->__pyx_n_s_substitution_cost_matrix
 #define __pyx_n_s_sys __pyx_mstate_global->__pyx_n_s_sys
 #define __pyx_n_s_test __pyx_mstate_global->__pyx_n_s_test
+#define __pyx_n_s_trajectoryclusteringanalysis_opt __pyx_mstate_global->__pyx_n_s_trajectoryclusteringanalysis_opt
 #define __pyx_kp_s_unable_to_allocate_array_data __pyx_mstate_global->__pyx_kp_s_unable_to_allocate_array_data
 #define __pyx_kp_s_unable_to_allocate_shape_and_str __pyx_mstate_global->__pyx_kp_s_unable_to_allocate_shape_and_str
 #define __pyx_n_s_unpack __pyx_mstate_global->__pyx_n_s_unpack
@@ -17357,7 +17357,7 @@ static PyObject *__pyx_unpickle_Enum__set_state(struct __pyx_MemviewEnum_obj *__
   return __pyx_r;
 }
 
-/* "TrajectoryClusteringAnalysis/optimal_matching.pyx":3
+/* "trajectoryclusteringanalysis/optimal_matching.pyx":3
  * from libc.stdlib cimport malloc, free
  * from libc.math cimport INFINITY
  * cpdef double optimal_matching_fast(const int[:] seq1,             # <<<<<<<<<<<<<<
@@ -17365,14 +17365,14 @@ static PyObject *__pyx_unpickle_Enum__set_state(struct __pyx_MemviewEnum_obj *__
  *                                   const double[:, :] substitution_cost_matrix,
  */
 
-static PyObject *__pyx_pw_28TrajectoryClusteringAnalysis_16optimal_matching_1optimal_matching_fast(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_28trajectoryclusteringanalysis_16optimal_matching_1optimal_matching_fast(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_matching_fast(__Pyx_memviewslice __pyx_v_seq1, __Pyx_memviewslice __pyx_v_seq2, __Pyx_memviewslice __pyx_v_substitution_cost_matrix, double __pyx_v_indel_cost, CYTHON_UNUSED int __pyx_skip_dispatch) {
+static double __pyx_f_28trajectoryclusteringanalysis_16optimal_matching_optimal_matching_fast(__Pyx_memviewslice __pyx_v_seq1, __Pyx_memviewslice __pyx_v_seq2, __Pyx_memviewslice __pyx_v_substitution_cost_matrix, double __pyx_v_indel_cost, CYTHON_UNUSED int __pyx_skip_dispatch) {
   int __pyx_v_m;
   int __pyx_v_n;
   int __pyx_v_i;
@@ -17415,7 +17415,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
   #endif
   __Pyx_RefNannySetupContext("optimal_matching_fast", 1);
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":8
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":8
  *                                   double indel_cost) nogil:
  *     """ Version optimise d'Optimal Matching en Cython """
  *     cdef int m = seq1.shape[0]             # <<<<<<<<<<<<<<
@@ -17424,7 +17424,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
  */
   __pyx_v_m = (__pyx_v_seq1.shape[0]);
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":9
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":9
  *     """ Version optimise d'Optimal Matching en Cython """
  *     cdef int m = seq1.shape[0]
  *     cdef int n = seq2.shape[0]             # <<<<<<<<<<<<<<
@@ -17433,7 +17433,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
  */
   __pyx_v_n = (__pyx_v_seq2.shape[0]);
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":14
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":14
  *     cdef int idx_i_j, idx_im1_j, idx_i_jm1, idx_im1_jm1
  *     # Allocation manuelle de la matrice de cot
  *     cdef double* score_matrix = <double*> malloc((m + 1) * (n + 1) * sizeof(double))             # <<<<<<<<<<<<<<
@@ -17442,7 +17442,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
  */
   __pyx_v_score_matrix = ((double *)malloc((((__pyx_v_m + 1) * (__pyx_v_n + 1)) * (sizeof(double)))));
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":15
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":15
  *     # Allocation manuelle de la matrice de cot
  *     cdef double* score_matrix = <double*> malloc((m + 1) * (n + 1) * sizeof(double))
  *     if not score_matrix:             # <<<<<<<<<<<<<<
@@ -17452,7 +17452,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
   __pyx_t_1 = (!(__pyx_v_score_matrix != 0));
   if (unlikely(__pyx_t_1)) {
 
-    /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":16
+    /* "trajectoryclusteringanalysis/optimal_matching.pyx":16
  *     cdef double* score_matrix = <double*> malloc((m + 1) * (n + 1) * sizeof(double))
  *     if not score_matrix:
  *         with gil:             # <<<<<<<<<<<<<<
@@ -17465,7 +17465,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
         #endif
         /*try:*/ {
 
-          /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":17
+          /* "trajectoryclusteringanalysis/optimal_matching.pyx":17
  *     if not score_matrix:
  *         with gil:
  *             raise MemoryError("Allocation de la mmoire choue !")             # <<<<<<<<<<<<<<
@@ -17479,7 +17479,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
           __PYX_ERR(0, 17, __pyx_L5_error)
         }
 
-        /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":16
+        /* "trajectoryclusteringanalysis/optimal_matching.pyx":16
  *     cdef double* score_matrix = <double*> malloc((m + 1) * (n + 1) * sizeof(double))
  *     if not score_matrix:
  *         with gil:             # <<<<<<<<<<<<<<
@@ -17496,7 +17496,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
         }
     }
 
-    /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":15
+    /* "trajectoryclusteringanalysis/optimal_matching.pyx":15
  *     # Allocation manuelle de la matrice de cot
  *     cdef double* score_matrix = <double*> malloc((m + 1) * (n + 1) * sizeof(double))
  *     if not score_matrix:             # <<<<<<<<<<<<<<
@@ -17505,7 +17505,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
  */
   }
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":19
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":19
  *             raise MemoryError("Allocation de la mmoire choue !")
  * 
  *     for i in range(m + 1):             # <<<<<<<<<<<<<<
@@ -17517,7 +17517,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
   for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_4; __pyx_t_5+=1) {
     __pyx_v_i = __pyx_t_5;
 
-    /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":20
+    /* "trajectoryclusteringanalysis/optimal_matching.pyx":20
  * 
  *     for i in range(m + 1):
  *         score_matrix[i * (n + 1)] = i * indel_cost             # <<<<<<<<<<<<<<
@@ -17527,7 +17527,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
     (__pyx_v_score_matrix[(__pyx_v_i * (__pyx_v_n + 1))]) = (__pyx_v_i * __pyx_v_indel_cost);
   }
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":21
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":21
  *     for i in range(m + 1):
  *         score_matrix[i * (n + 1)] = i * indel_cost
  *     for j in range(n + 1):             # <<<<<<<<<<<<<<
@@ -17539,7 +17539,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
   for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_4; __pyx_t_5+=1) {
     __pyx_v_j = __pyx_t_5;
 
-    /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":22
+    /* "trajectoryclusteringanalysis/optimal_matching.pyx":22
  *         score_matrix[i * (n + 1)] = i * indel_cost
  *     for j in range(n + 1):
  *         score_matrix[j] = j * indel_cost             # <<<<<<<<<<<<<<
@@ -17549,7 +17549,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
     (__pyx_v_score_matrix[__pyx_v_j]) = (__pyx_v_j * __pyx_v_indel_cost);
   }
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":24
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":24
  *         score_matrix[j] = j * indel_cost
  * 
  *     for i in range(1, m + 1):             # <<<<<<<<<<<<<<
@@ -17561,7 +17561,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
   for (__pyx_t_5 = 1; __pyx_t_5 < __pyx_t_4; __pyx_t_5+=1) {
     __pyx_v_i = __pyx_t_5;
 
-    /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":25
+    /* "trajectoryclusteringanalysis/optimal_matching.pyx":25
  * 
  *     for i in range(1, m + 1):
  *         for j in range(1, n + 1):             # <<<<<<<<<<<<<<
@@ -17573,7 +17573,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
     for (__pyx_t_8 = 1; __pyx_t_8 < __pyx_t_7; __pyx_t_8+=1) {
       __pyx_v_j = __pyx_t_8;
 
-      /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":26
+      /* "trajectoryclusteringanalysis/optimal_matching.pyx":26
  *     for i in range(1, m + 1):
  *         for j in range(1, n + 1):
  *             cost_substitute = substitution_cost_matrix[seq1[i - 1], seq2[j - 1]]             # <<<<<<<<<<<<<<
@@ -17586,7 +17586,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
       __pyx_t_12 = (*((int const  *) ( /* dim=0 */ (__pyx_v_seq2.data + __pyx_t_10 * __pyx_v_seq2.strides[0]) )));
       __pyx_v_cost_substitute = (*((double const  *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_substitution_cost_matrix.data + __pyx_t_11 * __pyx_v_substitution_cost_matrix.strides[0]) ) + __pyx_t_12 * __pyx_v_substitution_cost_matrix.strides[1]) )));
 
-      /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":27
+      /* "trajectoryclusteringanalysis/optimal_matching.pyx":27
  *         for j in range(1, n + 1):
  *             cost_substitute = substitution_cost_matrix[seq1[i - 1], seq2[j - 1]]
  *             idx_i_j = i * (n + 1) + j             # <<<<<<<<<<<<<<
@@ -17595,7 +17595,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
  */
       __pyx_v_idx_i_j = ((__pyx_v_i * (__pyx_v_n + 1)) + __pyx_v_j);
 
-      /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":28
+      /* "trajectoryclusteringanalysis/optimal_matching.pyx":28
  *             cost_substitute = substitution_cost_matrix[seq1[i - 1], seq2[j - 1]]
  *             idx_i_j = i * (n + 1) + j
  *             idx_im1_j = (i - 1) * (n + 1) + j             # <<<<<<<<<<<<<<
@@ -17604,7 +17604,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
  */
       __pyx_v_idx_im1_j = (((__pyx_v_i - 1) * (__pyx_v_n + 1)) + __pyx_v_j);
 
-      /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":29
+      /* "trajectoryclusteringanalysis/optimal_matching.pyx":29
  *             idx_i_j = i * (n + 1) + j
  *             idx_im1_j = (i - 1) * (n + 1) + j
  *             idx_i_jm1 = i * (n + 1) + (j - 1)             # <<<<<<<<<<<<<<
@@ -17613,7 +17613,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
  */
       __pyx_v_idx_i_jm1 = ((__pyx_v_i * (__pyx_v_n + 1)) + (__pyx_v_j - 1));
 
-      /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":30
+      /* "trajectoryclusteringanalysis/optimal_matching.pyx":30
  *             idx_im1_j = (i - 1) * (n + 1) + j
  *             idx_i_jm1 = i * (n + 1) + (j - 1)
  *             idx_im1_jm1 = (i - 1) * (n + 1) + (j - 1)             # <<<<<<<<<<<<<<
@@ -17622,7 +17622,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
  */
       __pyx_v_idx_im1_jm1 = (((__pyx_v_i - 1) * (__pyx_v_n + 1)) + (__pyx_v_j - 1));
 
-      /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":31
+      /* "trajectoryclusteringanalysis/optimal_matching.pyx":31
  *             idx_i_jm1 = i * (n + 1) + (j - 1)
  *             idx_im1_jm1 = (i - 1) * (n + 1) + (j - 1)
  *             match = score_matrix[idx_im1_jm1] + cost_substitute             # <<<<<<<<<<<<<<
@@ -17631,7 +17631,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
  */
       __pyx_v_match = ((__pyx_v_score_matrix[__pyx_v_idx_im1_jm1]) + __pyx_v_cost_substitute);
 
-      /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":32
+      /* "trajectoryclusteringanalysis/optimal_matching.pyx":32
  *             idx_im1_jm1 = (i - 1) * (n + 1) + (j - 1)
  *             match = score_matrix[idx_im1_jm1] + cost_substitute
  *             delete = score_matrix[idx_im1_j] + indel_cost             # <<<<<<<<<<<<<<
@@ -17640,7 +17640,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
  */
       __pyx_v_delete = ((__pyx_v_score_matrix[__pyx_v_idx_im1_j]) + __pyx_v_indel_cost);
 
-      /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":33
+      /* "trajectoryclusteringanalysis/optimal_matching.pyx":33
  *             match = score_matrix[idx_im1_jm1] + cost_substitute
  *             delete = score_matrix[idx_im1_j] + indel_cost
  *             insert = score_matrix[idx_i_jm1] + indel_cost             # <<<<<<<<<<<<<<
@@ -17649,7 +17649,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
  */
       __pyx_v_insert = ((__pyx_v_score_matrix[__pyx_v_idx_i_jm1]) + __pyx_v_indel_cost);
 
-      /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":34
+      /* "trajectoryclusteringanalysis/optimal_matching.pyx":34
  *             delete = score_matrix[idx_im1_j] + indel_cost
  *             insert = score_matrix[idx_i_jm1] + indel_cost
  *             score_matrix[idx_i_j] = min(match, delete, insert)             # <<<<<<<<<<<<<<
@@ -17676,7 +17676,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
     }
   }
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":35
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":35
  *             insert = score_matrix[idx_i_jm1] + indel_cost
  *             score_matrix[idx_i_j] = min(match, delete, insert)
  *     cdef double result = score_matrix[m * (n + 1) + n]             # <<<<<<<<<<<<<<
@@ -17685,7 +17685,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
  */
   __pyx_v_result = (__pyx_v_score_matrix[((__pyx_v_m * (__pyx_v_n + 1)) + __pyx_v_n)]);
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":36
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":36
  *             score_matrix[idx_i_j] = min(match, delete, insert)
  *     cdef double result = score_matrix[m * (n + 1) + n]
  *     free(score_matrix)             # <<<<<<<<<<<<<<
@@ -17694,7 +17694,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
  */
   free(__pyx_v_score_matrix);
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":37
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":37
  *     cdef double result = score_matrix[m * (n + 1) + n]
  *     free(score_matrix)
  *     if m == 0 and n == 0:             # <<<<<<<<<<<<<<
@@ -17712,7 +17712,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
   __pyx_L16_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":38
+    /* "trajectoryclusteringanalysis/optimal_matching.pyx":38
  *     free(score_matrix)
  *     if m == 0 and n == 0:
  *         return 0.0             # <<<<<<<<<<<<<<
@@ -17722,7 +17722,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
     __pyx_r = 0.0;
     goto __pyx_L0;
 
-    /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":37
+    /* "trajectoryclusteringanalysis/optimal_matching.pyx":37
  *     cdef double result = score_matrix[m * (n + 1) + n]
  *     free(score_matrix)
  *     if m == 0 and n == 0:             # <<<<<<<<<<<<<<
@@ -17731,7 +17731,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
  */
   }
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":40
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":40
  *         return 0.0
  *     #return result
  *     return result / max(m, n)  # Normalisation             # <<<<<<<<<<<<<<
@@ -17749,7 +17749,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
   __pyx_r = (__pyx_v_result / ((double)__pyx_t_18));
   goto __pyx_L0;
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":3
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":3
  * from libc.stdlib cimport malloc, free
  * from libc.math cimport INFINITY
  * cpdef double optimal_matching_fast(const int[:] seq1,             # <<<<<<<<<<<<<<
@@ -17763,7 +17763,7 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
   __pyx_gilstate_save = __Pyx_PyGILState_Ensure();
   #endif
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("TrajectoryClusteringAnalysis.optimal_matching.optimal_matching_fast", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("trajectoryclusteringanalysis.optimal_matching.optimal_matching_fast", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   #ifdef WITH_THREAD
   __Pyx_PyGILState_Release(__pyx_gilstate_save);
@@ -17774,16 +17774,16 @@ static double __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_28TrajectoryClusteringAnalysis_16optimal_matching_1optimal_matching_fast(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_28trajectoryclusteringanalysis_16optimal_matching_1optimal_matching_fast(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_matching_fast, " Version optimis\303\251e d'Optimal Matching en Cython ");
-static PyMethodDef __pyx_mdef_28TrajectoryClusteringAnalysis_16optimal_matching_1optimal_matching_fast = {"optimal_matching_fast", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_28TrajectoryClusteringAnalysis_16optimal_matching_1optimal_matching_fast, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_matching_fast};
-static PyObject *__pyx_pw_28TrajectoryClusteringAnalysis_16optimal_matching_1optimal_matching_fast(PyObject *__pyx_self, 
+PyDoc_STRVAR(__pyx_doc_28trajectoryclusteringanalysis_16optimal_matching_optimal_matching_fast, " Version optimis\303\251e d'Optimal Matching en Cython ");
+static PyMethodDef __pyx_mdef_28trajectoryclusteringanalysis_16optimal_matching_1optimal_matching_fast = {"optimal_matching_fast", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_28trajectoryclusteringanalysis_16optimal_matching_1optimal_matching_fast, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_28trajectoryclusteringanalysis_16optimal_matching_optimal_matching_fast};
+static PyObject *__pyx_pw_28trajectoryclusteringanalysis_16optimal_matching_1optimal_matching_fast(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
@@ -17901,11 +17901,11 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __PYX_XCLEAR_MEMVIEW(&__pyx_v_seq1, 1);
   __PYX_XCLEAR_MEMVIEW(&__pyx_v_seq2, 1);
   __PYX_XCLEAR_MEMVIEW(&__pyx_v_substitution_cost_matrix, 1);
-  __Pyx_AddTraceback("TrajectoryClusteringAnalysis.optimal_matching.optimal_matching_fast", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("trajectoryclusteringanalysis.optimal_matching.optimal_matching_fast", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_matching_fast(__pyx_self, __pyx_v_seq1, __pyx_v_seq2, __pyx_v_substitution_cost_matrix, __pyx_v_indel_cost);
+  __pyx_r = __pyx_pf_28trajectoryclusteringanalysis_16optimal_matching_optimal_matching_fast(__pyx_self, __pyx_v_seq1, __pyx_v_seq2, __pyx_v_substitution_cost_matrix, __pyx_v_indel_cost);
 
   /* function exit code */
   __PYX_XCLEAR_MEMVIEW(&__pyx_v_seq1, 1);
@@ -17921,7 +17921,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_matching_fast(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_seq1, __Pyx_memviewslice __pyx_v_seq2, __Pyx_memviewslice __pyx_v_substitution_cost_matrix, double __pyx_v_indel_cost) {
+static PyObject *__pyx_pf_28trajectoryclusteringanalysis_16optimal_matching_optimal_matching_fast(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_seq1, __Pyx_memviewslice __pyx_v_seq2, __Pyx_memviewslice __pyx_v_substitution_cost_matrix, double __pyx_v_indel_cost) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   double __pyx_t_1;
@@ -17934,7 +17934,7 @@ static PyObject *__pyx_pf_28TrajectoryClusteringAnalysis_16optimal_matching_opti
   if (unlikely(!__pyx_v_seq1.memview)) { __Pyx_RaiseUnboundLocalError("seq1"); __PYX_ERR(0, 3, __pyx_L1_error) }
   if (unlikely(!__pyx_v_seq2.memview)) { __Pyx_RaiseUnboundLocalError("seq2"); __PYX_ERR(0, 3, __pyx_L1_error) }
   if (unlikely(!__pyx_v_substitution_cost_matrix.memview)) { __Pyx_RaiseUnboundLocalError("substitution_cost_matrix"); __PYX_ERR(0, 3, __pyx_L1_error) }
-  __pyx_t_1 = __pyx_f_28TrajectoryClusteringAnalysis_16optimal_matching_optimal_matching_fast(__pyx_v_seq1, __pyx_v_seq2, __pyx_v_substitution_cost_matrix, __pyx_v_indel_cost, 0); if (unlikely(__pyx_t_1 == ((double)-1) && PyErr_Occurred())) __PYX_ERR(0, 3, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_28trajectoryclusteringanalysis_16optimal_matching_optimal_matching_fast(__pyx_v_seq1, __pyx_v_seq2, __pyx_v_substitution_cost_matrix, __pyx_v_indel_cost, 0); if (unlikely(__pyx_t_1 == ((double)-1) && PyErr_Occurred())) __PYX_ERR(0, 3, __pyx_L1_error)
   __pyx_t_2 = PyFloat_FromDouble(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 3, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_r = __pyx_t_2;
@@ -17944,7 +17944,7 @@ static PyObject *__pyx_pf_28TrajectoryClusteringAnalysis_16optimal_matching_opti
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("TrajectoryClusteringAnalysis.optimal_matching.optimal_matching_fast", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("trajectoryclusteringanalysis.optimal_matching.optimal_matching_fast", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -18089,7 +18089,7 @@ static PyType_Slot __pyx_type___pyx_array_slots[] = {
   {0, 0},
 };
 static PyType_Spec __pyx_type___pyx_array_spec = {
-  "TrajectoryClusteringAnalysis.optimal_matching.array",
+  "trajectoryclusteringanalysis.optimal_matching.array",
   sizeof(struct __pyx_array_obj),
   0,
   Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_SEQUENCE,
@@ -18135,7 +18135,7 @@ static PyBufferProcs __pyx_tp_as_buffer_array = {
 
 static PyTypeObject __pyx_type___pyx_array = {
   PyVarObject_HEAD_INIT(0, 0)
-  "TrajectoryClusteringAnalysis.optimal_matching.""array", /*tp_name*/
+  "trajectoryclusteringanalysis.optimal_matching.""array", /*tp_name*/
   sizeof(struct __pyx_array_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_array, /*tp_dealloc*/
@@ -18298,7 +18298,7 @@ static PyType_Slot __pyx_type___pyx_MemviewEnum_slots[] = {
   {0, 0},
 };
 static PyType_Spec __pyx_type___pyx_MemviewEnum_spec = {
-  "TrajectoryClusteringAnalysis.optimal_matching.Enum",
+  "trajectoryclusteringanalysis.optimal_matching.Enum",
   sizeof(struct __pyx_MemviewEnum_obj),
   0,
   Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_GC,
@@ -18308,7 +18308,7 @@ static PyType_Spec __pyx_type___pyx_MemviewEnum_spec = {
 
 static PyTypeObject __pyx_type___pyx_MemviewEnum = {
   PyVarObject_HEAD_INIT(0, 0)
-  "TrajectoryClusteringAnalysis.optimal_matching.""Enum", /*tp_name*/
+  "trajectoryclusteringanalysis.optimal_matching.""Enum", /*tp_name*/
   sizeof(struct __pyx_MemviewEnum_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_Enum, /*tp_dealloc*/
@@ -18608,7 +18608,7 @@ static PyType_Slot __pyx_type___pyx_memoryview_slots[] = {
   {0, 0},
 };
 static PyType_Spec __pyx_type___pyx_memoryview_spec = {
-  "TrajectoryClusteringAnalysis.optimal_matching.memoryview",
+  "trajectoryclusteringanalysis.optimal_matching.memoryview",
   sizeof(struct __pyx_memoryview_obj),
   0,
   Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_GC,
@@ -18654,7 +18654,7 @@ static PyBufferProcs __pyx_tp_as_buffer_memoryview = {
 
 static PyTypeObject __pyx_type___pyx_memoryview = {
   PyVarObject_HEAD_INIT(0, 0)
-  "TrajectoryClusteringAnalysis.optimal_matching.""memoryview", /*tp_name*/
+  "trajectoryclusteringanalysis.optimal_matching.""memoryview", /*tp_name*/
   sizeof(struct __pyx_memoryview_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_memoryview, /*tp_dealloc*/
@@ -18809,7 +18809,7 @@ static PyType_Slot __pyx_type___pyx_memoryviewslice_slots[] = {
   {0, 0},
 };
 static PyType_Spec __pyx_type___pyx_memoryviewslice_spec = {
-  "TrajectoryClusteringAnalysis.optimal_matching._memoryviewslice",
+  "trajectoryclusteringanalysis.optimal_matching._memoryviewslice",
   sizeof(struct __pyx_memoryviewslice_obj),
   0,
   Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_GC|Py_TPFLAGS_SEQUENCE,
@@ -18819,7 +18819,7 @@ static PyType_Spec __pyx_type___pyx_memoryviewslice_spec = {
 
 static PyTypeObject __pyx_type___pyx_memoryviewslice = {
   PyVarObject_HEAD_INIT(0, 0)
-  "TrajectoryClusteringAnalysis.optimal_matching.""_memoryviewslice", /*tp_name*/
+  "trajectoryclusteringanalysis.optimal_matching.""_memoryviewslice", /*tp_name*/
   sizeof(struct __pyx_memoryviewslice_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc__memoryviewslice, /*tp_dealloc*/
@@ -18954,8 +18954,6 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_PickleError, __pyx_k_PickleError, sizeof(__pyx_k_PickleError), 0, 0, 1, 1},
     {&__pyx_n_s_Sequence, __pyx_k_Sequence, sizeof(__pyx_k_Sequence), 0, 0, 1, 1},
     {&__pyx_kp_s_Step_may_not_be_zero_axis_d, __pyx_k_Step_may_not_be_zero_axis_d, sizeof(__pyx_k_Step_may_not_be_zero_axis_d), 0, 0, 1, 0},
-    {&__pyx_kp_s_TrajectoryClusteringAnalysis_opt, __pyx_k_TrajectoryClusteringAnalysis_opt, sizeof(__pyx_k_TrajectoryClusteringAnalysis_opt), 0, 0, 1, 0},
-    {&__pyx_n_s_TrajectoryClusteringAnalysis_opt_2, __pyx_k_TrajectoryClusteringAnalysis_opt_2, sizeof(__pyx_k_TrajectoryClusteringAnalysis_opt_2), 0, 0, 1, 1},
     {&__pyx_n_s_TypeError, __pyx_k_TypeError, sizeof(__pyx_k_TypeError), 0, 0, 1, 1},
     {&__pyx_kp_s_Unable_to_convert_item_to_object, __pyx_k_Unable_to_convert_item_to_object, sizeof(__pyx_k_Unable_to_convert_item_to_object), 0, 0, 1, 0},
     {&__pyx_n_s_ValueError, __pyx_k_ValueError, sizeof(__pyx_k_ValueError), 0, 0, 1, 1},
@@ -19035,6 +19033,7 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_shape, __pyx_k_shape, sizeof(__pyx_k_shape), 0, 0, 1, 1},
     {&__pyx_n_s_size, __pyx_k_size, sizeof(__pyx_k_size), 0, 0, 1, 1},
     {&__pyx_n_s_spec, __pyx_k_spec, sizeof(__pyx_k_spec), 0, 0, 1, 1},
+    {&__pyx_kp_s_src_trajectoryclusteringanalysis, __pyx_k_src_trajectoryclusteringanalysis, sizeof(__pyx_k_src_trajectoryclusteringanalysis), 0, 0, 1, 0},
     {&__pyx_n_s_start, __pyx_k_start, sizeof(__pyx_k_start), 0, 0, 1, 1},
     {&__pyx_n_s_step, __pyx_k_step, sizeof(__pyx_k_step), 0, 0, 1, 1},
     {&__pyx_n_s_stop, __pyx_k_stop, sizeof(__pyx_k_stop), 0, 0, 1, 1},
@@ -19046,6 +19045,7 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_substitution_cost_matrix, __pyx_k_substitution_cost_matrix, sizeof(__pyx_k_substitution_cost_matrix), 0, 0, 1, 1},
     {&__pyx_n_s_sys, __pyx_k_sys, sizeof(__pyx_k_sys), 0, 0, 1, 1},
     {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
+    {&__pyx_n_s_trajectoryclusteringanalysis_opt, __pyx_k_trajectoryclusteringanalysis_opt, sizeof(__pyx_k_trajectoryclusteringanalysis_opt), 0, 0, 1, 1},
     {&__pyx_kp_s_unable_to_allocate_array_data, __pyx_k_unable_to_allocate_array_data, sizeof(__pyx_k_unable_to_allocate_array_data), 0, 0, 1, 0},
     {&__pyx_kp_s_unable_to_allocate_shape_and_str, __pyx_k_unable_to_allocate_shape_and_str, sizeof(__pyx_k_unable_to_allocate_shape_and_str), 0, 0, 1, 0},
     {&__pyx_n_s_unpack, __pyx_k_unpack, sizeof(__pyx_k_unpack), 0, 0, 1, 1},
@@ -19113,7 +19113,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__8);
   __Pyx_GIVEREF(__pyx_tuple__8);
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":17
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":17
  *     if not score_matrix:
  *         with gil:
  *             raise MemoryError("Allocation de la mmoire choue !")             # <<<<<<<<<<<<<<
@@ -19225,7 +19225,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__19);
   __pyx_codeobj__20 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_stringsource, __pyx_n_s_pyx_unpickle_Enum, 1, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__20)) __PYX_ERR(1, 1, __pyx_L1_error)
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":3
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":3
  * from libc.stdlib cimport malloc, free
  * from libc.math cimport INFINITY
  * cpdef double optimal_matching_fast(const int[:] seq1,             # <<<<<<<<<<<<<<
@@ -19235,7 +19235,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__21 = PyTuple_Pack(4, __pyx_n_s_seq1, __pyx_n_s_seq2, __pyx_n_s_substitution_cost_matrix, __pyx_n_s_indel_cost); if (unlikely(!__pyx_tuple__21)) __PYX_ERR(0, 3, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__21);
   __Pyx_GIVEREF(__pyx_tuple__21);
-  __pyx_codeobj__22 = (PyObject*)__Pyx_PyCode_New(4, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__21, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_TrajectoryClusteringAnalysis_opt, __pyx_n_s_optimal_matching_fast, 3, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__22)) __PYX_ERR(0, 3, __pyx_L1_error)
+  __pyx_codeobj__22 = (PyObject*)__Pyx_PyCode_New(4, 0, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__21, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_trajectoryclusteringanalysis, __pyx_n_s_optimal_matching_fast, 3, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__22)) __PYX_ERR(0, 3, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -19745,14 +19745,14 @@ if (!__Pyx_RefNanny) {
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_TrajectoryClusteringAnalysis__optimal_matching) {
+  if (__pyx_module_is_main_trajectoryclusteringanalysis__optimal_matching) {
     if (PyObject_SetAttr(__pyx_m, __pyx_n_s_name_2, __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "TrajectoryClusteringAnalysis.optimal_matching")) {
-      if (unlikely((PyDict_SetItemString(modules, "TrajectoryClusteringAnalysis.optimal_matching", __pyx_m) < 0))) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "trajectoryclusteringanalysis.optimal_matching")) {
+      if (unlikely((PyDict_SetItemString(modules, "trajectoryclusteringanalysis.optimal_matching", __pyx_m) < 0))) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -20286,19 +20286,19 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_pyx_unpickle_Enum, __pyx_t_7) < 0) __PYX_ERR(1, 1, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":3
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":3
  * from libc.stdlib cimport malloc, free
  * from libc.math cimport INFINITY
  * cpdef double optimal_matching_fast(const int[:] seq1,             # <<<<<<<<<<<<<<
  *                                   const int[:] seq2,
  *                                   const double[:, :] substitution_cost_matrix,
  */
-  __pyx_t_7 = __Pyx_CyFunction_New(&__pyx_mdef_28TrajectoryClusteringAnalysis_16optimal_matching_1optimal_matching_fast, 0, __pyx_n_s_optimal_matching_fast, NULL, __pyx_n_s_TrajectoryClusteringAnalysis_opt_2, __pyx_d, ((PyObject *)__pyx_codeobj__22)); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 3, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_CyFunction_New(&__pyx_mdef_28trajectoryclusteringanalysis_16optimal_matching_1optimal_matching_fast, 0, __pyx_n_s_optimal_matching_fast, NULL, __pyx_n_s_trajectoryclusteringanalysis_opt, __pyx_d, ((PyObject *)__pyx_codeobj__22)); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 3, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_optimal_matching_fast, __pyx_t_7) < 0) __PYX_ERR(0, 3, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "TrajectoryClusteringAnalysis/optimal_matching.pyx":1
+  /* "trajectoryclusteringanalysis/optimal_matching.pyx":1
  * from libc.stdlib cimport malloc, free             # <<<<<<<<<<<<<<
  * from libc.math cimport INFINITY
  * cpdef double optimal_matching_fast(const int[:] seq1,
@@ -20317,7 +20317,7 @@ if (!__Pyx_RefNanny) {
   __Pyx_XDECREF(__pyx_t_7);
   if (__pyx_m) {
     if (__pyx_d && stringtab_initialized) {
-      __Pyx_AddTraceback("init TrajectoryClusteringAnalysis.optimal_matching", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init trajectoryclusteringanalysis.optimal_matching", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     #if !CYTHON_USE_MODULE_STATE
     Py_CLEAR(__pyx_m);
@@ -20331,7 +20331,7 @@ if (!__Pyx_RefNanny) {
     }
     #endif
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init TrajectoryClusteringAnalysis.optimal_matching");
+    PyErr_SetString(PyExc_ImportError, "init trajectoryclusteringanalysis.optimal_matching");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
