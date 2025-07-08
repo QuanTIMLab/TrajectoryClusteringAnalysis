@@ -48,27 +48,52 @@ def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, li
     Returns:
     None
     """
+    data = data.drop(id_col, axis=1).replace(label_to_encoded)
+
     # Generate the clustermap
-    sns.clustermap(data.drop(id_col, axis=1).replace(label_to_encoded),
-                   cmap=colors,
-                   metric='precomputed',
-                   method='ward',
-                   row_linkage=linkage_matrix,
-                   row_cluster=True, 
-                   col_cluster=False,
-                   dendrogram_ratio=(.1, .2),
-                   cbar_pos=None)
+    clustermap = sns.clustermap(
+        data,
+        cmap=colors,
+        metric='precomputed',
+        method='ward',
+        row_linkage=linkage_matrix,
+        row_cluster=True, 
+        col_cluster=False,
+        dendrogram_ratio=(.1, .2),
+        cbar=False  # disables the default colorbar
+    )
     
     # Customize the plot
-    plt.xlabel("Time")  # Label for the x-axis
-    plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
-    plt.yticks([])  # Remove y-axis ticks
-    plt.title("Clustermap of Treatment Sequences")  # Add a title
+    # plt.xlabel("Time")  # Label for the x-axis
+    clustermap.ax_heatmap.set_xticklabels(labels=data.columns.tolist(), rotation=45, ha='right')  # Set x-tick labels
+    clustermap.ax_heatmap.set_yticklabels([])
+    clustermap.ax_heatmap.set_title("Clustermap of individuals")
+    clustermap.cax.set_visible(False)
+    
 
     # Add a legend for treatment states
-    viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
-    legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
-    plt.legend(handles=legend_handles, labels=states, loc='upper right', ncol=1, title='Statuts')
+    if colors == 'viridis':
+        # plt.rcParams['axes.prop_cycle'] = plt.cycler(color=plt.cm.viridis(np.linspace(0, 1, len(alphabet))))
+        viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
+        legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
+        plt.legend(handles=legend_handles, labels=states, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0., ncol=1, title='Events')
+    elif colors == 'Spectral_r':
+        # Calculate colorbar position so its top left aligns with the top right of the heatmap
+        heatmap_bbox = clustermap.ax_heatmap.get_position()
+        cbar_width = 0.02
+        cbar_height = 0.18
+        cbar_x = heatmap_bbox.x1 # right edge of heatmap
+        cbar_y = heatmap_bbox.y1 - cbar_height - 0.01 # align top
+        cbar_pos = [cbar_x, cbar_y, cbar_width, cbar_height]
+        cbar = clustermap.figure.colorbar(plt.cm.ScalarMappable(cmap=colors), cax=plt.axes(cbar_pos))
+        cbar.set_label('Phenotype Intensity', rotation=270, labelpad=15)
+    else:
+        print("No colormap specified or unsupported colormap. No legend will be added.")    
+    
+    # Use clustermap's own figure for layout adjustment to avoid UserWarning
+    clustermap.figure.tight_layout()
+    # Optionally, adjust subplots for better spacing
+    clustermap.figure.subplots_adjust(right=0.90)
     plt.show()
 
 # Function to plot the inertia diagram for determining the optimal number of clusters
