@@ -32,7 +32,7 @@ def plot_dendrogram(linkage_matrix):
     plt.show()  # Display the plot
 
 # Function to plot a clustermap with a custom legend
-def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, linkage_matrix):
+def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, linkage_matrix, mode=None):
     """
     Plot a clustermap of the treatment sequences with a custom legend.
 
@@ -72,12 +72,12 @@ def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, li
     
 
     # Add a legend for treatment states
-    if colors == 'viridis':
+    if mode == 'unidimensional':
         # plt.rcParams['axes.prop_cycle'] = plt.cycler(color=plt.cm.viridis(np.linspace(0, 1, len(alphabet))))
         viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
         legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
         plt.legend(handles=legend_handles, labels=states, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0., ncol=1, title='Events')
-    elif colors == 'Spectral_r':
+    elif mode == 'multidimensional':
         # Calculate colorbar position so its top left aligns with the top right of the heatmap
         heatmap_bbox = clustermap.ax_heatmap.get_position()
         cbar_width = 0.02
@@ -88,7 +88,7 @@ def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, li
         cbar = clustermap.figure.colorbar(plt.cm.ScalarMappable(cmap=colors), cax=plt.axes(cbar_pos))
         cbar.set_label('Phenotype Intensity', rotation=270, labelpad=15)
     else:
-        print("No colormap specified or unsupported colormap. No legend will be added.")    
+        raise ValueError("Invalid mode. Choose either 'unidimensional' or 'multidimensional'.")   
     
     # Use clustermap's own figure for layout adjustment to avoid UserWarning
     clustermap.figure.tight_layout()
@@ -129,7 +129,7 @@ def plot_inertia(linkage_matrix, n_points=10):
     plt.show()
 
 # Function to plot heatmaps for each cluster
-def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, states, clusters, leaf_order, sorted=True):
+def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, states, clusters, leaf_order, sorted=True, mode=None):
     """
     Plot heatmaps for each cluster, ensuring the data is sorted by leaves_order.
 
@@ -147,6 +147,8 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
     Returns:
     None
     """
+    data = data.drop(id_col, axis=1)
+    
     # Reorder data based on leaf order
     if leaf_order is None or len(leaf_order) == 0:
         reordered_data = data.copy()
@@ -176,25 +178,48 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
     # if num_clusters % 2 != 0:
     #     fig.delaxes(axs[-1, -1])  
     # elif     
-
-
-    # plt.figure(figsize=(10, 15))
+    
     plt.subplots_adjust(hspace=2, wspace=0.5)
-    plt.suptitle('Heatmaps of Treatment Sequences by Cluster', fontsize=16, y=1.02)
-    for cluster_label, (cluster_df, ax) in enumerate(zip(cluster_data.items(), axs)):
-        #sns.heatmap(cluster_df[1].drop(id_col, axis=1).replace(label_to_encoded), cmap=colors, cbar=False, ax=ax, yticklabels=False)
-        heatmap_data = cluster_df[1].drop(id_col, axis=1).replace(label_to_encoded)
-        heatmap_data = heatmap_data.infer_objects(copy=True)
-        sns.heatmap(heatmap_data, cmap=colors, cbar=False, ax=ax, yticklabels=False)
-        ax.tick_params(axis='x', rotation=45)
-        ax.text(1.05, 0.5, f'cluster {cluster_label+1} (n={len(cluster_df[1])})', transform=ax.transAxes, ha='left', va='center')
-    axs[-1].set_xlabel('Time in months')
+        
+    if mode == 'unidimensional':
+        plt.suptitle('Heatmaps of Treatment Sequences by Cluster', fontsize=16, y=1.02)
+        for cluster_label, (cluster_df, ax) in enumerate(zip(cluster_data.items(), axs)):
+            #sns.heatmap(cluster_df[1].drop(id_col, axis=1).replace(label_to_encoded), cmap=colors, cbar=False, ax=ax, yticklabels=False)
+            heatmap_data = cluster_df[1].drop(id_col, axis=1).replace(label_to_encoded)
+            heatmap_data = heatmap_data.infer_objects(copy=True)
+            sns.heatmap(heatmap_data, cmap=colors, cbar=False, ax=ax, yticklabels=False)
+            ax.tick_params(axis='x', rotation=45)
+            ax.text(1.05, 0.5, f'cluster {cluster_label+1} (n={len(cluster_df[1])})', transform=ax.transAxes, ha='left', va='center')
+        axs[-1].set_xlabel('Time in months')
+        
+        # Add a legend for treatment states
+        viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
+        legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
+        plt.legend(handles=legend_handles, labels=states, loc='lower right', ncol=1, title='Statuts')
+        
+        plt.tight_layout()
+    
+    elif mode == 'multidimensional':
+        vmin, vmax = 0, 1
+        plt.suptitle('Heatmaps of Phenotypes Intensity by Cluster', y=1.02)
+        for cluster_label, (cluster_df, ax) in enumerate(zip(cluster_data.items(), axs)):
+            heatmap_data = cluster_df[1]
+            heatmap_data = heatmap_data.infer_objects(copy=True)
+            sns.heatmap(heatmap_data,
+                        cmap=colors,
+                        cbar=True,
+                        ax=ax,
+                        yticklabels=False, 
+                        vmin=vmin, vmax=vmax)
+            ax.tick_params(axis='x')
+            ax.text(1.05, 0.5, f'cluster {cluster_label+1} (n={len(cluster_df[1])})', transform=ax.transAxes, ha='left', va='center')
+        axs[-1].set_xlabel('Phenotypes')
+        
+        plt.tight_layout()
 
-    # Add a legend for treatment states
-    viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
-    legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
-    plt.legend(handles=legend_handles, labels=states, loc='lower right', ncol=1, title='Statuts')
-    plt.tight_layout()
+    else:
+        raise ValueError("Invalid mode. Choose either 'unidimensional' or 'multidimensional'.")
+
     plt.show()
 
 # Function to plot the percentage of patients under each state over time
