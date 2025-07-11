@@ -164,8 +164,8 @@ def main():
 
     # pivoted_data_random_sample = pivoted_data.sample(frac=0.1, random_state=42).reset_index(drop=True)
 
-    # valid_18months_individuals = pivoted_data.dropna(thresh=19).reset_index(drop=True)
-    # valid_18months_individuals = valid_18months_individuals[['id'] + [f'month_{i}' for i in range(1, 19)]]
+    # # valid_18months_individuals = pivoted_data.dropna(thresh=19).reset_index(drop=True)
+    # # valid_18months_individuals = valid_18months_individuals[['id'] + [f'month_{i}' for i in range(1, 19)]]
 
     # # Initialize the TCA object
     # tca = TCA(data=pivoted_data_random_sample,
@@ -180,14 +180,14 @@ def main():
     # # Perform clustering and visualization
     # custom_costs = {'D:C': 1, 'D:T': 2, 'D:S': 3, 'C:T': 1, 'C:S': 2, 'T:S': 1}
     # substitution_cost_matrix=tca.compute_substitution_cost_matrix(method='custom', custom_costs=custom_costs)
-    # distance_matrix = tca.compute_distance_matrix(valid_18months_individuals, metric='optimal_matching', substitution_cost_matrix=substitution_cost_matrix)
+    # distance_matrix = tca.compute_distance_matrix(tca.data, metric='optimal_matching', substitution_cost_matrix=substitution_cost_matrix)
     # print("distance matrix :\n", distance_matrix)
     # linkage_matrix = tca.hierarchical_clustering(distance_matrix)
     # tca.plot_dendrogram(linkage_matrix)
-    # tca.plot_clustermap(valid_18months_individuals, linkage_matrix)
+    # tca.plot_clustermap(tca.data, linkage_matrix)
     # tca.plot_inertia(linkage_matrix)
     # clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
-    # tca.plot_cluster_heatmaps(clusters, sorted=True)
+    # tca.plot_cluster_heatmaps(tca.data, clusters, sorted=True)
     # tca.plot_treatment_percentage()
     # tca.plot_treatment_percentage(clusters)
     # tca.bar_treatment_percentage()
@@ -238,9 +238,9 @@ def main():
     distance_matrix = tca.compute_distance_matrix(data=ph_intensity, metric='euclidean')
     print("Distance matrix:\n", distance_matrix)
     linkage_matrix = tca.hierarchical_clustering(distance_matrix)
-    tca.plot_dendrogram(linkage_matrix)
-    tca.plot_clustermap(ph_intensity, linkage_matrix)
-    tca.plot_inertia(linkage_matrix)
+    # tca.plot_dendrogram(linkage_matrix)
+    # tca.plot_clustermap(ph_intensity, linkage_matrix)
+    # tca.plot_inertia(linkage_matrix)
     clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
     tca.plot_cluster_heatmaps(ph_intensity, clusters, sorted=True)
 
