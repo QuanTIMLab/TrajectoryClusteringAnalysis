@@ -233,7 +233,7 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
         
 
     elif mode == 'multidimensional':
-        vmin, vmax = 0, 1
+        # vmin, vmax = 0, 1
         plt.suptitle('Heatmaps of Phenotypes Intensity by Cluster', y=1.)
         for cluster_label, (cluster_df, ax) in enumerate(zip(cluster_data.items(), axs)):
             heatmap_data = cluster_df[1]
