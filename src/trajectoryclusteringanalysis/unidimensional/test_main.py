@@ -1,5 +1,5 @@
 import pandas as pd
-from trajectoryclusteringanalysis.tca import TCA
+from trajectoryclusteringanalysis.tca_dev import TCA
 
 ####################################### MAIN #######################################
 
@@ -30,15 +30,18 @@ def main():
     valid_18months_individuals = valid_18months_individuals[['id'] + [f'month_{i}' for i in range(1, 19)]]
 
     # Initialisation de l'objet TCA avec les données préparées
-    tca = TCA(
-        data=pivoted_data_random_sample,
-        id='id',
-        alphabet=['D', 'C', 'T', 'S'],  # États possibles
-        states=["diagnostiqué", "en soins", "sous traitement", "inf. contrôlée"]
-    )
+    tca = TCA(data=pivoted_data_random_sample,
+              index_col='id',
+              time_col=None,  # Not used in unidimensional analysis
+              event_col=None,  # Not used in unidimensional analysis
+              alphabet=['D', 'C', 'T', 'S'],
+              states=["diagnostiqué", "en soins", "sous traitement", "inf. contrôlée"], 
+              mode='unidimensional',
+              )
+
    
     # Calcul de la matrice de distances avec la métrique Hamming
-    distance_matrix = tca.compute_distance_matrix(metric='dtw', substitution_cost_matrix=None)
+    distance_matrix = tca.compute_distance_matrix(tca.data, metric='hamming', substitution_cost_matrix=None)
     print("distance matrix :\n", distance_matrix)
     kmedoids_labels, medoid_indices, inertia = tca.kmedoids_clustering(distance_matrix, num_clusters=4,method='fasterpam')
     print("kmedoids_labels :\n", kmedoids_labels)
@@ -51,7 +54,7 @@ def main():
    # clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
 
     # Visualisation des résultats
-    tca.plot_cluster_heatmaps(kmedoids_labels, sorted=True)
+    tca.plot_cluster_heatmaps(tca.data, kmedoids_labels, sorted=True)
     tca.plot_treatment_percentage()
     tca.plot_treatment_percentage(kmedoids_labels)
     tca.bar_treatment_percentage()

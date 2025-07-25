@@ -19,6 +19,8 @@ import logging
 import timeit
 from trajectoryclusteringanalysis.optimal_matching import optimal_matching_fast # Import de la version Cython optimisée
 import kmedoids
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 
 
 def compute_substitution_cost_matrix(sequences, alphabet, method='constant', custom_costs=None):
@@ -290,3 +292,165 @@ def k_medoids_clustering_faster(distance_matrix, num_clusters, method='fasterpam
     inertia = kmedoids_model.inertia_
     logging.info("K-Medoids clustering completed.")
     return labels, medoid_indices, inertia
+
+def vectorize_sequences_by_state_frequency(sequences, alphabet,normalize=False):
+    """
+    Vectorizes sequences by counting the frequency of each state from the alphabet.
+
+    Args:
+        sequences (list of np.ndarray or list of lists): 
+            A list where each element is a sequence (np.array or list of states).
+        alphabet (list): 
+            A list of unique states that can appear in the sequences. 
+            The order of states in the alphabet determines the order in the output vector.
+
+    Returns:
+        np.ndarray: 
+            A 2D NumPy array where each row corresponds to a sequence and each column 
+            corresponds to a state in the alphabet. The values are the frequencies of states.
+    """
+    if not isinstance(sequences, list):
+        raise TypeError("Input 'sequences' must be a list of sequences.")
+    if not isinstance(alphabet, list):
+        raise TypeError("Input 'alphabet' must be a list.")
+    if not all(isinstance(state, (str, int, float)) for state in alphabet): # Assuming states are simple types
+        raise ValueError("Alphabet should contain simple data types (strings, numbers).")
+    if len(set(alphabet)) != len(alphabet):
+        raise ValueError("Alphabet should not contain duplicate states.")
+
+    alphabet_map = {state: i for i, state in enumerate(alphabet)}
+    num_sequences = len(sequences)
+    num_states = len(alphabet)
+    
+    vectorized_data = np.zeros((num_sequences, num_states), dtype=int)
+    
+    for i, seq in enumerate(sequences):
+        if not isinstance(seq, (np.ndarray, list)):
+            logging.warning(f"Sequence at index {i} is not a list or numpy array, skipping.")
+            continue
+        for state in seq:
+            if state in alphabet_map:
+                vectorized_data[i, alphabet_map[state]] += 1
+            # else:
+            #     logging.warning(f"State '{state}' in sequence {i} not found in alphabet. It will be ignored.")
+    if normalize:
+        vectorized_data = vectorized_data / vectorized_data.sum(axis=1, keepdims=True)          
+    return vectorized_data
+
+
+def kmeans_on_frequency(self, num_clusters, random_state=None,normalize=False, **kmeans_kwargs):
+        """
+        Performs K-Means clustering on a vectorized representation of sequences.
+
+        The sequences are first converted into numerical vectors based on the frequency
+        of each state from the alphabet. Then, scikit-learn's KMeans is applied.
+
+        Args:
+            num_clusters (int): The desired number of clusters.
+            random_state (int, RandomState instance or None, optional):
+                Determines random number generation for centroid initialization.
+                Use an int to make the randomness deterministic. Defaults to None.
+            normalize (bool): If True, normalizes the frequency vectors to sum to 1.
+            **kmeans_kwargs: Additional keyword arguments to pass to sklearn.cluster.KMeans.
+                             Example: n_init=10, max_iter=300.
+
+        Returns:
+                returns a tuple containing:
+                  - 'labels': Labels of each point (adjusted to start from 1).
+                  - 'cluster_centers': Coordinates of cluster centers (vectors of state frequencies).
+                  - 'inertia': Sum of squared distances of samples to their closest cluster center.
+
+        """
+        logging.info(f"Performing K-Means clustering with {num_clusters} clusters...")
+        
+        # 1. Vectorize sequences
+        vectorized_data = vectorize_sequences_by_state_frequency(list(self.sequences), self.alphabet,normalize=normalize)
+        
+        if vectorized_data.shape[0] == 0:
+            logging.error("No data to cluster after vectorization.")
+            raise ValueError("Vectorized data is empty, cannot perform K-Means.")
+        if num_clusters > vectorized_data.shape[0]:
+            logging.warning(f"Number of clusters ({num_clusters}) is greater than the number of samples ({vectorized_data.shape[0]}). Setting num_clusters to number of samples.")
+            num_clusters = vectorized_data.shape[0]
+
+        # 2. Apply KMeans
+        # Set default n_init if not provided, to suppress FutureWarning in scikit-learn >= 1.4
+        if 'n_init' not in kmeans_kwargs and hasattr(KMeans(), 'n_init'): # Check if n_init is an attribute
+             # Get default n_init value from a temporary KMeans instance if possible
+            try:
+                default_n_init = KMeans().n_init
+                if default_n_init == 'auto': # 'auto' is deprecated in favor of explicit 10
+                    kmeans_kwargs['n_init'] = 10 
+                else:
+                    kmeans_kwargs['n_init'] = default_n_init
+            except AttributeError: # Fallback if n_init is not easily retrievable or behaves unexpectedly
+                 kmeans_kwargs['n_init'] = 10
+        
+        kmeans = KMeans(n_clusters=num_clusters, random_state=random_state, **kmeans_kwargs)
+        kmeans.fit(vectorized_data)
+        
+        logging.info("K-Means clustering completed.")
+        
+        return kmeans.labels_ + 1, kmeans.cluster_centers_,kmeans.inertia_
+
+
+def kmeans_on_wide_format(data, num_clusters, label_to_encoded=None, random_state=None, normalize=False,  **kmeans_kwargs):
+    """
+    Performs KMeans clustering directly on wide-format (fixed-column encoded) sequences.
+
+    Args:
+        num_clusters (int): Number of desired clusters.
+        label_to_encoded (dict, optional): Dictionary to encode labels. If None, uses self.label_to_encoded if available.
+        random_state (int, optional): Random seed.
+        **kmeans_kwargs: Additional arguments for sklearn.cluster.KMeans.
+
+    Returns:
+        dict: Dictionary containing:
+            - 'labels': Cluster labels (starting at 1),
+            - 'cluster_centers': Cluster centers,
+            - 'inertia': Model inertia,
+
+    """
+    logging.info(f"Performing KMeans clustering on wide-format data with {num_clusters} clusters.")
+
+    # Replace NaN with a special value (e.g., 'MISSING')
+    data_no_nan = data.drop(columns=['id']).fillna('MISSING')
+
+    # Optionally, add 'MISSING' to label_to_encoded if not present
+    if label_to_encoded is not None and 'MISSING' not in label_to_encoded:
+        label_to_encoded = label_to_encoded.copy()
+        label_to_encoded['MISSING'] = -1
+    # Prepare data: encode
+    encoded_matrix = np.vstack([
+        replace_labels(seq, label_to_encoded)
+        for seq in data_no_nan.values
+    ])
+
+    if normalize:
+        scaler = StandardScaler()
+        encoded_matrix = scaler.fit_transform(encoded_matrix)
+   
+
+    if num_clusters > encoded_matrix.shape[0]:
+        logging.warning(f"num_clusters ({num_clusters}) > number of samples ({encoded_matrix.shape[0]}). Adjusting.")
+        num_clusters = encoded_matrix.shape[0]
+
+    # Set n_init if not provided
+    if 'n_init' not in kmeans_kwargs and hasattr(KMeans(), 'n_init'):
+        try:
+            default_n_init = KMeans().n_init
+            if default_n_init == 'auto':
+                kmeans_kwargs['n_init'] = 10
+            else:
+                kmeans_kwargs['n_init'] = default_n_init
+        except Exception:
+            kmeans_kwargs['n_init'] = 10
+
+    # Clustering
+    kmeans = KMeans(n_clusters=num_clusters, random_state=random_state, **kmeans_kwargs)
+    kmeans.fit(encoded_matrix)
+
+    logging.info("KMeans on wide format completed.")
+
+    return kmeans.labels_ + 1, kmeans.cluster_centers_,kmeans.inertia_
+

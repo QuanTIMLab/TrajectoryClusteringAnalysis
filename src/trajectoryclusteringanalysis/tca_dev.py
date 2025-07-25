@@ -118,7 +118,44 @@ class TCA:
             random_state=random_state,
             **kwargs
         )
+    
+    def kmeans_on_frequency(self, num_clusters=4, random_state=None,normalize=False, **kmeans_kwargs):
+        """
+        Perform K-Means clustering on the frequency of states in the sequences.
+
+        Args:
+            num_clusters (int): Number of clusters to form.
+            random_state (int, RandomState instance or None): Determines random number generation.
+            normalize (bool): Whether to normalize the data before clustering (default: False).
+            **kmeans_kwargs: Additional keyword arguments to pass to sklearn.cluster.KMeans.
+                             Example: n_init=10, max_iter=300.
+
+        Returns:
+            returns a tuple containing:
+                  - 'labels': Labels of each point (adjusted to start from 1).
+                  - 'cluster_centers': Coordinates of cluster centers (vectors of state frequencies).
+                  - 'inertia': Sum of squared distances of samples to their closest cluster center.
+        """
+        return kmeans_on_frequency(self, num_clusters=num_clusters,random_state=random_state, normalize=normalize, **kmeans_kwargs)
         
+    
+    def kmeans_on_wide_format(self, num_clusters=4,  random_state=None,normalize=False, **kmeans_kwargs):
+        """
+        Perform K-Means clustering directly on wide-format (fixed-column) encoded sequences.
+
+        Args:
+            num_clusters (int): Number of clusters to form.
+            random_state (int, optional): Random seed.
+            **kmeans_kwargs: Additional keyword arguments for sklearn.cluster.KMeans.
+
+        Returns:
+            returns a tuple containing:
+                  - 'labels': Labels of each point (adjusted to start from 1).
+                  - 'cluster_centers': Coordinates of cluster centers (vectors of state frequencies).
+                  - 'inertia': Sum of squared distances of samples to their closest cluster center.
+        """
+        return kmeans_on_wide_format(self.data, num_clusters=num_clusters, label_to_encoded=self.label_to_encoded, random_state=random_state,normalize=normalize, **kmeans_kwargs) 
+
     def assign_clusters(self, linkage_matrix, num_clusters):
         return assign_clusters(linkage_matrix, num_clusters)
 
