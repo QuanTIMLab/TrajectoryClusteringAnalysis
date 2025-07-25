@@ -17,7 +17,7 @@ from tslearn.metrics import dtw, dtw_path_from_metric, gak
 import tqdm
 import logging
 import timeit
-from src.trajectoryclusteringanalysis.optimal_matching import optimal_matching_fast # Import de la version Cython optimisée
+from trajectoryclusteringanalysis.optimal_matching import optimal_matching_fast # Import de la version Cython optimisée
 import kmedoids
 
 

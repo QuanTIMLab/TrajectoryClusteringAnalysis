@@ -8,7 +8,7 @@ from swotted import swottedModule, swottedTrainer
 from swotted.loss_metrics import *
 from swotted.utils import Subset, success_rate
 
-from src.trajectoryclusteringanalysis.plotting import *
+from trajectoryclusteringanalysis.plotting import *
 
 class MultidimensionalAnalyzer:
 

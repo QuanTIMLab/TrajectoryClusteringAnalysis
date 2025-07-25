@@ -1,0 +1,5 @@
+recursive-include src/trajectoryclusteringanalysis *.c *.h
+include LICENSE
+include requirements.txt
+include README.md
+include image/format_data.png
