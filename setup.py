@@ -61,6 +61,12 @@ setup(
     long_description=open('README.md', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
     license='MIT',
+    url='https://github.com/QuanTIMLab/TrajectoryClusteringAnalysis',  
+    project_urls={
+        'Documentation': 'https://quantimlab.github.io/TrajectoryClusteringAnalysis/',
+        'Code': 'https://github.com/QuanTIMLab/TrajectoryClusteringAnalysis',
+        'Bug Tracker': 'https://github.com/QuanTIMLab/TrajectoryClusteringAnalysis/issues',
+    },
     packages=find_packages(where='src'),
     package_dir={'': 'src'},  
     install_requires=get_requirements('requirements.txt'),

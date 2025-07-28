@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 import numpy as np
 from scipy.cluster.hierarchy import linkage, fcluster,leaves_list
-from TrajectoryClusteringAnalysis.plotting import plot_dendrogram, plot_clustermap, plot_inertia, plot_cluster_heatmaps, plot_treatment_percentage, bar_treatment_percentage
+from trajectoryclusteringanalysis.plotting import *
 
 class TestPlotting(unittest.TestCase):
 
@@ -34,14 +34,14 @@ class TestPlotting(unittest.TestCase):
 
     def test_plot_clustermap(self):
         plot_clustermap(self.df, 'id', self.label_to_encoded, self.colors, self.alphabet, 
-                        self.states , self.linkage_matrix)
+                        self.states , self.linkage_matrix,mode='unidimensional')
 
     def test_plot_inertia(self):
         plot_inertia(self.linkage_matrix)
 
     def test_plot_cluster_heatmaps(self):
         plot_cluster_heatmaps(self.df, 'id', self.label_to_encoded, self.colors, 
-                              self.alphabet, self.states, self.clusters, self.leaves_order)
+                              self.alphabet, self.states, self.clusters, self.leaves_order,mode='unidimensional')
 
     def test_plot_treatment_percentage_no_cluters(self):
         plot_treatment_percentage(self.df, 'id', self.alphabet,self.states)

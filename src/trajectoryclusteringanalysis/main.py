@@ -1,5 +1,5 @@
 import pandas as pd
-from tca_dev import TCA
+from tca import TCA
 
 
 ####################################### MAIN #######################################
@@ -28,8 +28,6 @@ def main():
 
     tca = TCA(data=pivoted_data_random_sample,
               index_col='id',
-              time_col=None,  # Not used in unidimensional analysis
-              event_col=None,  # Not used in unidimensional analysis
               alphabet=['D', 'C', 'T', 'S'],
               states=["diagnostiqué", "en soins", "sous traitement", "inf. contrôlée"], 
               mode='unidimensional',

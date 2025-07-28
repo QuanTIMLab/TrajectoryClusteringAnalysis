@@ -1,24 +1,31 @@
 # Trajectory Clustering Analysis (TCA)
 
-## Description
+## 🚀 Description
 
-Trajectory Clustering Analysis (TCA) is a Python package for analyzing and visualizing temporal treatment sequences in a dataset.
+TrajectoryClusteringAnalysis (TCA) is a Python package designed to analyze and visualize individual trajectories over time using sequence clustering techniques. While initially developed for modeling healthcare trajectories (e.g., treatment sequences for cancer patients), TCA is versatile and can be applied to a wide range of life course data such as employment histories, education paths, or any form of individual longitudinal states.
 
-## 🚀 Introduction
-
-**Trajectory Clustering Analysis (TCA)** is a Python package designed for the analysis of care trajectories using clustering techniques. It allows modeling, grouping, and visualizing medical treatment sequences to identify patterns and similar patient profiles.
 
 ## 🔍 Main Features
 
-- **Modeling Care Trajectories:** Representation of patients through chronological sequences of treatments.
-- **Trajectory Clustering:** Utilization of dissimilarity measures (such as Hamming distance, OM, DTW) combined with hierarchical clustering methods (CAH).
-- **Trajectory Visualization:** Graphical representation of trajectories for better interpretation of results.
+- **Unidimensional Analysis:**
+    - **Modeling Care Trajectories:** Representation of patients through chronological sequences of treatments.
+- **Multidimensional Analysis:**
+    - Tensor Decomposition using the [SWoTTeD model](https://hsebia.gitlabpages.inria.fr/swotted/) to identify and analyze complex, multi-event trajectories.
+- **Flexible Distance Metrics:** Includes Hamming, Levenshtein, DTW, Optimal Matching (OM), and GAK.
+- **Clustering Algorithms:** 
+  - [Hierarchical clustering](https://en.wikipedia.org/wiki/Hierarchical_clustering) (CAH).
+  - [K-Medoids](https://python-kmedoids.readthedocs.io/en/latest/index.html#) clustering (for robustness against noise):Clustering based on a precomputed distance matrix.
+  - [K-Means](https://en.wikipedia.org/wiki/K-means_clustering) Clustering: Two methods available:
+      - Clustering based on the frequency of states.
+      - Clustering directly on the wide-format encoded sequences.
+- **Visualization Tools:** Heatmaps, dendrograms, cluster plots, etc.
+- **Notebook Examples:** Provided for quick experimentation.
 
 ## 📦 Installation
 
 1. Clone the repository:
    ```bash
-   git clone <repository_link>
+   git clone https://github.com/QuanTIMLab/TrajectoryClusteringAnalysis.git
    cd TrajectoryClusteringAnalysis
    ```
 
@@ -41,7 +48,7 @@ Trajectory Clustering Analysis (TCA) is a Python package for analyzing and visua
 ## ⚙️ Basic Usage
 
 ```python
-from TrajectoryClusteringAnalysis.TCA import TCA
+from trajectoryclusteringanalysis.tca import TCA
 
 # Example data
 trajectories = [
@@ -52,60 +59,74 @@ trajectories = [
 
 # Preprocessing data
 ```
-![data_format](image/format_data.png)
+![data_format](src/trajectoryclusteringanalysis/images/format_data.png)
 ```python
 # Initialization and clustering
 # Example for DataFrame input (ensure df_wide_format is defined, e.g., from pivoted data)
 model = tca(data=df_wide_format,
-            id='id',
+            index_col='id',
+            time_col=None,  # Not used in unidimensional analysis
+            event_col=None,  # Not used in unidimensional analysis
             alphabet=["Surgery", "Chemotherapy", "Radiotherapy"],
-            states=["Surgery State", "Chemotherapy State", "Radiotherapy State"])
+            states=["Surgery State", "Chemotherapy State", "Radiotherapy State"],
+            mode='unidimensional')
 
-# Compute distance matrix
-# For Optimal Matching, you can specify a custom indel_cost:
-#custom_costs = {'Surgery:Chemotherapy': 1, 'Surgery:Radiotherapy': 1, 'Chemotherapy:Radiotherapy': 3}
-#sub_matrix=tca.compute_substitution_cost_matrix(method='custom', custom_costs=custom_costs)
-# distance_matrix = model.compute_distance_matrix(metric='optimal_matching', 
-#                                                 substitution_cost_matrix=sub_matrix,
-#                                                 indel_cost=1.5) 
-# If indel_cost is None (default for OM), it's calculated as max(sub_matrix)/2.
-# For other metrics like 'hamming', 'levenshtein', 'dtw', 'gak':
-distance_matrix = model.compute_distance_matrix(metric='hamming') # substitution_cost_matrix not needed for hamming
+# Compute distance matrix (e.g., Hamming or Optimal Matching)
+distance_matrix = model.compute_distance_matrix(metric='hamming')
+# OR with optimal matching and custom costs:
+# custom_costs = {'Surgery:Chemotherapy': 1, 'Surgery:Radiotherapy': 2, 'Chemotherapy:Radiotherapy': 3}
+# sub_matrix = model.compute_substitution_cost_matrix(method='custom', custom_costs=custom_costs)
+# distance_matrix = model.compute_distance_matrix(metric='optimal_matching', substitution_cost_matrix=sub_matrix, indel_cost=1.5)
+
 # Hierarchical Clustering (CAH)
 linkage_matrix = model.hierarchical_clustering(distance_matrix)
 model.plot_dendrogram(linkage_matrix)
 # Visualization
-model.plot_clustermap(linkage_matrix)
+model.plot_clustermap(model.data,linkage_matrix)
 # Assign clusters
 clusters = model.assign_clusters(linkage_matrix, num_clusters=4)
-model.plot_cluster_heatmaps(clusters)
+model.plot_cluster_heatmaps(model.data,clusters)
 ```
 
-## 📊 Project Structure
+## 🔬 Applications
+### TCA is suitable for analyzing sequential data in various domains, such as:
+
+ - Healthcare: Patient treatment pathways, diagnosis sequences
+
+ - Social Sciences: Employment trajectories, education paths
+
+ - Marketing: Customer journey modeling
+
+- Sociology/Demography: Life course studies
+
+## 📁 Repository Structure
 
 ```
 TrajectoryClusteringAnalysis/
-├── data/                   # Example or test data
-├── Notebook/               # Analysis and demonstration notebooks
-├── TrajectoryClusteringAnalysis/
-│   ├── __init__.py         # Package initialization
-│   ├── tca.py              # Trajectory clustering methods
-│   ├── clustering.py       # Clustering algorithms
-│   ├── plotting.py         # Plotting functions
-│   └── utils.py            # Utility functions
+├── data/                   # Example and demo datasets
+├── Notebooks/               # Jupyter notebooks (examples)
+├── src/
+│   └── trajectoryclusteringanalysis/
+│       ├── tca.py
+│       ├── plotting.py
+│       ├── utils.py
+│       ├── logger.py
+│       ├── images/                  # Visuals for documentation
+│       ├── optimal_matching.pyx
+│       ├── unidimensional/
+│       └── multidimensional/
 ├── tests/                  # Unit tests
-│   ├── __init__.py
-│   ├── test_tca.py
-│   └── test_plotting.py
-├── venv/                   # Virtual environment
-├── setup.py                # Installation script
-├── requirements.txt        # Dependencies
-└── README.md               # Documentation
+├── requirements.txt
+├── setup.py
+├── pyproject.toml
+├── MANIFEST.in
+├── LICENSE
+└── README.md
 ```
 
 ## 🧪 Examples
 
-Example notebooks are available in the `Notebook` folder to illustrate different trajectory analyses.
+Example notebooks are available in the `Notebooks` folder to illustrate different trajectory analyses.
 
 ## 🧪 Running Tests
 To run the tests, use the following command:

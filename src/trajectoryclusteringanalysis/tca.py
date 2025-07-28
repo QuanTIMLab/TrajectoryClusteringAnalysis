@@ -21,13 +21,14 @@ class TCA:
         leaf_order (list): Order of leaves in the dendrogram (default: None).
         substitution_cost_matrix (np.ndarray): Substitution cost matrix (default: None).
     """
+
     def __init__(self, data, index_col, time_col=None, event_col=None, alphabet=None, states=None, mode=None, colors='viridis'):
         """
         Initialize the TCA object with input data and parameters.
 
         Args:
             data (pd.DataFrame): Either a DataFrame in long format with columns for id, time, and event, or a DataFrame in wide format with individuals as rows and time points as columns.
-            id (str): Column name representing unique identifiers for individuals.
+             index_col (str): Column name representing unique identifiers for individuals.
             alphabet (list): List of possible states in the trajectories.
             states (list): Descriptive labels for the states.
             mode (str): Mode of analysis ('unidimensional' vs 'multidimensional').
@@ -44,6 +45,7 @@ class TCA:
         self.leaf_order = None
         self.substitution_cost_matrix = None
         self.sequences = None
+        self.analyzer = None
         logging.basicConfig(level=logging.INFO)
 
         # Validate input data regarding the mode
@@ -69,6 +71,7 @@ class TCA:
             assert len(data[self.index_col].unique()) > 0, "data must contain at least one unique individual"
 
             self.colors = 'Spectral_r'
+            self.analyzer = MultidimensionalAnalyzer(self.data, self.index_col, self.time_col, self.event_col)
 
         else:
             raise ValueError("mode must be either 'unidimensional' or 'multidimensional'")
@@ -96,6 +99,12 @@ class TCA:
         logging.getLogger("matplotlib").setLevel(logging.WARNING)
         logging.info("TCA object initialized successfully")
         logging.info(f"The {self.mode} analysis mode is set. TCA object will analyze the data accordingly.")
+
+
+
+
+
+
 
     def get_label(self, label_encoded):
         """
@@ -185,7 +194,6 @@ class TCA:
         if distance_matrix is None:
             raise ValueError("A precomputed distance_matrix must be provided.")
         
-
         return k_medoids_clustering_faster(
             distance_matrix,
             num_clusters,
@@ -195,7 +203,44 @@ class TCA:
             random_state=random_state,
             **kwargs
         )
+    
+    def kmeans_on_frequency(self, num_clusters=4, random_state=None,normalize=False, **kmeans_kwargs):
+        """
+        Perform K-Means clustering on the frequency of states in the sequences.
+
+        Args:
+            num_clusters (int): Number of clusters to form.
+            random_state (int, RandomState instance or None): Determines random number generation.
+            normalize (bool): Whether to normalize the data before clustering (default: False).
+            **kmeans_kwargs: Additional keyword arguments to pass to sklearn.cluster.KMeans.
+                             Example: n_init=10, max_iter=300.
+
+        Returns:
+            returns a tuple containing:
+                  - 'labels': Labels of each point (adjusted to start from 1).
+                  - 'cluster_centers': Coordinates of cluster centers (vectors of state frequencies).
+                  - 'inertia': Sum of squared distances of samples to their closest cluster center.
+        """
+        return kmeans_on_frequency(self, num_clusters=num_clusters,random_state=random_state, normalize=normalize, **kmeans_kwargs)
         
+    
+    def kmeans_on_wide_format(self, num_clusters=4,  random_state=None,normalize=False, **kmeans_kwargs):
+        """
+        Perform K-Means clustering directly on wide-format (fixed-column) encoded sequences.
+
+        Args:
+            num_clusters (int): Number of clusters to form.
+            random_state (int, optional): Random seed.
+            **kmeans_kwargs: Additional keyword arguments for sklearn.cluster.KMeans.
+
+        Returns:
+            returns a tuple containing:
+                  - 'labels': Labels of each point (adjusted to start from 1).
+                  - 'cluster_centers': Coordinates of cluster centers (vectors of state frequencies).
+                  - 'inertia': Sum of squared distances of samples to their closest cluster center.
+        """
+        return kmeans_on_wide_format(self.data, num_clusters=num_clusters, label_to_encoded=self.label_to_encoded, random_state=random_state,normalize=normalize, **kmeans_kwargs) 
+
     def assign_clusters(self, linkage_matrix, num_clusters):
         """
         Assign clusters to the data based on the linkage matrix.
@@ -225,7 +270,7 @@ class TCA:
         Args:
             linkage_matrix (np.ndarray): Linkage matrix from hierarchical clustering.
         """
-        plot_clustermap(data, self.index_col, self.label_to_encoded, self.colors, self.alphabet, self.states, linkage_matrix)
+        plot_clustermap(data, self.index_col, self.label_to_encoded, self.colors, self.alphabet, self.states, linkage_matrix, self.mode)
 
     def plot_inertia(self, linkage_matrix):
         """
@@ -236,8 +281,16 @@ class TCA:
         """
         plot_inertia(linkage_matrix)
 
-    def plot_cluster_heatmaps(self, clusters, sorted=True):
-        return plot_cluster_heatmaps(self.data, self.id, self.label_to_encoded, self.colors, self.alphabet, self.states, clusters, self.leaf_order, sorted)
+    def plot_cluster_heatmaps(self, data, clusters, sorted=True):
+        """
+        Plot heatmaps for each cluster.
+
+        Args:
+            data (pd.DataFrame): The data to plot.
+            clusters (np.ndarray): The cluster assignments.
+            sorted (bool): Whether to sort the data within each cluster.
+        """
+        return plot_cluster_heatmaps(data, self.index_col, self.label_to_encoded, self.colors, self.alphabet, self.states, clusters, self.leaf_order, sorted, self.mode)
 
     def plot_treatment_percentage(self, clusters=None):
         """
@@ -246,7 +299,7 @@ class TCA:
         Args:
             clusters (np.ndarray): Cluster assignments for each individual (optional).
         """
-        plot_treatment_percentage(self.data, self.id, self.alphabet, self.states, clusters)
+        plot_treatment_percentage(self.data, self.index_col, self.alphabet, self.states, clusters)
 
     def bar_treatment_percentage(self, clusters=None):
         """
@@ -255,7 +308,7 @@ class TCA:
         Args:
             clusters (np.ndarray): Cluster assignments for each individual (optional).
         """
-        bar_treatment_percentage(self.data, self.id, self.alphabet, self.states, clusters)
+        bar_treatment_percentage(self.data, self.index_col, self.alphabet, self.states, clusters)
     
     def plot_filtered_heatmap(self,labels=None, linkage_matrix=None, kernel_size=(10, 7)):
         """
@@ -276,7 +329,7 @@ class TCA:
         """
         if (labels is None and linkage_matrix is None) or (labels is not None and linkage_matrix is not None):
             raise ValueError("You must provide exactly one of 'labels' (K-Medoids) or 'linkage_matrix' (CAH).")
-        plot_filtered_heatmap(self.data, self.id, self.label_to_encoded, self.colors, self.alphabet, self.states,labels=labels, linkage_matrix=linkage_matrix,kernel_size=kernel_size)
+        plot_filtered_heatmap(self.data, self.index_col, self.label_to_encoded, self.colors, self.alphabet, self.states,labels=labels, linkage_matrix=linkage_matrix,kernel_size=kernel_size)
 
 ####################################### MAIN #######################################
 def main():
@@ -285,94 +338,97 @@ def main():
     """
 
     ###### UNIDIMENSIONAL ANALYSIS ######
-    # df = pd.read_csv('data/dataframe_test.csv')
+    df = pd.read_csv('data/dataframe_test.csv')
 
-    # selected_cols = df[['id', 'month', 'care_status']]
+    selected_cols = df[['id', 'month', 'care_status']]
 
-    # # Pivot the data to wide format
-    # pivoted_data = selected_cols.pivot(index='id', columns='month', values='care_status')
-    # pivoted_data['id'] = pivoted_data.index
-    # pivoted_data = pivoted_data[['id'] + [col for col in pivoted_data.columns if col != 'id']]
-    # pivoted_data.columns = ['id'] + ['month_' + str(int(col) + 1) for col in pivoted_data.columns[1:]]
+    # Pivot the data to wide format
+    pivoted_data = selected_cols.pivot(index='id', columns='month', values='care_status')
+    pivoted_data['id'] = pivoted_data.index
+    pivoted_data = pivoted_data[['id'] + [col for col in pivoted_data.columns if col != 'id']]
+    pivoted_data.columns = ['id'] + ['month_' + str(int(col) + 1) for col in pivoted_data.columns[1:]]
 
-    # pivoted_data_random_sample = pivoted_data.sample(frac=0.1, random_state=42).reset_index(drop=True)
+    pivoted_data_random_sample = pivoted_data.sample(frac=0.1, random_state=42).reset_index(drop=True)
 
     # valid_18months_individuals = pivoted_data.dropna(thresh=19).reset_index(drop=True)
     # valid_18months_individuals = valid_18months_individuals[['id'] + [f'month_{i}' for i in range(1, 19)]]
 
-    # # Initialize the TCA object
-    # tca = TCA(data=pivoted_data_random_sample,
-    #           id='id',
-    #           alphabet=['D', 'C', 'T', 'S'],
-    #           states=["diagnostiqué", "en soins", "sous traitement", "inf. contrôlée"])
+    # Initialize the TCA object
+    tca = TCA(data=pivoted_data_random_sample,
+              index_col='id',
+              time_col=None,  # Not used in unidimensional analysis
+              event_col=None,  # Not used in unidimensional analysis
+              alphabet=['D', 'C', 'T', 'S'],
+              states=["diagnostiqué", "en soins", "sous traitement", "inf. contrôlée"], 
+              mode='unidimensional',
+              )
 
-    # # Perform clustering and visualization
-    # custom_costs = {'D:C': 1, 'D:T': 2, 'D:S': 3, 'C:T': 1, 'C:S': 2, 'T:S': 1}
-    # substitution_cost_matrix=tca.compute_substitution_cost_matrix(method='custom', custom_costs=custom_costs)
-    # distance_matrix = tca.compute_distance_matrix(metric='optimal_matching', substitution_cost_matrix=substitution_cost_matrix)
-    # print("distance matrix :\n", distance_matrix)
-    # linkage_matrix = tca.hierarchical_clustering(distance_matrix)
-    # tca.plot_dendrogram(linkage_matrix)
-    # tca.plot_clustermap(linkage_matrix)
-    # tca.plot_inertia(linkage_matrix)
-    # clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
-    # tca.plot_cluster_heatmaps(clusters, sorted=True)
-    # tca.plot_treatment_percentage()
-    # tca.plot_treatment_percentage(clusters)
-    # tca.bar_treatment_percentage()
-    # tca.bar_treatment_percentage(clusters)
-    # tca.plot_filtered_heatmap(linkage_matrix=linkage_matrix, kernel_size=(0, 0))  # Pas de filtre modal
-    # tca.plot_filtered_heatmap(linkage_matrix=linkage_matrix, kernel_size=(10, 7)) 
+    # Perform clustering and visualization
+    custom_costs = {'D:C': 1, 'D:T': 2, 'D:S': 3, 'C:T': 1, 'C:S': 2, 'T:S': 1}
+    substitution_cost_matrix=tca.compute_substitution_cost_matrix(method='custom', custom_costs=custom_costs)
+    distance_matrix = tca.compute_distance_matrix(tca.data, metric='optimal_matching', substitution_cost_matrix=substitution_cost_matrix)
+    print("distance matrix :\n", distance_matrix)
+    linkage_matrix = tca.hierarchical_clustering(distance_matrix)
+    tca.plot_dendrogram(linkage_matrix)
+    tca.plot_clustermap(tca.data, linkage_matrix)
+    tca.plot_inertia(linkage_matrix)
+    clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
+    tca.plot_cluster_heatmaps(tca.data, clusters, sorted=True)
+    tca.plot_treatment_percentage()
+    tca.plot_treatment_percentage(clusters)
+    tca.bar_treatment_percentage()
+    tca.bar_treatment_percentage(clusters)
+    tca.plot_filtered_heatmap(linkage_matrix=linkage_matrix, kernel_size=(0, 0))  # Pas de filtre modal
+    tca.plot_filtered_heatmap(linkage_matrix=linkage_matrix, kernel_size=(10, 7)) 
 
 
 
     ###### MULTIDIMENSIONAL ANALYSIS ######
-    df = pd.read_excel('data/multidimensional_data.xlsx')
-    print(df.head())
+    # df = pd.read_excel('data/multidimensional_data.xlsx')
+    # print(df.head())
 
-    tca = TCA(data=df,
-              index_col='ID_PATIENT',
-              time_col='Months_Since_First_Events',
-              event_col='Lib_traitement',
-              mode='multidimensional')
+    # tca = TCA(data=df,
+    #           index_col='ID_PATIENT',
+    #           time_col='Months_Since_First_Events',
+    #           event_col='Lib_traitement',
+    #           mode='multidimensional')
     
+    # tca.analyzer.transform_time_event_structure_to_tensor()
+    # print("Tensor shape:", tca.analyzer.get_tensor_shape())
+    # tensor = tca.analyzer.get_tensor()
+    
+    # # Example decomposition
+    # rank = 5
+    # time_window_length = 3
+    # reg_term_ns = 0.5
+    # reg_term_s = 0.5
+    # metric = 'Bernoulli'
+    # learning_rate = 1e-2
+    # n_epochs = 10
+
+    # unique_patients = df['ID_PATIENT'].unique()
+    # patient_index = np.where(unique_patients == 1102101064)[0][0]  
+
+    # plot_input_matrix(tensor, id=patient_index, labels=tca.label_to_encoded)
+
+    # tca.analyzer.fit_swotted_decomposition(tensor, rank, time_window_length, reg_term_ns, reg_term_s, metric, learning_rate, n_epochs)
+    # tca.analyzer.get_decomposition_results(labels=tca.label_to_encoded, id=patient_index)
+
+    # ph_intensity = tca.analyzer.to_phenotype_intensity(scaler=StandardScaler())
+    # print("Phenotype intensity:\n", ph_intensity)
     # print(tca.label_to_encoded)
-    
-    analyzer = MultidimensionalAnalyzer(tca.data, tca.index_col, tca.time_col, tca.event_col)
-    analyzer.transform_time_event_structure_to_tensor()
-    print("Tensor shape:", analyzer.get_tensor_shape())
-    tensor = analyzer.get_tensor()
-    
-    # Example decomposition
-    rank = 5
-    time_window_length = 3
-    reg_term_ns = 0.5
-    reg_term_s = 0.5
-    metric = 'Bernoulli'
-    learning_rate = 1e-2
-    n_epochs = 100
-
-    unique_patients = df['ID_PATIENT'].unique()
-    patient_index = np.where(unique_patients == 1102101064)[0][0]  
-
-    plot_input_matrix(tensor, id=patient_index, labels=tca.label_to_encoded)
-
-    analyzer.fit_swotted_decomposition(tensor, rank, time_window_length, reg_term_ns, reg_term_s, metric, learning_rate, n_epochs)
-    analyzer.get_decomposition_results(labels=tca.label_to_encoded, id=patient_index)
-
-    ph_intensity = analyzer.to_phenotype_intensity(scaler=StandardScaler())
-    print("Phenotype intensity:\n", ph_intensity)
-    print(tca.label_to_encoded)
-    # test = ph_intensity.replace(tca.label_to_encoded, inplace=True)
-    # print(test)
+    # # test = ph_intensity.replace(tca.label_to_encoded, inplace=True)
+    # # print(test)
 
 
-    distance_matrix = tca.compute_distance_matrix(data=ph_intensity, metric='euclidean')
-    print("Distance matrix:\n", distance_matrix)
-    linkage_matrix = tca.hierarchical_clustering(distance_matrix)
-    tca.plot_dendrogram(linkage_matrix)
-    tca.plot_clustermap(ph_intensity, linkage_matrix)
-    
+    # distance_matrix = tca.compute_distance_matrix(data=ph_intensity, metric='euclidean')
+    # print("Distance matrix:\n", distance_matrix)
+    # linkage_matrix = tca.hierarchical_clustering(distance_matrix)
+    # # tca.plot_dendrogram(linkage_matrix)
+    # # tca.plot_clustermap(ph_intensity, linkage_matrix)
+    # # tca.plot_inertia(linkage_matrix)
+    # clusters = tca.assign_clusters(linkage_matrix, num_clusters=4)
+    # tca.plot_cluster_heatmaps(ph_intensity, clusters, sorted=True)
 
 
 if __name__ == "__main__":
