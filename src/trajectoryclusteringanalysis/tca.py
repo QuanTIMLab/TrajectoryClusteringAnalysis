@@ -4,9 +4,9 @@ warnings.filterwarnings("ignore", category=FutureWarning)  # Ignore FutureWarnin
 import numpy as np
 import logging
 from sklearn.preprocessing import LabelEncoder
-from src.trajectoryclusteringanalysis.unidimensional.clustering import *
-from src.trajectoryclusteringanalysis.multidimensional.analysis import *
-from src.trajectoryclusteringanalysis.plotting import *
+from trajectoryclusteringanalysis.unidimensional.clustering import *
+from trajectoryclusteringanalysis.multidimensional.analysis import *
+from trajectoryclusteringanalysis.plotting import *
 
 class TCA:
     """

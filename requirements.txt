@@ -9,9 +9,9 @@ Levenshtein
 tslearn
 tqdm
 h5py 
-rpy2
+#rpy2
 numba
-cython
+Cython
 kmedoids
 torch
 SWoTTeD==1.0.2a4
