@@ -254,34 +254,38 @@ class TCA:
         """
         return assign_clusters(linkage_matrix, num_clusters)
 
-    def plot_dendrogram(self, linkage_matrix):
+    def plot_dendrogram(self, linkage_matrix, title='Dendrogram of Treatment Sequences'):
         """
         Plot the dendrogram for the hierarchical clustering.
 
         Args:
             linkage_matrix (np.ndarray): Linkage matrix from hierarchical clustering.
+            title (str): The title of the plot.
         """
-        plot_dendrogram(linkage_matrix)
+        plot_dendrogram(linkage_matrix,title)
 
-    def plot_clustermap(self, data, linkage_matrix):
+    def plot_clustermap(self, data, linkage_matrix,title="Clustermap of individuals"):
         """
         Plot a clustermap for the data.
 
         Args:
             linkage_matrix (np.ndarray): Linkage matrix from hierarchical clustering.
+            data (pd.DataFrame): The data to plot.
+            title (str): The title of the plot.
         """
-        plot_clustermap(data, self.index_col, self.label_to_encoded, self.colors, self.alphabet, self.states, linkage_matrix, self.mode)
+        plot_clustermap(data, self.index_col, self.label_to_encoded, self.colors, self.alphabet, self.states, linkage_matrix, self.mode,title)
 
-    def plot_inertia(self, linkage_matrix):
+    def plot_inertia(self, linkage_matrix, title="Inertia Diagram (Elbow Method)"):
         """
         Plot the inertia diagram to determine the optimal number of clusters.
 
         Args:
             linkage_matrix (np.ndarray): Linkage matrix from hierarchical clustering.
+            title (str): The title of the plot.
         """
-        plot_inertia(linkage_matrix)
+        plot_inertia(linkage_matrix,title=title)
 
-    def plot_cluster_heatmaps(self, data, clusters, sorted=True):
+    def plot_cluster_heatmaps(self, data, clusters, sorted=True,title='Heatmaps of Treatment Sequences by Cluster'):
         """
         Plot heatmaps for each cluster.
 
@@ -289,28 +293,30 @@ class TCA:
             data (pd.DataFrame): The data to plot.
             clusters (np.ndarray): The cluster assignments.
             sorted (bool): Whether to sort the data within each cluster.
+            - title (str): The title of the plot.
         """
-        return plot_cluster_heatmaps(data, self.index_col, self.label_to_encoded, self.colors, self.alphabet, self.states, clusters, self.leaf_order, sorted, self.mode)
+        return plot_cluster_heatmaps(data, self.index_col, self.label_to_encoded, self.colors, self.alphabet, self.states, clusters, self.leaf_order, sorted, self.mode,title)
 
-    def plot_treatment_percentage(self, clusters=None):
+    def plot_treatment_percentage(self, clusters=None, title='Percentage of Patients under Each State Over Time'):
         """
         Plot the percentage of patients under each state over time.
 
         Args:
             clusters (np.ndarray): Cluster assignments for each individual (optional).
+            - title (str): The title of the plot.
         """
-        plot_treatment_percentage(self.data, self.index_col, self.alphabet, self.states, clusters)
+        plot_treatment_percentage(self.data, self.index_col, self.alphabet, self.states, clusters,title)
 
-    def bar_treatment_percentage(self, clusters=None):
+    def bar_treatment_percentage(self, clusters=None,title='Bar Plot of Percentage of Patients under Each State Over Time'):
         """
         Plot the percentage of patients under each state over time using bar plots.
 
         Args:
             clusters (np.ndarray): Cluster assignments for each individual (optional).
         """
-        bar_treatment_percentage(self.data, self.index_col, self.alphabet, self.states, clusters)
+        bar_treatment_percentage(self.data, self.index_col, self.alphabet, self.states, clusters,title)
     
-    def plot_filtered_heatmap(self,labels=None, linkage_matrix=None, kernel_size=(10, 7)):
+    def plot_filtered_heatmap(self,labels=None, linkage_matrix=None, kernel_size=(10, 7),title=None):
         """
         Plot a heatmap of patient treatment sequences, optionally filtered using a modal filter.
 
@@ -323,13 +329,14 @@ class TCA:
         - linkage_matrix (np.ndarray, optional): Linkage matrix from hierarchical clustering.
         - kernel_size (tuple of int, optional): Size of the modal filter kernel (rows, cols).
                                                 Use (0, 0) to disable filtering. Default is (10, 7).
+        - title (str): The title of the plot.
 
         Returns:
         - None. Displays a heatmap using matplotlib
         """
         if (labels is None and linkage_matrix is None) or (labels is not None and linkage_matrix is not None):
             raise ValueError("You must provide exactly one of 'labels' (K-Medoids) or 'linkage_matrix' (CAH).")
-        plot_filtered_heatmap(self.data, self.index_col, self.label_to_encoded, self.colors, self.alphabet, self.states,labels=labels, linkage_matrix=linkage_matrix,kernel_size=kernel_size)
+        plot_filtered_heatmap(self.data, self.index_col, self.label_to_encoded, self.colors, self.alphabet, self.states,labels=labels, linkage_matrix=linkage_matrix,kernel_size=kernel_size,title=title)
 
 ####################################### MAIN #######################################
 def main():

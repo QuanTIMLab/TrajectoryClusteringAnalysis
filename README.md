@@ -82,10 +82,10 @@ distance_matrix = model.compute_distance_matrix(metric='hamming')
 linkage_matrix = model.hierarchical_clustering(distance_matrix)
 model.plot_dendrogram(linkage_matrix)
 # Visualization
-model.plot_clustermap(model.data,linkage_matrix)
+model.plot_clustermap(model.data,linkage_matrix,title="Clustermap of individuals")
 # Assign clusters
 clusters = model.assign_clusters(linkage_matrix, num_clusters=4)
-model.plot_cluster_heatmaps(model.data,clusters)
+model.plot_cluster_heatmaps(model.data,clusters,title='Heatmaps of Treatment Sequences by Cluster')
 ```
 
 ## 🔬 Applications
