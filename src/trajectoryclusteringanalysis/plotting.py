@@ -113,9 +113,10 @@ def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, li
         raise ValueError("Invalid mode. Choose either 'unidimensional' or 'multidimensional'.")   
     
     # Use clustermap's own figure for layout adjustment to avoid UserWarning
-    clustermap.figure.tight_layout()
+    #clustermap.figure.tight_layout()
     # Optionally, adjust subplots for better spacing
     clustermap.figure.subplots_adjust(right=0.90)
+   
     plt.show()
 
 # Function to plot the inertia diagram for determining the optimal number of clusters
@@ -195,8 +196,8 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
     num_clusters = len(cluster_data)
     fig, axs = plt.subplots(
         num_clusters, 1,
-        # figsize=(min(num_clusters * 3, 12),
-        #          max(sum(heights) * 0.2, 4)),
+        # figsize=(min(num_clusters * 3, 10),
+         #         max(sum(heights) * 0.2, 4)),
         sharex=True,
         gridspec_kw={'height_ratios': heights}
     )
@@ -205,8 +206,7 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
         axs = [axs]
     if num_clusters == 2:
         axs = np.array([axs])
-    if num_clusters % 2 != 0:
-        fig.delaxes(axs[-1, -1])  
+    
     # elif     
     
     plt.subplots_adjust(hspace=2, wspace=0.5)
@@ -250,7 +250,7 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
     else:
         raise ValueError("Invalid mode. Choose either 'unidimensional' or 'multidimensional'.")
 
-    plt.tight_layout()
+   # plt.tight_layout()
     plt.show()
 
 # Function to plot the percentage of patients under each state over time
