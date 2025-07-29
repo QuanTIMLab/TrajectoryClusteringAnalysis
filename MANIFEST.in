@@ -2,4 +2,4 @@ recursive-include src/trajectoryclusteringanalysis *.c *.h
 include LICENSE
 include requirements.txt
 include README.md
-include src/trajectoryclusteringanalysis/images/format_data.png
+recursive-include trajectoryclusteringanalysis/images *

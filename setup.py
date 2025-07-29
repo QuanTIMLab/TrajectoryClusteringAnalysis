@@ -63,7 +63,7 @@ setup(
     license='MIT',
     url='https://github.com/QuanTIMLab/TrajectoryClusteringAnalysis',  
     project_urls={
-        'Documentation': 'https://quantimlab.github.io/TrajectoryClusteringAnalysis/',
+        'Documentation': 'https://github.com/QuanTIMLab/TrajectoryClusteringAnalysis',
         'Code': 'https://github.com/QuanTIMLab/TrajectoryClusteringAnalysis',
         'Bug Tracker': 'https://github.com/QuanTIMLab/TrajectoryClusteringAnalysis/issues',
     },
