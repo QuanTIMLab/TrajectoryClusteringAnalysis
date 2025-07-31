@@ -345,7 +345,7 @@ def main():
     """
 
     ###### UNIDIMENSIONAL ANALYSIS ######
-    df = pd.read_csv('data/dataframe_test.csv')
+    df = pd.read_csv('data/unidimensional_data.csv')
 
     selected_cols = df[['id', 'month', 'care_status']]
 

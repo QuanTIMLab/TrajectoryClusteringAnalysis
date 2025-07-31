@@ -8,7 +8,7 @@ from tca import TCA
 ####################################### MAIN #######################################
 
 def main():
-    df = pd.read_csv('data/dataframe_test.csv')
+    df = pd.read_csv('data/unidimensional_data.csv')
     # Sélectionner les colonnes pertinentes pour l'analyse
     selected_cols = df[['id', 'month', 'care_status']]
 

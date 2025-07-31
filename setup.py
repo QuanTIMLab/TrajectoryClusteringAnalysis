@@ -56,7 +56,7 @@ setup(
     name='trajectoryclusteringanalysis',
     version=get_version(),
     author='Nicolas and Ndiaga',
-    author_email='ndiagadiengs1@gmail.com',
+    author_email='',
     description='Un package pour l’analyse des trajectoires de soins par clustering',
     long_description=open('README.md', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
