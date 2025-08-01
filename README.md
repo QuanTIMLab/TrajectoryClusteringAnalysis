@@ -23,6 +23,11 @@ TrajectoryClusteringAnalysis (TCA) is a Python package designed to analyze and v
 
 ## 📦 Installation
 
+### ✅ Install from PyPI (recommended)
+```bash
+pip install trajectoryclusteringanalysis
+```
+## 🛠️ Install from source (for development)
 1. Clone the repository:
    ```bash
    git clone https://github.com/QuanTIMLab/TrajectoryClusteringAnalysis.git
