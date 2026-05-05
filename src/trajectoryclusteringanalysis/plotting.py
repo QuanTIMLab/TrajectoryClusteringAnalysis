@@ -464,12 +464,12 @@ def plot_input_matrix(tensor, id, labels, figsize=(12, 8), fontsize=12, title="I
     """
 
     plt.figure(figsize=figsize)
-    plt.imshow(tensor[id], vmin=0, vmax=1, cmap="binary", interpolation='none')
+    plt.imshow(tensor[id-1], vmin=0, vmax=1, cmap="binary", interpolation='none')
     plt.title(title, fontsize=fontsize)
     plt.xlabel("Time", fontsize=fontsize)
     plt.ylabel("Events", fontsize=fontsize)
-    plt.xticks(np.arange(0, tensor[id].shape[1], 2))
-    plt.yticks(range(tensor[id].shape[0]), labels, fontsize=fontsize-2)
+    plt.xticks(np.arange(0, tensor[id-1].shape[1], 2))
+    plt.yticks(range(tensor[id-1].shape[0]), labels, fontsize=fontsize-2)
     plt.tight_layout()  
     # fig, axs = plt.subplots(figsize=figsize)
     # axs.imshow(tensor[id], vmin=0, vmax=1, cmap="binary", interpolation='none')
