@@ -90,10 +90,9 @@ def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, li
         viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
         legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
         legend_handles.append(plt.Rectangle((0, 0), 1, 1, color='lightgrey', label='Pas de données'))
-        states.append('Pas de données')
         clustermap.ax_heatmap.legend(
             handles=legend_handles,
-            labels=states,
+            labels=list(states) + ['Pas de données'],
             loc='center left',
             bbox_to_anchor=(1.005, 0.5),
             borderaxespad=0.0,
@@ -242,11 +241,10 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
         viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
         legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
         legend_handles.append(plt.Rectangle((0, 0), 1, 1, color='lightgrey', label='Pas de données'))
-        current_states = list(states) + ['Pas de données'] if 'Pas de données' not in states else states
         
         fig.legend(
             handles=legend_handles, 
-            labels=states, 
+            labels=list(states) + ['Pas de données'], 
             loc='upper center', 
             bbox_to_anchor=(0.5, -0.05), 
             ncol=len(states), 
