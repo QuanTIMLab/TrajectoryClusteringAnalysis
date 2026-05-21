@@ -63,23 +63,13 @@ def compute_substitution_cost_matrix(sequences, alphabet, method='constant', cus
         substitution_frequencies = np.zeros((num_states, num_states))
 
         for sequence in sequences:
-            if isinstance(sequence, str):
-                seq_elements = sequence.split('-')
-            else:
-                seq_elements = sequence
-                
-            # Valeurs manquantes ('nan')
-            sequence_clean = [str(char) if str(char) != 'nan' else '-' for char in seq_elements]
-            
-            for i in range(len(sequence_clean) - 1):
-                if sequence_clean[i] in alphabet and sequence_clean[i + 1] in alphabet:
-                    state_i = alphabet.index(sequence_clean[i])
-                    state_j = alphabet.index(sequence_clean[i + 1])
-                    substitution_frequencies[state_i, state_j] += 1
+            sequence = [char if char != 'nan' else '-' for char in sequence.split('-')]
+            for i in range(len(sequence) - 1):
+                state_i = alphabet.index(sequence[i])
+                state_j = alphabet.index(sequence[i + 1])
+                substitution_frequencies[state_i, state_j] += 1
 
-        with np.errstate(invalid='ignore'):
-            substitution_probabilities = substitution_frequencies / substitution_frequencies.sum(axis=1, keepdims=True)
-            substitution_probabilities = np.nan_to_num(substitution_probabilities) # Remplace les éventuels NaN par 0
+        substitution_probabilities = substitution_frequencies / substitution_frequencies.sum(axis=1, keepdims=True)
 
         for i in range(num_states):
             for j in range(num_states):
