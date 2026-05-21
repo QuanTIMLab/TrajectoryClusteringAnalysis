@@ -127,7 +127,7 @@ class MultidimensionalAnalyzer:
         trainer.fit(model=self.model, train_dataloaders=train_loader)
         self.W = self.model(self.X)
 
-    def get_decomposition_results(self, labels, id):  
+    def get_decomposition_results(self, labels, id, time_unit="Months"):  
         """
         Returns the decomposition result.
         """
@@ -147,10 +147,10 @@ class MultidimensionalAnalyzer:
 
             print(f"success_rate :{success_rate(self.X, X_pred)}")
 
-            plot_discovered_phenotypes(rPh, self.model.rank, labels)
-            plot_discovered_pathways(rW, id, title=f"Discovered Pathways of individual {id}")
-            plot_reconstructed_matrix(X_pred, id, labels, title=f"Reconstructed Matrix of individual {id}")
-            plot_input_matrix(self.X, id, labels, title=f"Input Matrix of individual {id}")
+            plot_discovered_phenotypes(rPh, self.model.rank, labels, time_unit=time_unit)
+            plot_discovered_pathways(rW, id, title=f"Discovered Pathways of individual {id}", time_unit=time_unit)
+            plot_reconstructed_matrix(X_pred, id, labels, title=f"Reconstructed Matrix of individual {id}", time_unit=time_unit)
+            plot_input_matrix(self.X, id, labels, title=f"Input Matrix of individual {id}", time_unit=time_unit)
 
         else:
             raise ValueError("Decomposition has not been performed. Please call fit_swotted_decomposition first.")
@@ -199,7 +199,7 @@ def main():
 
         # Plotting the discovered phenotypes
         id = 100
-        plot_input_matrix(tensor, id, analyzer.data['Lib_traitement'].unique())
+        plot_input_matrix(tensor, id, analyzer.data['Lib_traitement'].unique(), time_unit="Days")
         
         # plot_discovered_phenotypes(analyzer.model, rank)
 
