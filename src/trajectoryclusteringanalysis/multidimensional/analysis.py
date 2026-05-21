@@ -40,7 +40,7 @@ class MultidimensionalAnalyzer:
 
         """
         unique_individuals = self.data[self.index_col].unique()
-        unique_events = self.data[self.event_col].unique()
+        unique_events = np.sort(self.data[self.event_col].unique())
         unique_time_points = self.data[self.time_col].unique()
 
         patient_to_index = {patient: idx for idx, patient in enumerate(unique_individuals)}
@@ -75,9 +75,20 @@ class MultidimensionalAnalyzer:
             return self.X
         else:
             raise ValueError("Tensor has not been initialized. Please call time_event_structure_to_tensor first.")
+            
         
     def fit_swotted_decomposition(self, tensor, rank, time_window_length, reg_term_ns=0.5, reg_term_s=0.5, metric='Bernoulli', learning_rate=1e-2, n_epochs=100, ):
         """
+        Fits the SWoTTeD decomposition model to the tensor.
+        Parameters:
+        - tensor: the input tensor of shape (K, N, T)       
+        - rank: the rank of the decomposition (number of phenotypes)
+        - time_window_length: the length of the time window for the non-succession regularization
+        - reg_term_ns: the regularization term for non-succession (default: 0.5)
+        - reg_term_s: the regularization term for sparsity (default: 0.5)
+        - metric: the metric to use for the reconstruction loss (default: 'Bernoulli')
+        - learning_rate: the learning rate for training (default: 1e-2) 
+        - n_epochs: the number of epochs for training (default: 100)
 
         """
         params = {}
@@ -137,8 +148,9 @@ class MultidimensionalAnalyzer:
             print(f"success_rate :{success_rate(self.X, X_pred)}")
 
             plot_discovered_phenotypes(rPh, self.model.rank, labels)
-            plot_discovered_pathways(rW, id)
-            plot_reconstructed_matrix(X_pred, id, labels)
+            plot_discovered_pathways(rW, id, title=f"Discovered Pathways of individual {id}")
+            plot_reconstructed_matrix(X_pred, id, labels, title=f"Reconstructed Matrix of individual {id}")
+            plot_input_matrix(self.X, id, labels, title=f"Input Matrix of individual {id}")
 
         else:
             raise ValueError("Decomposition has not been performed. Please call fit_swotted_decomposition first.")

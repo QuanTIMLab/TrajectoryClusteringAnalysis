@@ -26,8 +26,8 @@ def plot_dendrogram(linkage_matrix,title='Dendrogram of Treatment Sequences'):
     """
     # Create a figure for the dendrogram
     plt.figure(figsize=(10, 6))
-    dendrogram(linkage_matrix)  # Plot the dendrogram
-    plt.title(title)  # Add a title
+    dendrogram(linkage_matrix, no_labels=True)  # Plot the dendrogram
+    plt.title(title, fontsize=16, fontweight='bold')
     plt.xlabel('Patients')  # Label for the x-axis
     plt.ylabel('Distance')  # Label for the y-axis
     plt.show()  # Display the plot
@@ -52,6 +52,17 @@ def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, li
     """
     data = data.drop(id_col, axis=1).replace(label_to_encoded)
 
+    # On définit vmin et vmax
+    if isinstance(colors, str):
+        colors = plt.colormaps[colors]
+    colors.set_bad(color='lightgrey')
+    if mode == 'multidimensional':
+        vmin = data.min().min()
+        vmax = data.max().max()
+    else:
+        vmin = None
+        vmax = None
+
     # Generate the clustermap
     clustermap = sns.clustermap(
         data,
@@ -62,39 +73,26 @@ def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, li
         row_cluster=True, 
         col_cluster=False,
         dendrogram_ratio=(0.15, 0.05), 
-        cbar=False
+        cbar=False,
+        vmin=vmin,
+        vmax=vmax
     )
 
-    # # Remove the gap between dendrogram and heatmap
-    # clustermap.ax_row_dendrogram.set_position([
-    #     clustermap.ax_row_dendrogram.get_position().x0 - 0.05,
-    #     clustermap.ax_row_dendrogram.get_position().y0,
-    #     clustermap.ax_row_dendrogram.get_position().width,
-    #     clustermap.ax_heatmap.get_position().height
-    # ])
-    # clustermap.ax_heatmap.set_position([
-    #     clustermap.ax_heatmap.get_position().x0,
-    #     clustermap.ax_heatmap.get_position().y0,
-    #     clustermap.ax_heatmap.get_position().width,
-    #     clustermap.ax_heatmap.get_position().height
-    # ])
-
-    # Customize the plot
     xticks = clustermap.ax_heatmap.get_xticks()
     xtick_labels = [data.columns[int(i)] if int(i) < len(data.columns) else "" for i in xticks]
     clustermap.ax_heatmap.set_xticklabels(xtick_labels, rotation=45, ha='right')
     clustermap.ax_heatmap.set_yticks([])
     clustermap.ax_heatmap.set_yticklabels([])
-    clustermap.ax_heatmap.set_title(title)
+    clustermap.ax_heatmap.set_title(title, fontdict={'fontsize': 16, 'fontweight': 'bold'})
     clustermap.cax.set_visible(False)
 
-    # Add a legend for treatment states
     if mode == 'unidimensional':
         viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
         legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
+        legend_handles.append(plt.Rectangle((0, 0), 1, 1, color='lightgrey', label='Pas de données'))
         clustermap.ax_heatmap.legend(
             handles=legend_handles,
-            labels=states,
+            labels=list(states) + ['Pas de données'],
             loc='center left',
             bbox_to_anchor=(1.005, 0.5),
             borderaxespad=0.0,
@@ -102,22 +100,25 @@ def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, li
             title='Events'
         )
     elif mode == 'multidimensional':
-        # Calculate colorbar position so its top left aligns with the top right of the heatmap
         heatmap_bbox = clustermap.ax_heatmap.get_position()
         cbar_width = 0.02
         cbar_height = 0.18
-        cbar_x = heatmap_bbox.x1 # right edge of heatmap
+        
+        cbar_x = heatmap_bbox.x1 + 0.02 
         cbar_y = heatmap_bbox.y1 - cbar_height - 0.01 # align top
         cbar_pos = [cbar_x, cbar_y, cbar_width, cbar_height]
-        cbar = clustermap.figure.colorbar(plt.cm.ScalarMappable(cmap=colors), cax=plt.axes(cbar_pos))
+        
+        norm = plt.Normalize(vmin=vmin, vmax=vmax)
+        sm = plt.cm.ScalarMappable(cmap=colors, norm=norm)
+        sm.set_array([]) 
+        
+        cbar_ax = clustermap.figure.add_axes(cbar_pos)
+        cbar = clustermap.figure.colorbar(sm, cax=cbar_ax)
         cbar.set_label('Phenotype Intensity', rotation=270, labelpad=15)
     else:
         raise ValueError("Invalid mode. Choose either 'unidimensional' or 'multidimensional'.")   
     
-    # Use clustermap's own figure for layout adjustment to avoid UserWarning
-    #clustermap.figure.tight_layout()
-    # Optionally, adjust subplots for better spacing
-    clustermap.figure.subplots_adjust(right=0.90)
+    clustermap.figure.subplots_adjust(right=0.85)
    
     plt.show()
 
@@ -149,7 +150,7 @@ def plot_inertia(linkage_matrix, n_points=10,title="Inertia Diagram (Elbow Metho
     # Customize the plot
     plt.xlabel("Number of clusters")  # Label for the x-axis
     plt.ylabel("Inertia (distance)")  # Label for the y-axis
-    plt.title(title)  # Add a title
+    plt.title(title, fontsize=16, fontweight='bold')  # Add a title
     plt.legend()  # Add a legend
     plt.grid(True, linestyle="--", alpha=0.6)  # Add a grid for better readability
     plt.show()
@@ -175,6 +176,10 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
     None
     """
     data = data.drop(id_col, axis=1).replace(label_to_encoded)
+
+    if isinstance(colors, str):
+        colors = plt.colormaps[colors]
+    colors.set_bad(color='lightgrey')
     
     # Reorder data based on leaf order
     if leaf_order is None or len(leaf_order) == 0:
@@ -208,15 +213,17 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
     # Ensure axs is always iterable
     if num_clusters == 1:
         axs = [axs]
+    '''
     if num_clusters == 2:
-        axs = np.array([axs])
+        axs = np.array([axs]).flatten()  # Ensure axs is a flat array for consistent indexing
+    '''
     
     # elif     
     
     plt.subplots_adjust(hspace=2, wspace=0.5)
         
     if mode == 'unidimensional':
-        plt.suptitle(title, fontsize=16, y=1.02)
+        fig.suptitle(title, y=1, fontsize=16, fontweight='bold')
         for cluster_label, (cluster_df, ax) in enumerate(zip(cluster_data.items(), axs)):
             #sns.heatmap(cluster_df[1].drop(id_col, axis=1).replace(label_to_encoded), cmap=colors, cbar=False, ax=ax, yticklabels=False)
             heatmap_data = cluster_df[1]
@@ -233,29 +240,53 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
         # Add a legend for treatment states
         viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
         legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
-        plt.legend(handles=legend_handles, labels=states, loc='lower right', ncol=1, title='Events')
+        legend_handles.append(plt.Rectangle((0, 0), 1, 1, color='lightgrey', label='Pas de données'))
         
-
+        fig.legend(
+            handles=legend_handles, 
+            labels=list(states) + ['Pas de données'], 
+            loc='upper center', 
+            bbox_to_anchor=(0.5, -0.05), 
+            ncol=len(states), 
+            title='Events',
+            frameon=True,
+            fancybox=True,
+            edgecolor='black',
+            facecolor='white',
+            borderpad=1
+        )
+        
     elif mode == 'multidimensional':
-        # vmin, vmax = 0, 1
-        #title = 'Heatmaps of Phenotypes Intensity by Cluster'
-        plt.suptitle(title, y=1.)
-        for cluster_label, (cluster_df, ax) in enumerate(zip(cluster_data.items(), axs)):
-            heatmap_data = cluster_df[1]
-            heatmap_data = heatmap_data.infer_objects(copy=True)
+        fig.suptitle(title, y=1, fontsize=16, fontweight='bold')
+        
+        vmin = data.min().min()
+        vmax = data.max().max()
+        
+        for (c_label, c_df), ax in zip(cluster_data.items(), axs):
+            heatmap_data = c_df.infer_objects(copy=True)
             sns.heatmap(heatmap_data,
                         cmap=colors,
-                        cbar=False,
+                        vmin=vmin,     
+                        vmax=vmax,     
+                        cbar=False,    
                         ax=ax,
                         yticklabels=False)
             ax.tick_params(axis='x')
-            ax.text(1.05, 0.5, f'cluster {cluster_label+1} (n={len(cluster_df[1])})', transform=ax.transAxes, ha='left', va='center')
+            ax.text(1.05, 0.5, f'cluster {c_label} (n={len(c_df)})', transform=ax.transAxes, ha='left', va='center')
+            
         axs[-1].set_xlabel('Phenotypes')
-
+        
+        sm = plt.cm.ScalarMappable(cmap=colors, norm=plt.Normalize(vmin=vmin, vmax=vmax))
+        sm.set_array([]) 
+        
+        cbar_ax = fig.add_axes([1, 0.15, 0.02, 0.7])
+        
+        cbar = fig.colorbar(sm, cax=cbar_ax, orientation='vertical')
+        cbar.set_label('Phenotype Intensity', labelpad=15, rotation=270) 
     else:
         raise ValueError("Invalid mode. Choose either 'unidimensional' or 'multidimensional'.")
 
-   # plt.tight_layout()
+    plt.subplots_adjust(bottom=0.15, right=0.75, hspace=0.5)
     plt.show()
 
 # Function to plot the percentage of patients under each state over time
@@ -290,7 +321,7 @@ def plot_treatment_percentage(data, id_col, alphabet, states, clusters=None,titl
             plt.plot(months, percentages, label=f'{treatment_label}', color=color, marker='o')
 
         plt.xticks(months[::2], rotation=90, ha='right')
-        plt.title(title)
+        plt.title(title, fontsize=16, fontweight='bold')
         plt.xlabel('Time')
         plt.ylabel('Percentage of Patients')
         plt.legend(title=None)
@@ -304,6 +335,7 @@ def plot_treatment_percentage(data, id_col, alphabet, states, clusters=None,titl
         num_rows = (num_clusters + 1) // 2  
         num_cols = min(2, num_clusters)
         fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10))
+        fig.suptitle(title, fontsize=16, fontweight='bold')
 
         if num_clusters == 2:
             axs = np.array([axs])
@@ -389,6 +421,7 @@ def bar_treatment_percentage(data, id_col, alphabet, states, clusters=None,title
         num_cols = min(2, num_clusters)
 
         fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 10), squeeze=False)
+        fig.suptitle(title, fontsize=16, fontweight='bold')
 
         if num_clusters % 2 != 0:
             fig.delaxes(axs[-1, -1])
@@ -414,41 +447,33 @@ def bar_treatment_percentage(data, id_col, alphabet, states, clusters=None,title
             xticks_positions = range(0, len(months), 2)
             ax.set_xticks(xticks_positions)
             ax.set_xticklabels([months[i] for i in xticks_positions], rotation=90)
-
+            
         plt.tight_layout()
         plt.show()
 
-def plot_discovered_phenotypes(reordered_phenotypes, rank, labels, colors=['#E81313', '#54C45E', '#1071E5'], title="Discovered phenotype"):
+def plot_discovered_phenotypes(reordered_phenotypes, rank, labels, cmap_name='tab10', title="Discovered phenotype"):
     """
-    Plot the discovered phenotypes with a custom legend.
-
-    Parameters:
-    phenotypes (numpy.ndarray): The discovered phenotypes.
-    colors (list): List of colors for each phenotype.
-    states (list): List of state labels corresponding to the events.
-    title (str): The title of the plot.
-
-    Returns:
-    None
+    Plot the discovered phenotypes with an infinite dynamic palette.
     """
+    # On charge la même palette pour garder une cohérence parfaite des couleurs
+    palette = plt.colormaps[cmap_name]
+    
     for i in range(rank):
-        if rank == 3 :
-            # Create a colormap based on the base color
-            base_color = colors[i % len(colors)]
-            cmap = mcolors.LinearSegmentedColormap.from_list(f"custom_cmap_{i}", ["white", base_color])
-        else:
-            cmap = 'binary' 
+        # On récupère exactement la même couleur que celle du pathway pour le phénotype i
+        base_color = palette(i % palette.N)
+        cmap = mcolors.LinearSegmentedColormap.from_list(f"custom_cmap_{i}", ["white", base_color])
 
         # Plot the phenotype matrix with the custom colormap
+        plt.figure() 
         plt.imshow(reordered_phenotypes[i].detach().numpy(), vmin=0, vmax=1, cmap=cmap, interpolation='none')
         plt.ylabel("Events")
         plt.xticks(range(reordered_phenotypes[i].shape[1]), range(reordered_phenotypes[i].shape[1]))
         plt.xlabel("Time")
-        plt.title(f"{title} {i + 1}")
+        plt.title(f"{title} {i + 1}", fontsize=16, fontweight='bold')
         plt.yticks(range(reordered_phenotypes[i].shape[0]), labels)
         plt.show()
 
-def plot_input_matrix(tensor, id, labels, figsize=(12, 8), fontsize=12, title="Input Matrix of One Individual"):
+def plot_input_matrix(tensor, id, labels, figsize=(12, 8), fontsize=16, title="Input Matrix of One Individual"):
     """
     Plot the input matrix of a tensor with patient IDs as labels.
 
@@ -464,12 +489,12 @@ def plot_input_matrix(tensor, id, labels, figsize=(12, 8), fontsize=12, title="I
     """
 
     plt.figure(figsize=figsize)
-    plt.imshow(tensor[id], vmin=0, vmax=1, cmap="binary", interpolation='none')
-    plt.title(title, fontsize=fontsize)
+    plt.imshow(tensor[id-1], vmin=0, vmax=1, cmap="binary", interpolation='none')
+    plt.title(title, fontsize=fontsize, fontweight='bold')
     plt.xlabel("Time", fontsize=fontsize)
     plt.ylabel("Events", fontsize=fontsize)
-    plt.xticks(np.arange(0, tensor[id].shape[1], 2))
-    plt.yticks(range(tensor[id].shape[0]), labels, fontsize=fontsize-2)
+    plt.xticks(np.arange(0, tensor[id-1].shape[1], 2))
+    plt.yticks(ticks=np.arange(tensor[id-1].shape[0]), labels=labels, fontsize=fontsize-2)
     plt.tight_layout()  
     # fig, axs = plt.subplots(figsize=figsize)
     # axs.imshow(tensor[id], vmin=0, vmax=1, cmap="binary", interpolation='none')
@@ -482,19 +507,39 @@ def plot_input_matrix(tensor, id, labels, figsize=(12, 8), fontsize=12, title="I
     # plt.tight_layout()
     plt.show()
 
-def plot_discovered_pathways(reordered_pathways, id, figsize=(12, 8), fontsize=12,title="Discovered pathway of one individual"): 
+def plot_discovered_pathways(reordered_pathways, id, figsize=(12, 8), fontsize=16, title="Discovered pathway of one individual", cmap_name='tab10'): 
     """
+    Plot the discovered pathways with an infinite dynamic palette.
     """
     plt.figure(figsize=figsize) 
-    plt.imshow(reordered_pathways[id].detach().numpy(), vmin=0, vmax=1, cmap="binary", interpolation="nearest")
-    plt.ylabel("Phenotypes", fontsize=fontsize)
-    plt.yticks(range(reordered_pathways[0].shape[0]), range(1, reordered_pathways[0].shape[0]+1), fontsize=fontsize-2)
-    plt.xlabel("Time", fontsize=fontsize)
-    plt.xticks(np.arange(0, reordered_pathways[id].shape[1], 2))
-    plt.title(title, fontsize=fontsize)
-    plt.show()   
     
-def plot_reconstructed_matrix(reconstructed_matrix, id, labels, figsize=(12, 8), fontsize=12,title="Reconstructed matrix of one individual"):
+    # Récupération de la matrice pour le patient donné
+    matrix = reordered_pathways[id].detach().numpy()
+    rank_n = matrix.shape[0]
+    time_len = matrix.shape[1]
+    
+    # On charge la palette qualitative de Matplotlib (ex: tab20)
+    palette = plt.colormaps[cmap_name]
+    
+    # On dessine la matrice phénotype par phénotype
+    for i in range(rank_n):
+        # On pioche automatiquement une couleur distincte dans la palette
+        base_color = palette(i % palette.N)
+        cmap = mcolors.LinearSegmentedColormap.from_list(f"custom_cmap_pw_{i}", ["white", base_color])
+            
+        row_data = matrix[i:i+1, :]
+        plt.imshow(row_data, extent=[-0.5, time_len-0.5, i+0.5, i-0.5], vmin=0, vmax=1, cmap=cmap, interpolation="nearest")
+
+    plt.xlim(-0.5, time_len - 0.5)
+    plt.ylim(rank_n - 0.5, -0.5)
+    
+    plt.ylabel("Phenotypes", fontsize=fontsize)
+    plt.yticks(range(rank_n), [f"Phénotype {i+1}" for i in range(rank_n)], fontsize=fontsize-2)
+    plt.xlabel("Time", fontsize=fontsize)
+    plt.xticks(np.arange(0, time_len, 2))
+    plt.title(title, fontsize=fontsize, fontweight='bold')
+    plt.show()
+def plot_reconstructed_matrix(reconstructed_matrix, id, labels, figsize=(12, 8), fontsize=16,title="Reconstructed matrix of one individual"):
     """
     Plot the reconstructed matrix of a tensor with patient IDs as labels.
 
@@ -511,16 +556,16 @@ def plot_reconstructed_matrix(reconstructed_matrix, id, labels, figsize=(12, 8),
     """
     plt.figure(figsize=figsize)
     plt.imshow(reconstructed_matrix[id].detach().numpy(), vmin=0, vmax=1, cmap="binary", interpolation='none')
-    plt.title(title, fontsize=fontsize)
+    plt.title(title, fontsize=fontsize, fontweight='bold')
     plt.xlabel("Time", fontsize=fontsize)
     plt.ylabel("Events", fontsize=fontsize)
     plt.xticks(np.arange(0, reconstructed_matrix[id].shape[1], 2))
     plt.yticks(range(reconstructed_matrix[id].shape[0]), labels, fontsize=fontsize-2)
     # fig, axs = plt.subplots(figsize=(16, 12))
     # axs.imshow(X_pred.detach().numpy(), vmin=0, vmax=1, cmap="binary", interpolation='none')
-    # axs.set_title("Reconstructed matrix of one patient", fontsize=12) 
-    # axs.set_xlabel("Time", fontsize=12)
-    # axs.set_ylabel("Care Events", fontsize=12)
+    # axs.set_title("Reconstructed matrix of one patient", fontsize=16, fontweight='bold') 
+    # axs.set_xlabel("Time", fontsize=16, fontweight='bold')
+    # axs.set_ylabel("Care Events", fontsize=16, fontweight='bold')
     # axs.set_xticks(np.arange(0, T, 2)) 
     # axs.set_yticks(range(X[id].shape[0]))
     # axs.set_yticklabels(label_encoder.inverse_transform(range(X[id].shape[0])), fontsize=10)
@@ -574,7 +619,7 @@ def plot_filtered_heatmap(data, id_col, label_to_encoded, cmap, alphabet, states
     plt.ylabel("Patients")
     plt.xticks(rotation=90)
     plt.yticks([])
-    plt.title(title)
+    plt.title(title, fontsize=16, fontweight='bold')
 
     viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
     legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
