@@ -41,7 +41,7 @@ class MultidimensionalAnalyzer:
         """
         unique_individuals = self.data[self.index_col].unique()
         unique_events = np.sort(self.data[self.event_col].unique())
-        unique_time_points = self.data[self.time_col].unique()
+        unique_time_points = np.sort(self.data[self.time_col].unique())
 
         patient_to_index = {patient: idx for idx, patient in enumerate(unique_individuals)}
 

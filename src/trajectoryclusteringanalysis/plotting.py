@@ -489,7 +489,7 @@ def plot_input_matrix(tensor, id, labels, figsize=(12, 8), fontsize=16, title="I
     """
 
     plt.figure(figsize=figsize)
-    plt.imshow(tensor[id-1], vmin=0, vmax=1, cmap="binary", interpolation='none')
+    plt.imshow(tensor[id-1], vmin=0, vmax=1, cmap="binary", interpolation='nearest')
     plt.title(title, fontsize=fontsize, fontweight='bold')
     plt.xlabel("Time", fontsize=fontsize)
     plt.ylabel("Events", fontsize=fontsize)
