@@ -25,7 +25,7 @@ class MultidimensionalAnalyzer:
     
     def has_time_event_structure(self):
         """
-
+        Checks if the data has a valid time-event structure.
         """
         if not isinstance(self.data, pd.DataFrame):
             return False
@@ -37,7 +37,7 @@ class MultidimensionalAnalyzer:
 
     def transform_time_event_structure_to_tensor(self):
         """
-
+        Transforms the time-event structure to a tensor.
         """
         unique_individuals = self.data[self.index_col].unique()
         unique_events = np.sort(self.data[self.event_col].unique())
@@ -80,6 +80,7 @@ class MultidimensionalAnalyzer:
     def fit_swotted_decomposition(self, tensor, rank, time_window_length, reg_term_ns=0.5, reg_term_s=0.5, metric='Bernoulli', learning_rate=1e-2, n_epochs=100, ):
         """
         Fits the SWoTTeD decomposition model to the tensor.
+
         Parameters:
         - tensor: the input tensor of shape (K, N, T)       
         - rank: the rank of the decomposition (number of phenotypes)
@@ -90,6 +91,8 @@ class MultidimensionalAnalyzer:
         - learning_rate: the learning rate for training (default: 1e-2) 
         - n_epochs: the number of epochs for training (default: 100)
 
+        Returns:
+        - model: the fitted SWoTTeD model
         """
         params = {}
         params['model']={}
@@ -130,6 +133,18 @@ class MultidimensionalAnalyzer:
     def get_decomposition_results(self, labels, id, time_unit="Months"):  
         """
         Returns the decomposition result.
+
+        Parameters:
+        - labels: the labels of the events
+        - id: the ID of the individual
+        - time_unit: the unit of time for plotting (default: "Months") 
+
+        Returns:
+        - The plot of the discovered phenotypes
+        - The plot of the discovered pathways
+        - The plot of the reconstructed matrix
+        - The plot of the input matrix
+
         """
         if hasattr(self, 'model') and self.model is not None:
             
@@ -157,7 +172,7 @@ class MultidimensionalAnalyzer:
         
     def compute_reconstruction(self):
         """
-        Retourne X_pred après fit_swotted_decomposition.
+        Returns X_pred after fit_swotted_decomposition.
         """
         if not (hasattr(self, 'model') and self.model is not None):
             raise ValueError("Decomposition has not been performed. Please call fit_swotted_decomposition first.")
@@ -170,6 +185,12 @@ class MultidimensionalAnalyzer:
     def to_phenotype_intensity(self, scaler=MinMaxScaler()):
         """
         Converts the decomposition result to phenotype intensity.
+
+        Parameters:
+        - scaler: the scaler to use for normalizing the phenotype intensity (default: MinMaxScaler)
+
+        Returns:
+        - A DataFrame containing the phenotype intensity for each individual.
         """
         if hasattr(self, 'model') and self.W is not None:
             W_all = torch.stack(self.W)

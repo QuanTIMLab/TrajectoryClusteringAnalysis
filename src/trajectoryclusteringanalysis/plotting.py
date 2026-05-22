@@ -454,12 +454,21 @@ def bar_treatment_percentage(data, id_col, alphabet, states, clusters=None,title
 def plot_discovered_phenotypes(reordered_phenotypes, rank, labels, cmap_name='tab10', title="Discovered phenotype", time_unit="Months"):
     """
     Plot the discovered phenotypes with an infinite dynamic palette.
+
+    Parameters:
+    reordered_phenotypes (torch.Tensor): The tensor containing the reordered phenotypes.
+    rank (int): The number of phenotypes to plot.
+    labels (list): The list of event labels corresponding to the rows of the phenotype matrices.
+    cmap_name (str): The name of the colormap to use for the phenotypes (default is 'tab10').
+    title (str): The base title for the plots (default is "Discovered phenotype").
+    time_unit (str): The unit of time to display on the x-axis (default is "Months").
+
+    Returns:
+    None
     """
-    # On charge la même palette pour garder une cohérence parfaite des couleurs
     palette = plt.colormaps[cmap_name]
     
     for i in range(rank):
-        # On récupère exactement la même couleur que celle du pathway pour le phénotype i
         base_color = palette(i % palette.N)
         cmap = mcolors.LinearSegmentedColormap.from_list(f"custom_cmap_{i}", ["white", base_color])
 
@@ -476,6 +485,19 @@ def plot_discovered_phenotypes(reordered_phenotypes, rank, labels, cmap_name='ta
 def plot_input_matrix(tensor, id, labels, figsize=(14, 8), fontsize=14, title="Input Matrix of One Individual", time_unit="Days", ax=None):
     """
     Plot the input matrix of a tensor with patient IDs as labels.
+
+    Parameters:
+    tensor (torch.Tensor or np.ndarray): The input tensor containing the matrices to plot.
+    id (int): The patient ID for which to plot the matrix (1-based index).
+    labels (list): The list of event labels corresponding to the rows of the matrix.
+    figsize (tuple): The size of the figure (default is (14, 8)).
+    fontsize (int): The base font size for the plot (default is 14).
+    title (str): The title of the plot (default is "Input Matrix of One Individual").
+    time_unit (str): The unit of time to display on the x-axis (default is "Days").
+    ax (matplotlib.axes.Axes): An optional Matplotlib Axes object to plot on. If None, a new figure and axes will be created (default is None).
+
+    Returns:
+    None
     """
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize)
@@ -510,6 +532,19 @@ def plot_input_matrix(tensor, id, labels, figsize=(14, 8), fontsize=14, title="I
 def plot_reconstructed_matrix(reconstructed_matrix, id, labels, figsize=(14, 8), fontsize=14, title="Reconstructed Matrix of One Individual", time_unit="Days", ax=None):
     """
     Plot the reconstructed matrix of a tensor with patient IDs as labels.
+
+    Parameters:
+    reconstructed_matrix (torch.Tensor or np.ndarray): The tensor containing the reconstructed matrices to plot.
+    id (int): The patient ID for which to plot the matrix (1-based index).
+    labels (list): The list of event labels corresponding to the rows of the matrix.
+    figsize (tuple): The size of the figure (default is (14, 8)).
+    fontsize (int): The base font size for the plot (default is 14).
+    title (str): The title of the plot (default is "Reconstructed Matrix of One Individual").
+    time_unit (str): The unit of time to display on the x-axis (default is "Days").
+    ax (matplotlib.axes.Axes): An optional Matplotlib Axes object to plot on. If None, a new figure and axes will be created (default is None).
+
+    Returns:
+    None
     """
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize)
@@ -528,6 +563,7 @@ def plot_reconstructed_matrix(reconstructed_matrix, id, labels, figsize=(14, 8),
     
     step_x = max(1, matrix_to_plot.shape[1] // 15) 
     ax.set_xticks(np.arange(0, matrix_to_plot.shape[1], step_x))
+    ax.tick_params(axis='x', rotation=45, labelsize=fontsize-2)
     ax.tick_params(axis='x', labelsize=fontsize-2)
     
     clean_labels = [label[:35] + '...' if len(label) > 35 else label for label in labels]
@@ -543,6 +579,18 @@ def plot_reconstructed_matrix(reconstructed_matrix, id, labels, figsize=(14, 8),
 def plot_discovered_pathways(reordered_pathways, id, figsize=(14, 8), fontsize=14, title="Discovered Pathways of One Individual", cmap_name='tab10', time_unit="Days"): 
     """
     Plot the discovered pathways.
+
+    Parameters:
+    reordered_pathways (torch.Tensor or np.ndarray): The tensor containing the reordered pathways to plot
+    id (int): The patient ID for which to plot the pathways (1-based index).
+    figsize (tuple): The size of the figure (default is (14, 8)).
+    fontsize (int): The base font size for the plot (default is 14).
+    title (str): The title of the plot (default is "Discovered Pathways of One Individual").
+    cmap_name (str): The name of the colormap to use for the pathways (default is 'tab10').
+    time_unit (str): The unit of time to display on the x-axis (default is "Days").
+
+    Returns:
+    None
     """
     plt.figure(figsize=figsize) 
     
