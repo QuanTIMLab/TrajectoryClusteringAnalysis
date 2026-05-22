@@ -451,7 +451,7 @@ def bar_treatment_percentage(data, id_col, alphabet, states, clusters=None,title
         plt.tight_layout()
         plt.show()
 
-def plot_discovered_phenotypes(reordered_phenotypes, rank, labels, cmap_name='tab10', title="Discovered phenotype", time_unit="Days"):
+def plot_discovered_phenotypes(reordered_phenotypes, rank, labels, cmap_name='tab10', title="Discovered phenotype", time_unit="Months"):
     """
     Plot the discovered phenotypes with an infinite dynamic palette.
     """
@@ -473,59 +473,71 @@ def plot_discovered_phenotypes(reordered_phenotypes, rank, labels, cmap_name='ta
         plt.yticks(range(reordered_phenotypes[i].shape[0]), labels)
         plt.show()
 
-def plot_input_matrix(tensor, id, labels, figsize=(14, 8), fontsize=14, title="Input Matrix of One Individual", time_unit="Days"):
+def plot_input_matrix(tensor, id, labels, figsize=(14, 8), fontsize=14, title="Input Matrix of One Individual", time_unit="Days", ax=None):
     """
     Plot the input matrix of a tensor with patient IDs as labels.
     """
-    plt.figure(figsize=figsize)
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize)
+        standalone = True
+    
+    else:
+        standalone = False
     
     matrix_to_plot = tensor[id-1].detach().cpu().numpy() if hasattr(tensor[id-1], 'detach') else tensor[id-1]
-    plt.imshow(matrix_to_plot, vmin=0, vmax=1, cmap="binary", interpolation='nearest', aspect='auto')
+    ax.imshow(matrix_to_plot, vmin=0, vmax=1, cmap="binary", interpolation='nearest', aspect='auto')
     
-    plt.title(title, fontsize=fontsize+2, fontweight='bold', pad=20)
-    plt.xlabel(f"Time ({time_unit})", fontsize=fontsize, labelpad=10)
-    plt.ylabel("Events / Medications", fontsize=fontsize, labelpad=10)
+    ax.set_title(title, fontsize=fontsize+2, fontweight='bold', pad=20)
+    ax.set_xlabel(f"Time ({time_unit})", fontsize=fontsize, labelpad=10)
+    ax.set_ylabel("Events / Medications", fontsize=fontsize, labelpad=10)
     
     # Axe X
     step_x = max(1, matrix_to_plot.shape[1] // 15) 
-    plt.xticks(np.arange(0, matrix_to_plot.shape[1], step_x), fontsize=fontsize-2)
+    ax.set_xticks(np.arange(0, matrix_to_plot.shape[1], step_x))
+    ax.tick_params(axis='x', labelsize=fontsize-2)
     
     clean_labels = [label[:35] + '...' if len(label) > 35 else label for label in labels]
     
-    plt.yticks(ticks=np.arange(matrix_to_plot.shape[0]), labels=clean_labels, fontsize=fontsize-3)
+    ax.set_yticks(np.arange(matrix_to_plot.shape[0]))
+    ax.set_yticklabels(clean_labels, fontsize=fontsize-3)
 
-    plt.grid(axis='x', color='gray', linestyle='--', linewidth=0.5, alpha=0.4)
+    ax.grid(axis='x', color='gray', linestyle='--', linewidth=0.5, alpha=0.4)
     
-    # Grande marge à gauche
-    plt.subplots_adjust(left=0.35, right=0.95, top=0.90, bottom=0.15)
-    
-    plt.show()
+    if standalone:
+        plt.subplots_adjust(left=0.35, right=0.95, top=0.90, bottom=0.15)
+        plt.show()
 
-def plot_reconstructed_matrix(reconstructed_matrix, id, labels, figsize=(14, 8), fontsize=14, title="Reconstructed Matrix of One Individual", time_unit="Days"):
+def plot_reconstructed_matrix(reconstructed_matrix, id, labels, figsize=(14, 8), fontsize=14, title="Reconstructed Matrix of One Individual", time_unit="Days", ax=None):
     """
     Plot the reconstructed matrix of a tensor with patient IDs as labels.
     """
-    plt.figure(figsize=figsize)
-    
-    matrix_to_plot = reconstructed_matrix[id].detach().cpu().numpy() if hasattr(reconstructed_matrix[id], 'detach') else reconstructed_matrix[id]
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize)
+        standalone = True
+    else:
+        standalone = False
+
+    matrix_to_plot = reconstructed_matrix[id-1].detach().cpu().numpy() if hasattr(reconstructed_matrix[id-1], 'detach') else reconstructed_matrix[id-1]
     
     # Aspect='auto'
-    plt.imshow(matrix_to_plot, cmap="binary", interpolation='nearest', aspect='auto')
+    ax.imshow(matrix_to_plot, vmin=0, vmax=1, cmap="binary", interpolation='nearest', aspect='auto')
     
-    plt.title(title, fontsize=fontsize+2, fontweight='bold', pad=20)
-    plt.xlabel(f"Time ({time_unit})", fontsize=fontsize, labelpad=10)
-    plt.ylabel("Events / Medications", fontsize=fontsize, labelpad=10)
+    ax.set_title(title, fontsize=fontsize+2, fontweight='bold', pad=20)
+    ax.set_xlabel(f"Time ({time_unit})", fontsize=fontsize, labelpad=10)
+    ax.set_ylabel("Events / Medications", fontsize=fontsize, labelpad=10)
     
     step_x = max(1, matrix_to_plot.shape[1] // 15) 
-    plt.xticks(np.arange(0, matrix_to_plot.shape[1], step_x), fontsize=fontsize-2)
+    ax.set_xticks(np.arange(0, matrix_to_plot.shape[1], step_x))
+    ax.tick_params(axis='x', labelsize=fontsize-2)
     
     clean_labels = [label[:35] + '...' if len(label) > 35 else label for label in labels]
-    plt.yticks(ticks=np.arange(matrix_to_plot.shape[0]), labels=clean_labels, fontsize=fontsize-3)
-    
-    plt.grid(axis='x', color='gray', linestyle='--', linewidth=0.5, alpha=0.4)
-    plt.subplots_adjust(left=0.35, right=0.95, top=0.90, bottom=0.15)
-    
-    plt.show()
+    ax.set_yticks(np.arange(matrix_to_plot.shape[0]))
+    ax.set_yticklabels(clean_labels, fontsize=fontsize-3)
+
+    ax.grid(axis='x', color='gray', linestyle='--', linewidth=0.5, alpha=0.4)
+    if standalone:
+        plt.subplots_adjust(left=0.35, right=0.95, top=0.90, bottom=0.15)
+        plt.show()
 
 
 def plot_discovered_pathways(reordered_pathways, id, figsize=(14, 8), fontsize=14, title="Discovered Pathways of One Individual", cmap_name='tab10', time_unit="Days"): 

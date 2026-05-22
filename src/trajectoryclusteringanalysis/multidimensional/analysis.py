@@ -155,6 +155,19 @@ class MultidimensionalAnalyzer:
         else:
             raise ValueError("Decomposition has not been performed. Please call fit_swotted_decomposition first.")
         
+    def compute_reconstruction(self):
+        """
+        Retourne X_pred et le FIT metric après fit_swotted_decomposition.
+        """
+        if not (hasattr(self, 'model') and self.model is not None):
+            raise ValueError("Decomposition has not been performed. Please call fit_swotted_decomposition first.")
+    
+        Ph = self.model.Ph.detach().clone().requires_grad_(True)
+        X_pred = torch.stack([self.model.model.reconstruct(self.W[p], Ph)
+                              for p in range(self.K)])
+        fit = 1 - torch.norm(self.X - X_pred) / torch.norm(self.X)
+        return X_pred, fit
+        
     def to_phenotype_intensity(self, scaler=MinMaxScaler()):
         """
         Converts the decomposition result to phenotype intensity.
