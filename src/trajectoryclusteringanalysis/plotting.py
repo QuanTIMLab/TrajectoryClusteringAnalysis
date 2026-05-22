@@ -507,10 +507,10 @@ def plot_reconstructed_matrix(reconstructed_matrix, id, labels, figsize=(14, 8),
     """
     plt.figure(figsize=figsize)
     
-    matrix_to_plot = reconstructed_matrix[id-1].detach().cpu().numpy() if hasattr(reconstructed_matrix[id-1], 'detach') else reconstructed_matrix[id-1]
+    matrix_to_plot = reconstructed_matrix[id].detach().cpu().numpy() if hasattr(reconstructed_matrix[id], 'detach') else reconstructed_matrix[id]
     
     # Aspect='auto'
-    plt.imshow(matrix_to_plot, vmin=0, vmax=1, cmap="binary", interpolation='nearest', aspect='auto')
+    plt.imshow(matrix_to_plot, cmap="binary", interpolation='nearest', aspect='auto')
     
     plt.title(title, fontsize=fontsize+2, fontweight='bold', pad=20)
     plt.xlabel(f"Time ({time_unit})", fontsize=fontsize, labelpad=10)
