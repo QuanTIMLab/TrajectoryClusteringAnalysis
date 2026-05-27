@@ -518,7 +518,7 @@ def plot_input_matrix(tensor, id, labels, figsize=(14, 8), fontsize=14, title="I
     ax.set_xticks(np.arange(0, matrix_to_plot.shape[1], step_x))
     ax.tick_params(axis='x', labelsize=fontsize-2)
     
-    clean_labels = [label[:35] + '...' if len(label) > 35 else label for label in labels]
+    clean_labels = [str(label)[:35] + '...' if len(str(label)) > 35 else str(label) for label in labels]
     
     ax.set_yticks(np.arange(matrix_to_plot.shape[0]))
     ax.set_yticklabels(clean_labels, fontsize=fontsize-3)
@@ -566,7 +566,7 @@ def plot_reconstructed_matrix(reconstructed_matrix, id, labels, figsize=(14, 8),
     ax.tick_params(axis='x', rotation=45, labelsize=fontsize-2)
     ax.tick_params(axis='x', labelsize=fontsize-2)
     
-    clean_labels = [label[:35] + '...' if len(label) > 35 else label for label in labels]
+    clean_labels = [str(label)[:35] + '...' if len(str(label)) > 35 else str(label) for label in labels]
     ax.set_yticks(np.arange(matrix_to_plot.shape[0]))
     ax.set_yticklabels(clean_labels, fontsize=fontsize-3)
 
