@@ -499,9 +499,43 @@ def plot_input_matrix(tensor, id, labels, figsize=(14, 8), fontsize=14, title="I
     Returns:
     None
     """
+<<<<<<< HEAD
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize)
         standalone = True
+=======
+
+    plt.figure(figsize=figsize)
+    plt.imshow(tensor[id-1], vmin=0, vmax=1, cmap="binary", interpolation='none')
+    plt.title(title, fontsize=fontsize)
+    plt.xlabel("Time", fontsize=fontsize)
+    plt.ylabel("Events", fontsize=fontsize)
+    plt.xticks(np.arange(0, tensor[id-1].shape[1], 2))
+    plt.yticks(range(tensor[id-1].shape[0]), labels, fontsize=fontsize-2)
+    plt.tight_layout()  
+    # fig, axs = plt.subplots(figsize=figsize)
+    # axs.imshow(tensor[id], vmin=0, vmax=1, cmap="binary", interpolation='none')
+    # axs.set_title("Input matrix of one individual", fontsize=fontsize) 
+    # axs.set_xlabel("Time", fontsize=fontsize)
+    # axs.set_ylabel("Events", fontsize=fontsize)
+    # axs.set_xticks(np.arange(0, tensor[id].shape[1], 2)) 
+    # axs.set_yticks(range(tensor[id].shape[0]))
+    # axs.set_yticklabels(labels, fontsize=fontsize-2)
+    # plt.tight_layout()
+    plt.show()
+
+def plot_discovered_pathways(reordered_pathways, id, figsize=(12, 8), fontsize=12,title="Discovered pathway of one individual"): 
+    """
+    """
+    plt.figure(figsize=figsize) 
+    plt.imshow(reordered_pathways[id].detach().numpy(), vmin=0, vmax=1, cmap="binary", interpolation="nearest")
+    plt.ylabel("Phenotypes", fontsize=fontsize)
+    plt.yticks(range(reordered_pathways[0].shape[0]), range(1, reordered_pathways[0].shape[0]+1), fontsize=fontsize-2)
+    plt.xlabel("Time", fontsize=fontsize)
+    plt.xticks(np.arange(0, reordered_pathways[id].shape[1], 2))
+    plt.title(title, fontsize=fontsize)
+    plt.show()   
+>>>>>>> upstream/copilot/worktree-2026-04-13T12-30-11
     
     else:
         standalone = False

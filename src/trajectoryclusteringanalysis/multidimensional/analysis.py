@@ -7,8 +7,70 @@ from omegaconf import OmegaConf
 from swotted import swottedModule, swottedTrainer
 from swotted.loss_metrics import *
 from swotted.utils import Subset, success_rate
+try:
+    from lightning.pytorch.callbacks import Callback
+except ImportError:
+    from pytorch_lightning.callbacks import Callback
 
 from trajectoryclusteringanalysis.plotting import *
+
+
+class FitMetricCallback(Callback):
+    """
+    Lightweight epoch monitoring.
+
+    By default, prints training loss each epoch with negligible overhead.
+    Optional full FIT metric can be enabled every N epochs (costly).
+    """
+
+    def __init__(self, analyzer, fit_metric_every_n_epochs=0):
+        self.analyzer = analyzer
+        self.fit_metric_every_n_epochs = int(fit_metric_every_n_epochs)
+
+    def _get_train_loss(self, trainer):
+        metrics = trainer.callback_metrics
+        if 'train_loss' in metrics:
+            return metrics['train_loss']
+        for key, value in metrics.items():
+            if 'loss' in str(key).lower():
+                return value
+        return None
+
+    def on_train_epoch_end(self, trainer, pl_module):
+        epoch = trainer.current_epoch + 1
+        max_epochs = trainer.max_epochs
+
+        train_loss = self._get_train_loss(trainer)
+        if train_loss is not None:
+            try:
+                loss_value = float(train_loss.detach().cpu().item())
+            except Exception:
+                loss_value = float(train_loss)
+            print(f"Epoch {epoch}/{max_epochs} - train_loss: {loss_value:.6f}")
+
+        if self.fit_metric_every_n_epochs <= 0:
+            return
+        if (epoch % self.fit_metric_every_n_epochs) != 0:
+            return
+        if self.analyzer.X is None or self.analyzer.K is None:
+            return
+
+        with torch.no_grad():
+            W_epoch = pl_module(self.analyzer.X)
+            Ph_epoch = pl_module.Ph.detach()
+
+            x_pred = []
+            for p in range(self.analyzer.K):
+                x_pred.append(pl_module.model.reconstruct(W_epoch[p], Ph_epoch))
+            x_pred = torch.stack(x_pred)
+
+            denom = torch.norm(self.analyzer.X)
+            if denom.item() == 0:
+                fit_metric = torch.tensor(0.0)
+            else:
+                fit_metric = 1 - (torch.norm(self.analyzer.X - x_pred) / denom)
+
+            print(f"Epoch {epoch}/{max_epochs} - FIT metric: {fit_metric.item():.4f}")
 
 class MultidimensionalAnalyzer:
 
@@ -77,7 +139,7 @@ class MultidimensionalAnalyzer:
             raise ValueError("Tensor has not been initialized. Please call time_event_structure_to_tensor first.")
             
         
-    def fit_swotted_decomposition(self, tensor, rank, time_window_length, reg_term_ns=0.5, reg_term_s=0.5, metric='Bernoulli', learning_rate=1e-2, n_epochs=100, ):
+    def fit_swotted_decomposition(self, tensor, rank, time_window_length, reg_term_ns=0.5, reg_term_s=0.5, metric='Bernoulli', learning_rate=1e-2, n_epochs=100, fit_metric_every_n_epochs=0):
         """
         Fits the SWoTTeD decomposition model to the tensor.
 
@@ -117,7 +179,14 @@ class MultidimensionalAnalyzer:
         # define the model
         self.model = swottedModule(config)
         # train the model
-        trainer = swottedTrainer(max_epochs=n_epochs, accelerator='cpu', devices=1, logger=None, enable_progress_bar=True)
+        trainer = swottedTrainer(
+            max_epochs=n_epochs,
+            accelerator='cpu',
+            devices=1,
+            logger=None,
+            enable_progress_bar=True,
+            callbacks=[FitMetricCallback(self, fit_metric_every_n_epochs=fit_metric_every_n_epochs)],
+        )
 
         train_loader = DataLoader(
         Subset(tensor, np.arange(len(self.X))),
@@ -157,10 +226,7 @@ class MultidimensionalAnalyzer:
                 X_pred.append(self.model.model.reconstruct(self.W[p], Ph)) 
             X_pred = torch.stack(X_pred)
             
-            fit_metric = 1 - (torch.norm(self.X - X_pred) / torch.norm(self.X))
-            print(f"FIT metric for the entire dataset: {fit_metric.item():.4f}")
-
-            print(f"success_rate :{success_rate(self.X, X_pred)}")
+            print(f"Success rate for the entire dataset: {success_rate(self.X, X_pred):.4f}")
 
             plot_discovered_phenotypes(rPh, self.model.rank, labels, time_unit=time_unit)
             plot_discovered_pathways(rW, id, title=f"Discovered Pathways of individual {id}", time_unit=time_unit)
