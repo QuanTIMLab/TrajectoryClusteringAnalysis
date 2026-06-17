@@ -105,10 +105,6 @@ class FitMetricCallback(Callback):
         if x_target is None:
             x_target = self.analyzer.X
 
-        denom = self._fit_full_norm if use_full_dataset else self._fit_eval_norm
-        if denom is None:
-            denom = torch.norm(x_target)
-
         with torch.no_grad():
             w_epoch = pl_module(x_target)
             ph_epoch = pl_module.Ph.detach()
@@ -119,9 +115,9 @@ class FitMetricCallback(Callback):
                 x_pred.append(pl_module.model.reconstruct(w_epoch[p], ph_epoch))
             x_pred = torch.stack(x_pred)
 
-            if denom.item() == 0:
-                return 0.0
-            return float((1 - (torch.norm(x_target - x_pred) / denom)).item())
+            # Keep the naming as FIT metric while delegating the computation
+            # to SWoTTeD's canonical success_rate implementation.
+            return float(success_rate(x_target, x_pred))
 
     def on_train_epoch_end(self, trainer, pl_module):
 
