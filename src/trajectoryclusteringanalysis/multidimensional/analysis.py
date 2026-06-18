@@ -55,8 +55,6 @@ class FitMetricCallback(Callback):
         self._epoch_start_time = None
         self._fit_eval_indices = None
         self._fit_eval_tensor = None
-        self._fit_eval_norm = None
-        self._fit_full_norm = None
         self._best_fit_metric_for_checkpoint = None
         self._best_fit_epoch_for_checkpoint = None
         self._best_model_state_dict = None
@@ -76,12 +74,9 @@ class FitMetricCallback(Callback):
         if self.analyzer.X is None or self.analyzer.K is None:
             return
 
-        self._fit_full_norm = torch.norm(self.analyzer.X)
-
         if self.fit_metric_eval_max_patients is None:
             self._fit_eval_indices = None
             self._fit_eval_tensor = self.analyzer.X
-            self._fit_eval_norm = self._fit_full_norm
             return
 
         n_patients = int(self.analyzer.K)
@@ -89,13 +84,11 @@ class FitMetricCallback(Callback):
         if n_eval >= n_patients:
             self._fit_eval_indices = None
             self._fit_eval_tensor = self.analyzer.X
-            self._fit_eval_norm = self._fit_full_norm
             return
 
         # Evenly spaced subset keeps coverage across the cohort.
         self._fit_eval_indices = torch.linspace(0, n_patients - 1, steps=n_eval).long()
         self._fit_eval_tensor = self.analyzer.X[self._fit_eval_indices]
-        self._fit_eval_norm = torch.norm(self._fit_eval_tensor)
 
     def _compute_fit_metric(self, pl_module, use_full_dataset=False):
         if self.analyzer.X is None or self.analyzer.K is None:
@@ -104,10 +97,6 @@ class FitMetricCallback(Callback):
         x_target = self.analyzer.X if use_full_dataset else self._fit_eval_tensor
         if x_target is None:
             x_target = self.analyzer.X
-
-        denom = self._fit_full_norm if use_full_dataset else self._fit_eval_norm
-        if denom is None:
-            denom = torch.norm(x_target)
 
         with torch.no_grad():
             w_epoch = pl_module(x_target)
@@ -119,9 +108,7 @@ class FitMetricCallback(Callback):
                 x_pred.append(pl_module.model.reconstruct(w_epoch[p], ph_epoch))
             x_pred = torch.stack(x_pred)
 
-            if denom.item() == 0:
-                return 0.0
-            return float((1 - (torch.norm(x_target - x_pred) / denom)).item())
+            return success_rate(x_target, x_pred)
 
     def on_train_epoch_end(self, trainer, pl_module):
 
@@ -500,6 +487,7 @@ class MultidimensionalAnalyzer:
         
         print("\n -> Computing final decomposition on full tensor ...")
         decomp_start_time = time.perf_counter()
+        print(f"Model training mode: {self.model.training}")
         self.W = self.model(self.X)
         decomp_elapsed_s = time.perf_counter() - decomp_start_time
         print(f" -> Decomposition finished (time: {decomp_elapsed_s:.2f}s)")

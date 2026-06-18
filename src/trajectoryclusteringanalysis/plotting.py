@@ -516,7 +516,7 @@ def plot_input_matrix(tensor, id, labels, figsize=(14, 8), fontsize=14, title="I
     # Axe X
     step_x = max(1, matrix_to_plot.shape[1] // 15) 
     ax.set_xticks(np.arange(0, matrix_to_plot.shape[1], step_x))
-    ax.tick_params(axis='x', labelsize=fontsize-2)
+    ax.tick_params(axis='x', rotation=45, labelsize=fontsize-2)
     
     clean_labels = [str(label)[:35] + '...' if len(str(label)) > 35 else str(label) for label in labels]
     
