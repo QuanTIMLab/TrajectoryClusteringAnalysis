@@ -487,7 +487,6 @@ class MultidimensionalAnalyzer:
         
         print("\n -> Computing final decomposition on full tensor ...")
         decomp_start_time = time.perf_counter()
-        print(f"Model training mode: {self.model.training}")
         self.W = self.model(self.X)
         decomp_elapsed_s = time.perf_counter() - decomp_start_time
         print(f" -> Decomposition finished (time: {decomp_elapsed_s:.2f}s)")
