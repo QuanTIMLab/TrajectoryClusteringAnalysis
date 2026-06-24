@@ -478,15 +478,41 @@ def plot_input_matrix(tensor, id, labels, figsize=(12, 8), fontsize=16, title="I
     Plot the input matrix of a tensor with patient IDs as labels.
 
     Parameters:
-    tensor (torch.Tensor): The input tensor to be plotted.
-    id (list): List of patient IDs corresponding to the rows of the tensor.
-    figsize (tuple): Size of the figure for the plot.
-    fontsize (int): Font size for the labels.
-    title (str): The title of the plot.
+    tensor (torch.Tensor or np.ndarray): The input tensor containing the matrices to plot.
+    id (int): The patient ID for which to plot the matrix (1-based index).
+    labels (list): The list of event labels corresponding to the rows of the matrix.
+    figsize (tuple): The size of the figure (default is (14, 8)).
+    fontsize (int): The base font size for the plot (default is 14).
+    title (str): The title of the plot (default is "Input Matrix of One Individual").
+    time_unit (str): The unit of time to display on the x-axis (default is "Days").
+    ax (matplotlib.axes.Axes): An optional Matplotlib Axes object to plot on. If None, a new figure and axes will be created (default is None).
 
     Returns:
     None
     """
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize)
+        standalone = True
+    
+    else:
+        standalone = False
+    
+    matrix_to_plot = tensor[id-1].detach().cpu().numpy() if hasattr(tensor[id-1], 'detach') else tensor[id-1]
+    ax.imshow(matrix_to_plot, vmin=0, vmax=1, cmap="binary", interpolation='nearest', aspect='auto')
+    
+    ax.set_title(title, fontsize=fontsize+2, fontweight='bold', pad=20)
+    ax.set_xlabel(f"Time ({time_unit})", fontsize=fontsize, labelpad=10)
+    ax.set_ylabel("Events / Medications", fontsize=fontsize, labelpad=10)
+    
+    # Axe X
+    step_x = max(1, matrix_to_plot.shape[1] // 15) 
+    ax.set_xticks(np.arange(0, matrix_to_plot.shape[1], step_x))
+    ax.tick_params(axis='x', rotation=45, labelsize=fontsize-2)
+    
+    clean_labels = [str(label)[:35] + '...' if len(str(label)) > 35 else str(label) for label in labels]
+    
+    ax.set_yticks(np.arange(matrix_to_plot.shape[0]))
+    ax.set_yticklabels(clean_labels, fontsize=fontsize-3)
 
     plt.figure(figsize=figsize)
     plt.imshow(tensor[id-1], vmin=0, vmax=1, cmap="binary", interpolation='none')
@@ -541,15 +567,16 @@ def plot_discovered_pathways(reordered_pathways, id, figsize=(12, 8), fontsize=1
     plt.show()
 def plot_reconstructed_matrix(reconstructed_matrix, id, labels, figsize=(12, 8), fontsize=16,title="Reconstructed matrix of one individual"):
     """
-    Plot the reconstructed matrix of a tensor with patient IDs as labels.
+    Plot the discovered pathways.
 
     Parameters:
-    reconstructed_matrix (torch.Tensor): The reconstructed matrix to be plotted.
-    id (list): List of patient IDs corresponding to the rows of the tensor.
-    labels (list): List of event labels corresponding to the rows of the tensor.
-    figsize (tuple): Size of the figure for the plot.
-    fontsize (int): Font size for the labels.
-    title (str): The title of the plot.
+    reordered_pathways (torch.Tensor or np.ndarray): The tensor containing the reordered pathways to plot
+    id (int): The patient ID for which to plot the pathways (1-based index).
+    figsize (tuple): The size of the figure (default is (14, 8)).
+    fontsize (int): The base font size for the plot (default is 14).
+    title (str): The title of the plot (default is "Discovered Pathways of One Individual").
+    cmap_name (str): The name of the colormap to use for the pathways (default is 'tab10').
+    time_unit (str): The unit of time to display on the x-axis (default is "Days").
 
     Returns:
     None
