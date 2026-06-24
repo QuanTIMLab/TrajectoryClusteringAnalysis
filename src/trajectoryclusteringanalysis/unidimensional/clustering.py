@@ -1,8 +1,8 @@
 """
-Module for trajectory clustering algorithms.
+Module pour les algorithmes de clustering de trajectoires.
 
-This module contains functions to compute substitution matrices,
-distance matrices, and perform hierarchical clustering.
+Ce module contient des fonctions pour calculer les matrices de substitution,
+les matrices de distances, et effectuer un clustering hiérarchique.
 """
 
 
@@ -17,7 +17,7 @@ from tslearn.metrics import dtw, dtw_path_from_metric, gak
 import tqdm
 import logging
 import timeit
-from trajectoryclusteringanalysis.optimal_matching import optimal_matching_fast # Import the optimized Cython version
+from trajectoryclusteringanalysis.optimal_matching import optimal_matching_fast # Import de la version Cython optimisée
 import kmedoids
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
@@ -25,16 +25,16 @@ from sklearn.preprocessing import StandardScaler
 
 def compute_substitution_cost_matrix(sequences, alphabet, method='constant', custom_costs=None):
     """
-    Compute a substitution cost matrix for sequences.
+    Calcule une matrice de coûts de substitution pour les séquences.
 
     Args:
-        sequences (list): List of sequences to analyze.
-        alphabet (list): List of possible states.
-        method (str): Method to compute costs ('constant', 'custom', 'frequency').
-        custom_costs (dict): Custom substitution costs (optional).
+        sequences (list): Liste des séquences à analyser.
+        alphabet (list): Liste des états possibles.
+        method (str): Méthode pour calculer les coûts ('constant', 'custom', 'frequency').
+        custom_costs (dict): Coûts personnalisés pour les substitutions (optionnel).
 
     Returns:
-        pd.DataFrame: Substitution cost matrix.
+        pd.DataFrame: Matrice de coûts de substitution.
     """
     num_states = len(alphabet)
     substitution_matrix = np.zeros((num_states, num_states))
@@ -222,16 +222,16 @@ def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming',
 
 def hierarchical_clustering(tca_instance, distance_matrix, method='ward', optimal_ordering=True):
     """
-    Perform hierarchical clustering on a distance matrix.
+    Effectue un clustering hiérarchique sur une matrice de distances.
 
     Args:
-        tca_instance (TCA): Instance of the TCA class.
-        distance_matrix (np.ndarray): Distance matrix.
-        method (str): Linkage method ('ward', 'single', etc.).
-        optimal_ordering (bool): Optimize leaf ordering (default: True).
+        tca_instance (TCA): Instance de la classe TCA.
+        distance_matrix (np.ndarray): Matrice de distances.
+        method (str): Méthode de linkage ('ward', 'single', etc.).
+        optimal_ordering (bool): Optimiser l'ordre des feuilles (par défaut: True).
 
     Returns:
-        np.ndarray: Linkage matrix.
+        np.ndarray: Matrice de linkage.
     """
     logging.info(f"Computing the linkage matrix using method: {method}...")
     condensed_distance_matrix = squareform(distance_matrix)
@@ -242,14 +242,14 @@ def hierarchical_clustering(tca_instance, distance_matrix, method='ward', optima
 
 def assign_clusters(linkage_matrix, num_clusters):
     """
-    Assign cluster labels to the data.
+    Assigne des étiquettes de clusters aux données.
 
     Args:
-        linkage_matrix (np.ndarray): Linkage matrix.
-        num_clusters (int): Number of clusters to assign.
+        linkage_matrix (np.ndarray): Matrice de linkage.
+        num_clusters (int): Nombre de clusters à assigner.
 
     Returns:
-        np.ndarray: Cluster labels.
+        np.ndarray: Étiquettes des clusters.
     """
     clusters = fcluster(linkage_matrix, num_clusters, criterion='maxclust')
     return clusters
