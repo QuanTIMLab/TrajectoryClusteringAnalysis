@@ -440,7 +440,7 @@ class MultidimensionalAnalyzer:
         """
         unique_individuals = self.data[self.index_col].unique()
         unique_events = np.sort(self.data[self.event_col].unique())
-        unique_time_points = np.sort(self.data[self.time_col].unique())
+        unique_time_points = self.data[self.time_col].unique()
 
         patient_to_index = {patient: idx for idx, patient in enumerate(unique_individuals)}
 
@@ -500,7 +500,6 @@ class MultidimensionalAnalyzer:
     ):
         """
         Fits the SWoTTeD decomposition model to the tensor.
-
         Parameters:
         - tensor: the input tensor of shape (K, N, T)       
         - rank: the rank of the decomposition (number of phenotypes)
@@ -651,10 +650,12 @@ class MultidimensionalAnalyzer:
             
             print(f"Success rate for the entire dataset: {success_rate(self.X, X_pred):.4f}")
 
-            plot_discovered_phenotypes(rPh, self.model.rank, labels, time_unit=time_unit)
-            plot_discovered_pathways(rW, id, title=f"Discovered Pathways of individual {id}", time_unit=time_unit)
-            plot_reconstructed_matrix(X_pred, id, labels, title=f"Reconstructed Matrix of individual {id}", time_unit=time_unit)
-            plot_input_matrix(self.X, id, labels, title=f"Input Matrix of individual {id}", time_unit=time_unit)
+            print(f"success_rate :{success_rate(self.X, X_pred)}")
+
+            plot_discovered_phenotypes(rPh, self.model.rank, labels)
+            plot_discovered_pathways(rW, id, title=f"Discovered Pathways of individual {id}")
+            plot_reconstructed_matrix(X_pred, id, labels, title=f"Reconstructed Matrix of individual {id}")
+            plot_input_matrix(self.X, id, labels, title=f"Input Matrix of individual {id}")
 
         else:
             raise ValueError("Decomposition has not been performed. Please call fit_swotted_decomposition first.")
