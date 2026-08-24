@@ -12,25 +12,33 @@ from .utils import modal_filter_numba
 
 
 
-# Function to plot a dendrogram for hierarchical clustering
-def plot_dendrogram(linkage_matrix,title='Dendrogram of Treatment Sequences'):
+def plot_dendrogram(linkage_matrix, title='Dendrogram of Treatment Sequences', n_clusters=None):
     """
     Plot a dendrogram based on the hierarchical clustering of treatment sequences.
 
     Parameters:
     linkage_matrix (numpy.ndarray): The linkage matrix containing the hierarchical clustering information.
     title (str): The title of the plot.
+    n_clusters (int, optional): Number of clusters to highlight with a cut line.
+                                If None, scipy's default coloring is used.
 
     Returns:
     None
     """
-    # Create a figure for the dendrogram
     plt.figure(figsize=(10, 6))
-    dendrogram(linkage_matrix, no_labels=True)  # Plot the dendrogram
+
+    if n_clusters is not None:
+        threshold = linkage_matrix[-(n_clusters - 1), 2]
+        dendrogram(linkage_matrix, color_threshold=threshold)
+        plt.axhline(y=threshold, color='red', linestyle='--', label=f'{n_clusters} clusters')
+        plt.legend()
+    else:
+        dendrogram(linkage_matrix, no_labels=True)
+
     plt.title(title, fontsize=16, fontweight='bold')
-    plt.xlabel('Patients')  # Label for the x-axis
-    plt.ylabel('Distance')  # Label for the y-axis
-    plt.show()  # Display the plot
+    plt.xlabel('Patients')
+    plt.ylabel('Distance')
+    plt.show()
 
 # Function to plot a clustermap with a custom legend
 def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, linkage_matrix, mode=None,title="Clustermap of individuals"):
@@ -89,10 +97,10 @@ def plot_clustermap(data, id_col, label_to_encoded, colors, alphabet, states, li
     if mode == 'unidimensional':
         viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
         legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
-        legend_handles.append(plt.Rectangle((0, 0), 1, 1, color='lightgrey', label='Pas de données'))
+        legend_handles.append(plt.Rectangle((0, 0), 1, 1, color='lightgrey', label='No data'))
         clustermap.ax_heatmap.legend(
             handles=legend_handles,
-            labels=list(states) + ['Pas de données'],
+            labels=list(states) + ['No data'],
             loc='center left',
             bbox_to_anchor=(1.005, 0.5),
             borderaxespad=0.0,
@@ -240,11 +248,11 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
         # Add a legend for treatment states
         viridis_colors_list = [plt.cm.viridis(i) for i in np.linspace(0, 1, len(alphabet))]
         legend_handles = [plt.Rectangle((0, 0), 1, 1, color=viridis_colors_list[i], label=alphabet[i]) for i in range(len(alphabet))]
-        legend_handles.append(plt.Rectangle((0, 0), 1, 1, color='lightgrey', label='Pas de données'))
+        legend_handles.append(plt.Rectangle((0, 0), 1, 1, color='lightgrey', label='No data'))
         
         fig.legend(
             handles=legend_handles, 
-            labels=list(states) + ['Pas de données'], 
+            labels=list(states) + ['No data'], 
             loc='upper center', 
             bbox_to_anchor=(0.5, -0.05), 
             ncol=len(states), 
@@ -257,32 +265,20 @@ def plot_cluster_heatmaps(data, id_col, label_to_encoded, colors, alphabet, stat
         )
         
     elif mode == 'multidimensional':
-        fig.suptitle(title, y=1, fontsize=16, fontweight='bold')
-        
-        vmin = data.min().min()
-        vmax = data.max().max()
-        
-        for (c_label, c_df), ax in zip(cluster_data.items(), axs):
-            heatmap_data = c_df.infer_objects(copy=True)
+        # vmin, vmax = 0, 1
+        #title = 'Heatmaps of Phenotypes Intensity by Cluster'
+        plt.suptitle(title, y=1.)
+        for cluster_label, (cluster_df, ax) in enumerate(zip(cluster_data.items(), axs)):
+            heatmap_data = cluster_df[1]
+            heatmap_data = heatmap_data.infer_objects(copy=True)
             sns.heatmap(heatmap_data,
                         cmap=colors,
-                        vmin=vmin,     
-                        vmax=vmax,     
-                        cbar=False,    
+                        cbar=False,
                         ax=ax,
                         yticklabels=False)
             ax.tick_params(axis='x')
-            ax.text(1.05, 0.5, f'cluster {c_label} (n={len(c_df)})', transform=ax.transAxes, ha='left', va='center')
-            
-        axs[-1].set_xlabel('Phenotypes')
-        
-        sm = plt.cm.ScalarMappable(cmap=colors, norm=plt.Normalize(vmin=vmin, vmax=vmax))
-        sm.set_array([]) 
-        
-        cbar_ax = fig.add_axes([1, 0.15, 0.02, 0.7])
-        
-        cbar = fig.colorbar(sm, cax=cbar_ax, orientation='vertical')
-        cbar.set_label('Phenotype Intensity', labelpad=15, rotation=270) 
+            ax.text(1.05, 0.5, f'cluster {cluster_label+1} (n={len(cluster_df[1])})', transform=ax.transAxes, ha='left', va='center')
+        axs[-1].set_xlabel('Phenotypes') 
     else:
         raise ValueError("Invalid mode. Choose either 'unidimensional' or 'multidimensional'.")
 
