@@ -68,7 +68,7 @@ def compute_substitution_cost_matrix(sequences, alphabet, method='constant', cus
             else:
                 seq_elements = sequence
                 
-            # Missing values (‘nan’)
+            # Valeurs manquantes ('nan')
             sequence_clean = [str(char) if str(char) != 'nan' else '-' for char in seq_elements]
             
             for i in range(len(sequence_clean) - 1):
@@ -79,7 +79,7 @@ def compute_substitution_cost_matrix(sequences, alphabet, method='constant', cus
 
         with np.errstate(invalid='ignore'):
             substitution_probabilities = substitution_frequencies / substitution_frequencies.sum(axis=1, keepdims=True)
-            substitution_probabilities = np.nan_to_num(substitution_probabilities) # Replaces any NaN values with 0
+            substitution_probabilities = np.nan_to_num(substitution_probabilities) # Remplace les éventuels NaN par 0
 
         for i in range(num_states):
             for j in range(num_states):
@@ -110,18 +110,18 @@ def replace_labels(sequence, label_to_encoded):
 
 def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming', substitution_cost_matrix=None, alphabet=None, indel_cost=None, id=None):
     """
-    Calculates a distance matrix between sequences.
+    Calcule une matrice de distances entre les séquences.
 
     Args:
-        data (pd.DataFrame): Input data.
-        sequences (list): List of sequences.
-        label_to_encoded (dict): Mapping of labels to encoded values.
-        metric (str): Distance metric ('hamming', 'levenshtein', etc.).
-        substitution_cost_matrix (pd.DataFrame): Substitution cost matrix (optional).
-        alphabet (list): List of possible states (optional).
+        data (pd.DataFrame): Données d'entrée.
+        sequences (list): Liste des séquences.
+        label_to_encoded (dict): Mapping des labels vers des valeurs encodées.
+        metric (str): Métrique de distance ('hamming', 'levenshtein', etc.).
+        substitution_cost_matrix (pd.DataFrame): Matrice de coûts de substitution (optionnel).
+        alphabet (list): Liste des états possibles (optionnel).
 
     Returns:
-        np.ndarray: Distance matrix.
+        np.ndarray: Matrice de distances.
     """
     logging.info(f"Calculating distance matrix using metric: {metric}...")
     start_time = timeit.default_timer()
@@ -462,5 +462,4 @@ def kmeans_on_wide_format(data, num_clusters, label_to_encoded=None, random_stat
 
     logging.info("KMeans on wide format completed.")
 
-    return kmeans.labels_ + 1, kmeans.cluster_centers_,kmeans.inertia_
-
+    return kmeans.labels_ + 1, kmeans.cluster_centers_,kmeans.ine

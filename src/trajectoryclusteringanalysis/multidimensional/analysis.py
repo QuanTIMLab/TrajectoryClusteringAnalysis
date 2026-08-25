@@ -9,7 +9,6 @@ from omegaconf import OmegaConf
 from swotted import swottedModule, swottedTrainer
 from swotted.loss_metrics import *
 from swotted.utils import Subset, success_rate
-from swotted.decomposition_contraints import phenotypeSuccession_constraint
 try:
     from lightning.pytorch.callbacks import Callback
     from lightning.pytorch.callbacks import EarlyStopping
@@ -19,88 +18,6 @@ except ImportError:
 
 from trajectoryclusteringanalysis.plotting import *
 
-
-from torch.optim.lr_scheduler import ReduceLROnPlateau, CosineAnnealingLR, ExponentialLR
-
-class LRSchedulerCallback(Callback):
-    """
-    Applies a learning rate schedule during training.
-    Supported modes: 'reduce_on_plateau', 'cosine', 'exponential', 'step'
-    """
-
-    def __init__(
-        self,
-        schedule_type='reduce_on_plateau',
-        # ReduceLROnPlateau
-        rop_factor=0.5,
-        rop_patience=5,
-        rop_min_lr=1e-6,
-        rop_monitor='train_loss_total',
-        # CosineAnnealing
-        cosine_t_max=50,
-        cosine_eta_min=1e-6,
-        # Exponential
-        exp_gamma=0.95,
-        # Step
-        step_size=50,
-        step_gamma=0.1,
-    ):
-        self.schedule_type = schedule_type
-        self.rop_factor = rop_factor
-        self.rop_patience = rop_patience
-        self.rop_min_lr = rop_min_lr
-        self.rop_monitor = rop_monitor
-        self.cosine_t_max = cosine_t_max
-        self.cosine_eta_min = cosine_eta_min
-        self.exp_gamma = exp_gamma
-        self.step_size = step_size
-        self.step_gamma = step_gamma
-        self._scheduler = None
-
-    def on_train_start(self, trainer, pl_module):
-        # Retrieves the optimizer from the Lightning module
-        optimizer = trainer.optimizers[0]
-
-        if self.schedule_type == 'reduce_on_plateau':
-            self._scheduler = ReduceLROnPlateau(
-                optimizer,
-                mode='min',
-                factor=self.rop_factor,
-                patience=self.rop_patience,
-                min_lr=self.rop_min_lr,
-            )
-        elif self.schedule_type == 'cosine':
-            self._scheduler = CosineAnnealingLR(
-                optimizer,
-                T_max=self.cosine_t_max,
-                eta_min=self.cosine_eta_min,
-            )
-        elif self.schedule_type == 'exponential':
-            self._scheduler = ExponentialLR(optimizer, gamma=self.exp_gamma)
-        elif self.schedule_type == 'step':
-            from torch.optim.lr_scheduler import StepLR
-            self._scheduler = StepLR(optimizer, step_size=self.step_size, gamma=self.step_gamma)
-        else:
-            raise ValueError(f"schedule_type inconnu : {self.schedule_type}")
-
-    def on_train_epoch_end(self, trainer, pl_module):
-        if self._scheduler is None:
-            return
-
-        if self.schedule_type == 'reduce_on_plateau':
-            monitored = trainer.callback_metrics.get(self.rop_monitor, None)
-            if monitored is not None:
-                try:
-                    val = float(monitored.detach().cpu().item())
-                except Exception:
-                    val = float(monitored)
-                self._scheduler.step(val)
-        else:
-            self._scheduler.step()
-
-        # Displays the current LR
-        current_lr = trainer.optimizers[0].param_groups[0]['lr']
-        print(f"    lr_scheduler: learning rate = {current_lr:.2e}")
 
 def identity_collate(batch):
     return batch
@@ -193,30 +110,6 @@ class FitMetricCallback(Callback):
 
             return success_rate(x_target, x_pred)
 
-    def _compute_regularization_terms(self, pl_module):
-        """
-        Compute ||P||_1 (phenotype sparsity) and S(W) (non-succession)
-        based on the current state of the model.
-        """
-        if not hasattr(pl_module, 'Ph'):
-            return None, None
-
-        with torch.no_grad():
-            Ph = pl_module.Ph.detach()  # shape (R, N, omega)
-            p_l1_norm = Ph.abs().sum().item()
-
-            ns_total = None
-            x_eval = self._fit_eval_tensor if self._fit_eval_tensor is not None else self.analyzer.X
-            if x_eval is not None:
-                w_eval = pl_module(x_eval)
-                twl = getattr(pl_module, 'twl', 1)
-                try:
-                    ns_total = phenotypeSuccession_constraint(w_eval, twl).item()
-                except Exception:
-                    ns_total = None
-
-        return p_l1_norm, ns_total
-
     def on_train_epoch_end(self, trainer, pl_module):
 
         epoch = trainer.current_epoch + 1
@@ -288,13 +181,6 @@ class FitMetricCallback(Callback):
                 self.analyzer.training_history['fit_metric_points_epoch'].append(epoch)
                 self.analyzer.training_history['fit_metric_points_value'].append(fit_metric_value)
 
-            # Termes de régularisation
-            p_l1_norm, ns_value = self._compute_regularization_terms(pl_module)
-            self.analyzer.training_history['p_l1_norm'].append(p_l1_norm)
-            self.analyzer.training_history['non_succession'].append(ns_value)
-        else:
-            p_l1_norm, ns_value = None, None
-
         parts = [f"Epoch {epoch}/{max_epochs} :"]
         if loss_ph_value is not None:
             parts.append(f"train_loss_Ph: {loss_ph_value:.6f}")
@@ -306,10 +192,6 @@ class FitMetricCallback(Callback):
             parts.append(f"duration: {epoch_duration:.2f}s")
         if fit_metric_value is not None:
             parts.append(f"FIT metric: {fit_metric_value:.4f}")
-        if p_l1_norm is not None:
-            parts.append(f"||P||_1: {p_l1_norm:.4f}")
-        if ns_value is not None:
-            parts.append(f"S(X): {ns_value:.4f}")
 
         # Keep the first metric directly after ':' for easier reading.
         out = " - ".join(parts)
@@ -487,16 +369,12 @@ class MultidimensionalAnalyzer:
         learning_rate=1e-2,
         n_epochs=100,
         fit_metric_every_n_epochs=0,
-        fit_metric_eval_max_patients=200,
+        fit_metric_eval_max_patients=None,
         restore_best_fit_checkpoint=True,
         num_workers=0,
         early_stopping_patience=10,
         early_stopping_min_delta=1e-4,
         early_stopping_monitor='train_loss_total',
-        lr_schedule_type='reduce_on_plateau',
-        lr_rop_factor=0.3,
-        lr_rop_patience=5,
-        lr_rop_min_lr=1e-5,
     ):
         """
         Fits the SWoTTeD decomposition model to the tensor.
@@ -546,8 +424,6 @@ class MultidimensionalAnalyzer:
             'fit_metric': [],
             'fit_metric_points_epoch': [],
             'fit_metric_points_value': [],
-            'p_l1_norm': [],
-            'non_succession': [],
             'best_fit_metric': None,
             'best_fit_metric_epoch': None,
             'final_fit_metric': None,
@@ -565,14 +441,7 @@ class MultidimensionalAnalyzer:
                 early_stopping_min_delta=early_stopping_min_delta,
                 early_stopping_mode=early_stopping_mode,
                 early_stopping_patience=early_stopping_patience,
-            ),
-            LRSchedulerCallback(
-                schedule_type=lr_schedule_type,
-                rop_factor=lr_rop_factor,       # Divide the LR by 2 when it plateaus
-                rop_patience=lr_rop_patience,      # waits 10 epochs without improvement
-                rop_min_lr=lr_rop_min_lr,      # plancher
-                rop_monitor='train_loss_total',
-            ),
+            )
         ]
         if (
             early_stopping_patience is not None
@@ -602,7 +471,7 @@ class MultidimensionalAnalyzer:
 
         train_loader = DataLoader(
             Subset(tensor, np.arange(len(self.X))),
-            batch_size=64,
+            batch_size=15,
             num_workers=num_workers,
             shuffle=False,
             collate_fn=identity_collate,
