@@ -469,7 +469,7 @@ def plot_discovered_phenotypes(reordered_phenotypes, rank, labels, cmap_name='ta
         plt.yticks(range(reordered_phenotypes[i].shape[0]), labels)
         plt.show()
 
-def plot_input_matrix(tensor, id, labels, figsize=(12, 8), fontsize=16, title="Input Matrix of One Individual"):
+def plot_input_matrix(tensor, id, labels, figsize=(12, 8), fontsize=16, title="Input Matrix of One Individual", time_unit="Days", ax=None):
     """
     Plot the input matrix of a tensor with patient IDs as labels.
 
@@ -477,57 +477,41 @@ def plot_input_matrix(tensor, id, labels, figsize=(12, 8), fontsize=16, title="I
     tensor (torch.Tensor or np.ndarray): The input tensor containing the matrices to plot.
     id (int): The patient ID for which to plot the matrix (1-based index).
     labels (list): The list of event labels corresponding to the rows of the matrix.
-    figsize (tuple): The size of the figure (default is (14, 8)).
-    fontsize (int): The base font size for the plot (default is 14).
-    title (str): The title of the plot (default is "Input Matrix of One Individual").
+    figsize (tuple): The size of the figure (default is (12, 8)).
+    fontsize (int): The base font size for the plot (default is 16).
+    title (str): The title of the plot.
     time_unit (str): The unit of time to display on the x-axis (default is "Days").
-    ax (matplotlib.axes.Axes): An optional Matplotlib Axes object to plot on. If None, a new figure and axes will be created (default is None).
+    ax (matplotlib.axes.Axes): An optional Matplotlib Axes object to plot on.
+        If None, a new figure and axes will be created.
 
     Returns:
     None
     """
+
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize)
-        standalone = True
-    
-    else:
-        standalone = False
-    
-    matrix_to_plot = tensor[id-1].detach().cpu().numpy() if hasattr(tensor[id-1], 'detach') else tensor[id-1]
-    ax.imshow(matrix_to_plot, vmin=0, vmax=1, cmap="binary", interpolation='nearest', aspect='auto')
-    
-    ax.set_title(title, fontsize=fontsize+2, fontweight='bold', pad=20)
+
+    matrix_to_plot = (tensor[id - 1].detach().cpu().numpy() if hasattr(tensor[id - 1], 'detach') else tensor[id - 1])
+    ax.imshow(matrix_to_plot, vmin=0, vmax=1, cmap="binary", interpolation="nearest", aspect="auto")
+    ax.set_title(title, fontsize=fontsize + 2, fontweight="bold", pad=20)
     ax.set_xlabel(f"Time ({time_unit})", fontsize=fontsize, labelpad=10)
     ax.set_ylabel("Events / Medications", fontsize=fontsize, labelpad=10)
-    
-    # Axe X
-    step_x = max(1, matrix_to_plot.shape[1] // 15) 
-    ax.set_xticks(np.arange(0, matrix_to_plot.shape[1], step_x))
-    ax.tick_params(axis='x', rotation=45, labelsize=fontsize-2)
-    
-    clean_labels = [str(label)[:35] + '...' if len(str(label)) > 35 else str(label) for label in labels]
-    
-    ax.set_yticks(np.arange(matrix_to_plot.shape[0]))
-    ax.set_yticklabels(clean_labels, fontsize=fontsize-3)
 
-    plt.figure(figsize=figsize)
-    plt.imshow(tensor[id-1], vmin=0, vmax=1, cmap="binary", interpolation='none')
-    plt.title(title, fontsize=fontsize, fontweight='bold')
-    plt.xlabel("Time", fontsize=fontsize)
-    plt.ylabel("Events", fontsize=fontsize)
-    plt.xticks(np.arange(0, tensor[id-1].shape[1], 2))
-    plt.yticks(ticks=np.arange(tensor[id-1].shape[0]), labels=labels, fontsize=fontsize-2)
-    plt.tight_layout()  
-    # fig, axs = plt.subplots(figsize=figsize)
-    # axs.imshow(tensor[id], vmin=0, vmax=1, cmap="binary", interpolation='none')
-    # axs.set_title("Input matrix of one individual", fontsize=fontsize) 
-    # axs.set_xlabel("Time", fontsize=fontsize)
-    # axs.set_ylabel("Events", fontsize=fontsize)
-    # axs.set_xticks(np.arange(0, tensor[id].shape[1], 2)) 
-    # axs.set_yticks(range(tensor[id].shape[0]))
-    # axs.set_yticklabels(labels, fontsize=fontsize-2)
-    # plt.tight_layout()
-    plt.show()
+    # Axe X
+    step_x = max(1, matrix_to_plot.shape[1] // 15)
+    ax.set_xticks(np.arange(0, matrix_to_plot.shape[1], step_x))
+    ax.tick_params(axis="x", rotation=45, labelsize=fontsize - 2)
+
+    # Labels des événements
+    clean_labels = [str(label)[:35] + "..." if len(str(label)) > 35 else str(label) for label in labels]
+    ax.set_yticks(np.arange(matrix_to_plot.shape[0]))
+    ax.grid(True, which="major", axis="x", linestyle="--", linewidth=0.5, alpha=0.5)
+    ax.set_yticklabels(clean_labels, fontsize=fontsize - 3)
+
+    plt.tight_layout()
+
+    if ax is not None:
+        plt.show()
 
 def plot_discovered_pathways(reordered_pathways, id, figsize=(12, 8), fontsize=16, title="Discovered pathway of one individual", cmap_name='tab10'): 
     """
