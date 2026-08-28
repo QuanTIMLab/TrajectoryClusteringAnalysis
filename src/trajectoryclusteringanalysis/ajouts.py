@@ -77,40 +77,38 @@ def long_to_wide_format(df, id_col, time_col, value_col, prefix="time_", static_
     
 
 # Visualisation de la matrice de coûts
-def plot_cost_matrix(cost_matrix, ax=None, title="Matrice de coûts de substitution", cmap="YlOrRd", annot_fmt=".2f"):
+def plot_cost_matrix(cost_matrix, ax=None, title="Substitution Cost Matrix", cmap="YlOrRd", annot_fmt=".2f"):
     """
-    Affiche la matrice de coûts sous forme de carte de chaleur (Heatmap).
-    
-    Paramètres:
-    cost_matrix : pd.DataFrame
-        La matrice des coûts de substitution.
-    ax : matplotlib.axes.Axes, optionnel
-        L'axe sur lequel tracer le graphique. Si None, une nouvelle figure est créée.
-    title : str, optionnel
-        Le titre du graphique.
-    cmap : str ou matplotlib.colors.Colormap, optionnel
-        La palette de couleurs utilisée pour la heatmap (défaut : "YlOrRd").
-    annot_fmt : str, optionnel
-        Le formatage des nombres affichés dans les cases (défaut : ".2f" pour 2 décimales).
-        
-    Retourne:
+    Displays the cost matrix as a heatmap.
+
+    Parameters:
+    cost_matrix: pd.DataFrame
+        The substitution cost matrix.
+    ax: matplotlib.axes.Axes, optional
+        The axis on which to plot the graph. If None, a new figure is created.
+    title: str, optional
+        The title of the graph.
+    cmap: str or matplotlib.colors.Colormap, optional
+        The color palette used for the heatmap (default: “YlOrRd”).
+    annot_fmt: str, optional
+        The formatting for the numbers displayed in the cells (default: “.2f” for 2 decimal places).
+
+    Returns:
     matplotlib.axes.Axes
-        L'axe contenant le graphique.
+        The axis containing the plot.
     """
     
-    # Si on n'a pas fourni de case spécifique (ax), on en crée une.
     if ax is None:
         fig, ax = plt.subplots(figsize=(6, 5))
         is_autonomous = True
     else:
         is_autonomous = False
         
-    # Création de la Heatmap
     sns.heatmap(
         cost_matrix, 
         annot=True, 
         cmap=cmap, 
-        cbar_kws={'label': 'Coût de substitution'},
+        cbar_kws={'label': 'Substitution cost'},
         fmt=annot_fmt,
         linewidths=0.5, 
         linecolor='gray',
@@ -118,10 +116,9 @@ def plot_cost_matrix(cost_matrix, ax=None, title="Matrice de coûts de substitut
     )
     
     ax.set_title(title, pad=15, fontsize=14, fontweight='bold')
-    ax.set_xlabel("État d'arrivée", fontsize=12)
-    ax.set_ylabel("État de départ", fontsize=12)
+    ax.set_xlabel("Final State", fontsize=12)
+    ax.set_ylabel("Initial State", fontsize=12)
     
-    # Rotation des étiquettes (ticks) pour la lisibilité
     ax.tick_params(axis='x', rotation=0)
     ax.tick_params(axis='y', rotation=0)
     
@@ -132,16 +129,16 @@ def plot_cost_matrix(cost_matrix, ax=None, title="Matrice de coûts de substitut
     return ax
 
 
-def plot_transversal_entropy(tca, clusters=None, title="Évolution de l'Entropie Transversale"):
+def plot_transversal_entropy(tca, clusters=None, title="Evolution of Transversal Entropy"):
         """
-        Calcule et affiche l'entropie transversale (seqHtplot de TraMineR).
-        Si 'clusters' est fourni, affiche une courbe par cluster.
+        Calculates and displays the transverse entropy (TraMineR's seqHtplot).
+        If 'clusters' is provided, displays one curve per cluster.
 
-        Paramètres:
-        tca : TCA object
-            L'objet TCA contenant les données de séquences.
-        clusters : array-like, optionnel
-            Les labels de cluster pour chaque patient. Si None, affiche la moyenne pour l'ensemble des données.
+        Parameters:
+        tca: TCA object
+            The TCA object containing the sequence data.
+        clusters: array-like, optional
+            The cluster labels for each patient. If None, displays the average for the entire dataset.
         """        
         df_seqs = tca.data.drop(columns=[tca.index_col])
         time_points = df_seqs.columns
@@ -150,10 +147,10 @@ def plot_transversal_entropy(tca, clusters=None, title="Évolution de l'Entropie
         def calculate_entropy(df):
             entropies = []
             for col in df.columns:
-                # Calcul des proportions p_i pour chaque état
+                # Calculating the proportions p_i for each state
                 probs = df[col].value_counts(normalize=True)
-                # Formule de Shannon : -sum(p_i * log(p_i))
-                # On normalise par log(n_states) pour avoir un score entre 0 et 1
+                # Shannon formula: -sum(p_i * log(p_i))
+                # We normalize by log(n_states) to obtain a score between 0 and 1
                 h = -np.sum(probs * np.log(probs)) / np.log(n_states) if n_states > 1 else 0
                 entropies.append(h)
             return entropies
@@ -161,11 +158,11 @@ def plot_transversal_entropy(tca, clusters=None, title="Évolution de l'Entropie
         plt.figure(figsize=(12, 6))
 
         if clusters is None:
-            # Entropie globale
+            # Total Entropy
             overall_h = calculate_entropy(df_seqs)
             plt.plot(time_points, overall_h, label="Cohorte Totale", color='black', linewidth=3)
         else:
-            # Une courbe par cluster
+            # One curve per cluster
             unique_clusters = np.unique(clusters)
             for cluster in unique_clusters:
                 cluster_data = df_seqs[clusters == cluster]
@@ -173,33 +170,32 @@ def plot_transversal_entropy(tca, clusters=None, title="Évolution de l'Entropie
                 plt.plot(time_points, cluster_h, label=f"Cluster {cluster}")
 
         plt.title(title, fontsize=15, fontweight='bold')
-        plt.xlabel("Temps (Mois)")
-        plt.ylabel("Indice d'Entropie (Normalisé)")
+        plt.xlabel("Time")
+        plt.ylabel("Entropy Index (Normalized)")
         plt.ylim(0, 1.05)
         plt.grid(axis='y', linestyle='--', alpha=0.7)
-        plt.legend(title="Groupes", bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.legend(title="Groups", bbox_to_anchor=(1.05, 1), loc='upper left')
         
         plt.xticks(rotation=45)
         plt.tight_layout()
         plt.show()
 
 
-def plot_mean_time(tca, clusters=None, title="Temps Moyen passé dans chaque État"):
+def plot_mean_time(tca, clusters=None, title="Average Time Spent in Each State"):
         """
-        Calcule et affiche le temps moyen passé dans chaque état (seqmtplot).
+        Calculates and displays the average time spent in each state (seqmtplot).
 
-        Paramètres:
-        tca : TCA object
-            L'objet TCA contenant les données de séquences.
-        clusters : array-like, optionnel
-            Les labels de cluster pour chaque patient. Si None, affiche la moyenne pour l'ensemble des données.
-        title : str, optionnel
-            Le titre du graphique.
+        Parameters:
+        tca: TCA object
+            The TCA object containing the sequence data.
+        clusters: array-like, optional
+            The cluster labels for each patient. If None, displays the average for the entire dataset.
+        title: str, optional
+            The title of the plot.
         """
         df_seqs = tca.data.drop(columns=[tca.index_col])
         
         def get_means(df):
-            # Si le filtre a renvoyé un tableau vide à cause des index, on gère directement
             if df.empty:
                 return pd.Series(0, index=tca.alphabet)
                 
@@ -208,7 +204,6 @@ def plot_mean_time(tca, clusters=None, title="Temps Moyen passé dans chaque Ét
                 if state not in counts.columns:
                     counts[state] = 0
             
-            # AJOUT SECURITÉ : .fillna(0) au cas où la moyenne génère un NaN
             return counts[tca.alphabet].mean().fillna(0)
 
         plt.figure(figsize=(10, 6))
@@ -221,15 +216,13 @@ def plot_mean_time(tca, clusters=None, title="Temps Moyen passé dans chaque Ét
             bars = plt.bar(tca.states, means, color=colors, edgecolor='black', alpha=0.8)
             plt.ylabel("Nombre moyen de mois")
         else:
-            # Comparaison par cluster (Barres groupées)
-            # AJOUT SECURITÉ : on s'assure que unique_clusters lit bien les valeurs nettes
+            # Cluster Comparison (Grouped Bars)
             unique_clusters = np.unique(np.array(clusters))
             n_clusters = len(unique_clusters)
             width = 0.8 / n_clusters
             x = np.arange(len(tca.states))
 
             for i, cluster in enumerate(unique_clusters):
-                # AJOUT SECURITÉ : le ".values" force Pandas à ignorer le conflit d'index des patients
                 cluster_means = get_means(df_seqs[np.array(clusters) == cluster])
                 plt.bar(x + i*width, cluster_means, width, label=f"Cluster {cluster}", alpha=0.8)
             
@@ -246,20 +239,20 @@ def plot_mean_time(tca, clusters=None, title="Temps Moyen passé dans chaque Ét
 
 def extract_representative_sequences(df_sequences, distance_matrix, cluster_labels, coverage_threshold):
     """
-    Identifie la séquence médoïde de chaque cluster et calcule sa représentativité.
-    
-    Paramètres:
-    df_sequences : DataFrame
-        Le dataframe contenant uniquement les séquences (sans la colonne d'index patient).
-    distance_matrix : ndarray
-        La matrice de distance.
-    cluster_labels : array-like
-        Les labels de cluster affectés à chaque patient (taille N).
-    coverage_threshold : float
-        La distance maximale acceptable pour dire qu'un patient est "représenté" par le médoïde.
-        
-    Retourne:
-    dict : Un dictionnaire contenant les infos du médoïde pour chaque cluster.
+    Identifies the medoid sequence for each cluster and calculates its representativeness.
+
+    Parameters:
+    df_sequences: DataFrame
+        The DataFrame containing only the sequences (without the patient index column).
+    distance_matrix: ndarray
+        The distance matrix.
+    cluster_labels: array-like
+        The cluster labels assigned to each patient (size N).
+    coverage_threshold: float
+        The maximum acceptable distance for a patient to be considered “represented” by the medoid.
+
+    Returns:
+    dict: A dictionary containing the medoid information for each cluster.
     """
     unique_clusters = np.unique(cluster_labels)
     results = {}
@@ -268,20 +261,20 @@ def extract_representative_sequences(df_sequences, distance_matrix, cluster_labe
         idx_cluster = np.where(cluster_labels == cluster)[0]
         n_patients = len(idx_cluster)
         
-        # Extraire la sous-matrice de distance uniquement pour ce cluster
+        # Extract the distance submatrix for this cluster only
         sub_matrix = distance_matrix[np.ix_(idx_cluster, idx_cluster)]
         
-        # Trouver le médoïde (celui dont la somme des distances aux autres est minimale)
+        # Find the medoid (the one whose sum of distances to the others is minimal)
         sum_distances = sub_matrix.sum(axis=1)
         medoid_relative_idx = np.argmin(sum_distances) # Index dans la sous-matrice
         medoid_absolute_idx = idx_cluster[medoid_relative_idx] # Index dans le jeu de données global
         
-        # Calculer le taux de couverture
+        # Calculate the coverage rate
         distances_to_medoid = sub_matrix[medoid_relative_idx]
         covered_count = np.sum(distances_to_medoid <= coverage_threshold)
         coverage_rate = (covered_count / n_patients) * 100
         
-        # Stocker les résultats
+        # Save the results
         results[cluster] = {
             'medoid_index': medoid_absolute_idx,
             'sequence': df_sequences.iloc[medoid_absolute_idx].values,
@@ -293,16 +286,16 @@ def extract_representative_sequences(df_sequences, distance_matrix, cluster_labe
     return results
 
 
-def plot_representative_sequences(tca, rep_seq_results, title="Séquences Représentatives (Médoïdes)"):
+def plot_representative_sequences(tca, rep_seq_results, title="Representative Sequences (Medoids)"):
     """
-    Affiche les séquences représentatives avec leur taux de couverture.
+    Displays representative sequences along with their coverage rates.
 
-    Paramètres:
-    tca : TCA object
-    rep_seq_results : dict
-        Dictionnaire contenant les informations des séquences représentatives pour chaque cluster.
-    title : str
-        Le titre du graphique. 
+    Parameters:
+    tca: TCA object
+    rep_seq_results: dict
+        A dictionary containing information about the representative sequences for each cluster.
+    title: str
+        The title of the graph.
     """
     clusters = list(rep_seq_results.keys())
     n_clusters = len(clusters)
@@ -322,14 +315,13 @@ def plot_representative_sequences(tca, rep_seq_results, title="Séquences Repré
         ax = axes[idx]
         info = rep_seq_results[cluster]
         
-        # Convertir la séquence en numérique pour l'affichage
+        # Convert the sequence to digital format for display
         seq_numeric = np.array([state_to_idx.get(s, np.nan) for s in info['sequence']])
-        matrix = seq_numeric.reshape(1, -1).astype(float) # Format requis pour imshow
+        matrix = seq_numeric.reshape(1, -1).astype(float)
         
-        # Affichage
         ax.imshow(matrix, aspect='auto', cmap=custom_cmap, norm=norm, interpolation='none')
         
-        # Labels axe Y : Nom du cluster et couverture
+        # Y-axis labels: Cluster name and coverage
         label = (f"Cluster {cluster}\n"
                  f"Couverture: {info['coverage_rate']:.1f}%\n"
                  f"({info['covered_count']}/{info['n_patients']} patients)")
@@ -357,45 +349,45 @@ def plot_representative_sequences(tca, rep_seq_results, title="Séquences Repré
 
 def extract_coverage_kmedoids(df_sequences, distance_matrix, cluster_labels, medoids_indices, coverage_threshold):
     """
-    Calcule le taux de couverture des médoïdes (donné par k-medoids).
-    
-    Paramètres:
-    df_sequences : DataFrame
-        Le dataframe contenant uniquement les séquences.
-    distance_matrix : ndarray
-        La matrice de distance globale.
-    cluster_labels : array-like
-        Les labels de cluster affectés à chaque patient.
-    medoids_indices : array-like
-        Les index absolus des médoïdes (généralement kmedoids_model.medoid_indices_).
-    coverage_threshold : float
-        La distance maximale acceptable pour le voisinage.
-        
-    Retourne:
-    dict : Un dictionnaire contenant les infos du médoïde pour chaque cluster.
+    Calculates the medoid coverage rate (given by k-medoids).
+
+    Parameters:
+    df_sequences: DataFrame
+        The DataFrame containing only the sequences.
+    distance_matrix: ndarray
+        The global distance matrix.
+    cluster_labels: array-like
+        The cluster labels assigned to each patient.
+    medoids_indices: array-like
+        The absolute indices of the medoids (typically kmedoids_model.medoid_indices_).
+    coverage_threshold: float
+        The maximum acceptable distance for the neighborhood.
+
+    Returns:
+    dict: A dictionary containing the medoid information for each cluster.
     """
     unique_clusters = np.unique(cluster_labels)
     results = {}
     
-    # Création d'un dictionnaire pour associer chaque médoïde à son cluster
+    # Creating a dictionary to associate each medoid with its cluster
     medoid_dict = {cluster_labels[idx]: idx for idx in medoids_indices}
     
     for cluster in unique_clusters:
-        # Trouver tous les patients appartenant à ce cluster
+        # Find all patients in this cluster
         idx_cluster = np.where(cluster_labels == cluster)[0]
         n_patients = len(idx_cluster)
         
-        # Récupérer l'index du médoïde de ce cluster
+        # Retrieve the medoid index for this cluster
         medoid_absolute_idx = medoid_dict[cluster]
         
-        # Extraire directement les distances entre ce médoïde et les patients de son cluster
+        # Directly extract the distances between this medoid and the patients in its cluster
         distances_to_medoid = distance_matrix[medoid_absolute_idx, idx_cluster]
         
-        # Calculer le taux de couverture
+        # Calculate the coverage rate
         covered_count = np.sum(distances_to_medoid <= coverage_threshold)
         coverage_rate = (covered_count / n_patients) * 100
         
-        # Stocker les résultats
+        # Save the results
         results[cluster] = {
             'medoid_index': medoid_absolute_idx,
             'sequence': df_sequences.iloc[medoid_absolute_idx].values,
@@ -407,38 +399,37 @@ def extract_coverage_kmedoids(df_sequences, distance_matrix, cluster_labels, med
     return results
 
 
-def plot_trajectory_decision_tree(df_clinical, cluster_labels, max_depth=3, variables_label=None, titre="Arbre de décision des trajectoires cliniques"):
+def plot_trajectory_decision_tree(df_clinical, cluster_labels, max_depth=3, variables_label=None, titre="Clinical Pathway Decision Tree"):
     """
-    Entraîne et affiche un arbre de décision épuré pour voir quelles variables
-    conduisent aux différents clusters.
+    Trains and displays a simplified decision tree to see which variables
+    lead to the different clusters.
 
-    Paramètres:
-    df_clinical : pd.DataFrame
-        DataFrame contenant les variables cliniques (sans la colonne d'identifiant).
-    cluster_labels : array-like
-        Les labels de cluster pour chaque patient.
-    max_depth : int, optionnel
-        La profondeur maximale de l'arbre (défaut : 3).
-    variables_label : dict, optionnel
-        Un dictionnaire pour remplacer les valeurs des variables (défaut : None).
-    titre : str, optionnel
-        Le titre du graphique (défaut : "Arbre de décision des trajectoires cliniques").
+    Parameters:
+    df_clinical: pd.DataFrame
+        A DataFrame containing the clinical variables (excluding the ID column).
+    cluster_labels: array-like
+        The cluster labels for each patient.
+    max_depth: int, optional
+        The maximum depth of the tree (default: 3).
+    variables_label: dict, optional
+        A dictionary to replace variable values (default: None).
+    title: str, optional
+        The title of the plot (default: “Clinical Trajectory Decision Tree”).
     """
     X = df_clinical.copy()
     
     if variables_label is not None:
         X = X.replace(variables_label)
         
-    # On crée les colonnes binaires (ex: sex_Femme) pour l'arbre
     X = pd.get_dummies(X)
         
     y = cluster_labels
     
-    # Entraînement de l'arbre
+    # Training the decision tree
     clf = DecisionTreeClassifier(max_depth=max_depth, random_state=42, min_samples_leaf=0.05)
     clf.fit(X, y)
     
-    # Visualisation
+    # Visualization
     plt.figure(figsize=(15, 8))
     
     feature_noms = X.columns.tolist()
@@ -458,28 +449,27 @@ def plot_trajectory_decision_tree(df_clinical, cluster_labels, max_depth=3, vari
     
     for text_obj in annotations:
         text = text_obj.get_text()
-        lignes = text.split('\n')
-        lignes_new = []
+        lines = text.split('\n')
+        lines_new = []
         
-        for ligne in lignes:
-            if "samples" in ligne or "value" in ligne:
+        for line in lines:
+            if "samples" in line or "value" in line:
                 continue
                 
-            if "<=" in ligne:
-                col_name = ligne.split(" <= ")[0]
+            if "<=" in line:
+                col_name = line.split(" <= ")[0]
                 
-                if "_" in col_name and "0.5" in ligne:
+                if "_" in col_name and "0.5" in line:
                     var_name, modalite = col_name.split("_", 1)
-                    lignes_new.append(f"{var_name} : {modalite} ?")
-                    # Ajout de la boussole anti-erreur
-                    lignes_new.append("<- Non  | Oui ->")
+                    lines_new.append(f"{var_name} : {modalite} ?")
+                    lines_new.append("<- No  | Yes ->")
                 else:
-                    lignes_new.append(f"{ligne} ?")
+                    lines_new.append(f"{line} ?")
             else:
-                lignes_new.append(ligne)
+                lines_new.append(line)
                 
-        nouveau_texte = '\n'.join(lignes_new)
-        text_obj.set_text(nouveau_texte)
+        new_text = '\n'.join(lines_new)
+        text_obj.set_text(new_text)
         text_obj.set_fontweight('bold')
 
     plt.title(titre, fontsize=16, pad=20, fontweight='bold')
@@ -490,38 +480,37 @@ def plot_trajectory_decision_tree(df_clinical, cluster_labels, max_depth=3, vari
     return clf
 
 
-def plot_time_to_event(df_sequences, cluster_labels, target_state='S', time_unit="Mois", titre="Temps avant d'atteindre l'état S par cluster"):
+def plot_time_to_event(df_sequences, cluster_labels, target_state='S', time_unit="Mois", titre="Time to reach the target state by cluster"):
     """
-    Affiche les courbes de Kaplan-Meier (Incidence Cumulée) pour comparer 
-    la rapidité avec laquelle chaque cluster atteint l'état S.
+    Displays curves to compare the rate at which each cluster reaches the target state.
 
-    Paramètres :
-    df_sequences : pd.DataFrame
-        DataFrame contenant les séquences d'états (sans la colonne d'identifiant).
-    cluster_labels : array-like
-        Les labels de cluster pour chaque patient.
-    target_state : str, optionnel
-        L'état d'intérêt pour l'analyse de survie (défaut : 'S').
-    time_unit : str, optionnel
-        L'unité de temps à afficher sur l'axe X (défaut : "Mois").
+    Parameters:
+    df_sequences: pd.DataFrame
+        DataFrame containing the state sequences (without the ID column).
+    cluster_labels: array-like
+        The cluster labels for each patient.
+    target_state: str, optional
+        The state of interest for the survival analysis (default: ‘S’).
+    time_unit: str, optional
+        The time unit to display on the X-axis (default: “Months”).
     """
-    T = [] # Temps jusqu'à l'événement (ou temps de suivi max si non atteint)
-    E = [] # 1 si l'état S est atteint, 0 sinon
+    T = [] # Time until the event (or maximum follow-up time if not reached)
+    E = [] # 1 if target state is reached, 0 otherwise
     
     max_time = df_sequences.shape[1]
     
-    # Extraction des temps d'atteinte pour chaque patient
+    # Calculating arrival times for each patient
     for i in range(len(df_sequences)):
         seq = df_sequences.iloc[i].values
-        # Première occurrence de l'état S
+        # First occurrence of the target state
         indices = np.where(seq == target_state)[0]
         
         if len(indices) > 0:
-            T.append(indices[0]) # Le temps est l'index de la première occurrence
-            E.append(1)          # L'événement s'est produit
+            T.append(indices[0]) # Time is the index of the first occurrence
+            E.append(1)          # The event occurred
         else:
-            T.append(max_time)   # N'a jamais atteint l'état pendant le suivi
-            E.append(0)          # L'événement ne s'est pas produit
+            T.append(max_time)   # Never reached that stage
+            E.append(0)          # The event did not occur
             
     plt.figure(figsize=(10, 6))
     kmf = KaplanMeierFitter()
@@ -529,23 +518,21 @@ def plot_time_to_event(df_sequences, cluster_labels, target_state='S', time_unit
     unique_clusters = np.unique(cluster_labels)
     
     for cluster in unique_clusters:
-        # Filtrer les patients appartenant à ce cluster
+        # Filter patients belonging to this cluster
         idx = (cluster_labels == cluster)
         T_cluster = np.array(T)[idx]
         E_cluster = np.array(E)[idx]
         
         kmf.fit(T_cluster, event_observed=E_cluster, label=f"Cluster {cluster}")
         
-        # plot_cumulative_density affiche la proportion qui a ATTEINT l'état (monte de 0 à 1)
+        # plot_cumulative_density displays the proportion that has REACHED the state (rises from 0 to 1)
         kmf.plot_cumulative_density(ci_show=False, linewidth=2.5)
 
-    # 4. Esthétique du graphique
     plt.title(titre, fontsize=15, pad=15, fontweight='bold')
     plt.xlabel(f"Temps écoulé ({time_unit})", fontsize=12)
     plt.ylabel(f"Proportion de patients dans l'état '{target_state}'", fontsize=12)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     
-    # On force l'axe Y à aller de 0% à 100%
     plt.ylim(0, 1.05)
     yticks = plt.gca().get_yticks()
     plt.gca().set_yticks(yticks)
@@ -562,21 +549,21 @@ def plot_time_to_event(df_sequences, cluster_labels, target_state='S', time_unit
     plt.show()
 
 
-def plot_cluster_profiles(df_clinical, cluster_labels, variables_label=None, variables_to_plot=None, titre="Profil clinique des clusters"):
+def plot_cluster_profiles(df_clinical, cluster_labels, variables_label=None, variables_to_plot=None, titre="Clinical Profile of Clusters"):
     """
-    Affiche le profil clinique complet sous forme de barres empilées horizontales.
+    Displays the complete clinical profile as horizontal stacked bars.
 
-    Paramètres:
-    df_clinical : pd.DataFrame  
-        DataFrame contenant les variables cliniques (sans la colonne d'identifiant).
-    cluster_labels : array-like
-        Les labels de cluster pour chaque patient.
-    variables_label : dict, optionnel
-        Un dictionnaire pour remplacer les valeurs numériques par leur vrai nom.
-    variables_to_plot : list, optionnel
-        Une liste de colonnes spécifiques à inclure dans le graphique. Si None, toutes les colonnes seront utilisées.
-    titre : str, optionnel
-        Le titre du graphique.
+    Parameters:
+    df_clinical: pd.DataFrame
+        A DataFrame containing the clinical variables (excluding the ID column).
+    cluster_labels: array-like
+        The cluster labels for each patient.
+    variables_label: dict, optional
+        A dictionary to replace numerical values with their actual names.
+    variables_to_plot: list, optional
+        A list of specific columns to include in the plot. If None, all columns will be used.
+    title: str, optional
+        The title of the plot.
     """
     df_analyse = df_clinical.copy()
 
@@ -646,65 +633,64 @@ def plot_cluster_profiles(df_clinical, cluster_labels, variables_label=None, var
                         fontsize=9         
                     )
         
-        ax.set_title(f"Profil des patients : Cluster {cluster} (n = {len(df_c)} patients)", fontsize=13, pad=10)
+        ax.set_title(f"Patient Profile : Cluster {cluster} (n = {len(df_c)} patients)", fontsize=13, pad=10)
         ax.set_xlim(0, 100)
         ax.grid(axis='x', linestyle='--', alpha=0.3)
         
-    axes[-1].set_xlabel("Proportion au sein du cluster (%)", fontsize=11)
+    axes[-1].set_xlabel("Proportion within the cluster (%)", fontsize=11)
     plt.tight_layout()
     plt.suptitle(titre, fontsize=14, fontweight='bold', y=1.01)
     plt.show()
 
 
-def plot_frequent_transitions(tca, clusters, n_top=6, titre="Transitions les plus fréquentes par Cluster"):
+def plot_frequent_transitions(tca, clusters, n_top=6, titre="Most Frequent Transitions by Cluster"):
         """
-        Identifie et affiche les transitions (A -> B) les plus fréquentes pour chaque cluster,
-        en ignorant les transitions vides (nan -> nan).
+        Identifies and displays the most frequent transitions (A -> B) for each cluster,
+        ignoring empty transitions (nan -> nan).
 
-        Paramètres:
-        ----------- 
-        tca : TCA object
-            L'objet TCA contenant les données de séquences.
-        clusters : array-like
-            Les labels de cluster pour chaque patient.
-        n_top : int, optionnel
-            Le nombre de transitions à afficher par cluster (défaut : 6).
+        Parameters:
+        -----------
+        tca: TCA object
+            The TCA object containing the sequence data.
+        clusters: array-like
+            The cluster labels for each patient.
+        n_top: int, optional
+            The number of transitions to display per cluster (default: 6).
         """
 
         df_seqs = tca.data.drop(columns=[tca.index_col])
         unique_clusters = np.unique(clusters)
         
-        # Extraire toutes les transitions (paires d'états consécutifs)
+        # Extract all transitions (pairs of consecutive states)
         all_transitions = []
         for i in range(len(df_seqs.columns) - 1):
             t1, t2 = df_seqs.columns[i], df_seqs.columns[i+1]
-            # On crée la paire sous forme de chaîne
+            # We create the pair as a string
             pair = df_seqs[t1].astype(str) + " → " + df_seqs[t2].astype(str)
             all_transitions.append(pair)
         
         df_trans = pd.concat(all_transitions, axis=1)
         
-        # Calculer la fréquence de chaque transition par cluster
+        # Calculate the frequency of each transition by cluster
         trans_counts = []
         for cluster in unique_clusters:
             cluster_mask = (clusters == cluster)
-            # Compter les occurrences
+            # Count Occurrences
             counts = df_trans[cluster_mask].apply(pd.Series.value_counts).sum(axis=1)
-            counts = counts / cluster_mask.sum() # Normalisation
+            counts = counts / cluster_mask.sum() # Normalization
             counts.name = f"Cluster {cluster}"
             trans_counts.append(counts)
             
         df_diff = pd.concat(trans_counts, axis=1).fillna(0)
         
-        # Enlève "nan -> nan", et aussi "D -> nan" ou "nan -> C"
+        # Remove “nan -> nan,” as well as “D -> nan and “nan -> C”
         df_diff = df_diff[~df_diff.index.str.contains('nan', case=False)]
         
-        # Calculer l'Écart-type
+        # Calculate the Standard Deviation
         df_diff['score'] = df_diff.std(axis=1)
         top_transitions = df_diff.sort_values(by='score', ascending=False).head(n_top)
         top_transitions = top_transitions.drop(columns=['score'])
 
-        # Affichage
         if top_transitions.empty:
             print("Aucune transition valide trouvée après filtrage des NaNs.")
             return
@@ -719,29 +705,29 @@ def plot_frequent_transitions(tca, clusters, n_top=6, titre="Transitions les plu
         plt.show()
 
 
-def plot_extreme_trajectories(tca, clusters, distance_matrix, coverage_threshold=1.0, title="Trajectoires Médoïdes vs Extrêmes par cluster"):
+def plot_extreme_trajectories(tca, clusters, distance_matrix, coverage_threshold=1.0, title="Medoid Trajectories vs. Extremes by Cluster"):
     """
-    Affiche la trajectoire du médoïde et celle de la trajectoire la plus éloignée pour chaque cluster.
+    Displays the medoid trajectory and the trajectory of the farthest point for each cluster.
 
-    Paramètres:
+    Parameters:
     ------------
-    tca : TCA object
-        L'objet TCA contenant les données de séquences.
-    clusters : array-like
-        Les labels de cluster pour chaque patient.
-    distance_matrix : ndarray
-        La matrice de distance globale.
-    coverage_threshold : float, optionnel
-        Le seuil de tolérance requis par la fonction de calcul (par défaut 1.0).
-    title : str
-        Le titre du graphique.
+    tca: TCA object
+        The TCA object containing the sequence data.
+    clusters: array-like
+        The cluster labels for each patient.
+    distance_matrix: ndarray
+        The global distance matrix.
+    coverage_threshold: float, optional
+        The tolerance threshold required by the calculation function (default 1.0).
+    title: str
+        The title of the graph.
     """
     unique_clusters = np.unique(clusters)
     df_seqs = tca.data.drop(columns=[tca.index_col])
     time_points = df_seqs.columns
     n_clusters = len(unique_clusters)
 
-    # On récupère les médoïdes
+    # We retrieve the medoids
     rep_seq_results = extract_representative_sequences(df_seqs, distance_matrix, clusters, coverage_threshold)
 
     state_to_idx = {state: idx for idx, state in enumerate(tca.alphabet)}
@@ -758,13 +744,12 @@ def plot_extreme_trajectories(tca, clusters, distance_matrix, coverage_threshold
     for i, cluster_label in enumerate(unique_clusters):
         ax = axes[i]
         
-        # Récupération de l'index du médoïde
+        # Médoïde index
         medoid_global_idx = rep_seq_results[cluster_label]['medoid_index']
         
-        # Tous les index des patients de ce cluster précis
         cluster_indices = np.where(clusters == cluster_label)[0]
         
-        # Recherche de l'extrême : on cherche le patient du cluster le plus éloigné de ce médoïde
+        # Searching for the extreme: We are looking for the patient in the cluster farthest from this medoid
         distances_to_medoid = distance_matrix[medoid_global_idx, cluster_indices]
         extreme_local_idx = np.argmax(distances_to_medoid)
         extreme_global_idx = cluster_indices[extreme_local_idx]
@@ -772,14 +757,13 @@ def plot_extreme_trajectories(tca, clusters, distance_matrix, coverage_threshold
         seq_medoid = df_seqs.iloc[medoid_global_idx].map(state_to_idx).astype(float).values
         seq_extreme = df_seqs.iloc[extreme_global_idx].map(state_to_idx).astype(float).values
         
-        # Extrême en haut, Médoïde en bas
         matrix = np.vstack([seq_extreme, seq_medoid])
         
         ax.imshow(matrix, aspect='auto', cmap=custom_cmap, norm=norm, interpolation='none')
         
         ax.set_title(f"Cluster {cluster_label} (n={len(cluster_indices)})", fontweight='bold', fontsize=12)
         ax.set_yticks([0, 1])
-        ax.set_yticklabels(["Extrême", "Médoïde"], fontsize=11, fontweight='bold')
+        ax.set_yticklabels(["Extreme", "Medoid"], fontsize=11, fontweight='bold')
         
         ax.axhline(0.5, color='white', linewidth=3)
         ax.tick_params(axis='y', length=0) 
@@ -801,12 +785,12 @@ def plot_extreme_trajectories(tca, clusters, distance_matrix, coverage_threshold
 
 def summarize_clusters(tca, clusters):
     """
-    Génère un résumé de chaque cluster.
+    Generates a summary for each cluster.
 
-    Paramètres:
-    tca : TCA object
-    clusters : array-like   
-        Les labels de cluster pour chaque patient.
+    Parameters:
+    tca: TCA object
+    clusters: array-like
+        The cluster labels for each patient.
     """
     unique_clusters = np.unique(clusters)
     df_seqs = tca.data.drop(columns=[tca.index_col])
@@ -819,7 +803,7 @@ def summarize_clusters(tca, clusters):
     df_trans = pd.concat(all_trans, axis=1)
 
     summary_text = "========================================================\n"
-    summary_text += "RESUME  DES CLUSTERS\n"
+    summary_text += "SUMMARY OF CLUSTERS\n"
     summary_text += "========================================================\n\n"
 
     for cluster in unique_clusters:
@@ -828,30 +812,29 @@ def summarize_clusters(tca, clusters):
         n = mask.sum()
         perc = (n / total_n) * 100
 
-        # --- A. Statistiques de Temps ---
-        # Temps moyen passé dans chaque état
-        # On compte les occurrences de chaque état et on divise par le nombre de patients
+        # A. Time Statistics
+        # Average time spent in each state
+        # We count the number of occurrences of each state and divide by the number of patients
         counts = c_data.apply(pd.Series.value_counts).sum(axis=1).fillna(0)
         avg_durations = counts / n
         top_state = avg_durations.idxmax()
         top_duration = avg_durations.max()
 
-        # --- B. Nombre de changements d'états ---
+        # B. Number of state changes
         changes = 0
         for i in range(len(c_data.columns) - 1):
             changes += ((c_data.iloc[:, i] != c_data.iloc[:, i+1]) & c_data.iloc[:, i].notna() & c_data.iloc[:, i+1].notna()).sum()
         avg_changes = changes / n
 
-        # --- C. Transitions Signatures (Top 2) ---
+        # C. Most Common Transitions (Top 2)
         c_trans = df_trans[mask].apply(pd.Series.value_counts).sum(axis=1) / n
         c_trans = c_trans[~c_trans.index.str.contains('nan', case=False)]
         top_2_trans = c_trans.sort_values(ascending=False).head(2).index.tolist()
 
-        # --- D. Rédaction du bloc ---
         summary_text += f"CLUSTER {cluster} : '{top_state.upper()}-DOMINANT'\n"
-        summary_text += f"   • Taille       : {n} patients ({perc:.1f}% des patients)\n"
-        summary_text += f"   • État Fréquent     : '{top_state}' (durée moyenne : {top_duration:.1f} mois)\n"
-        summary_text += f"   • Transitions fréquentes   : {', '.join(top_2_trans)}\n"
+        summary_text += f"   • Size       : {n} patients ({perc:.1f}% of patients)\n"
+        summary_text += f"   • Frequent state     : '{top_state}' (mean duration : {top_duration:.1f})\n"
+        summary_text += f"   • Frequent transition   : {', '.join(top_2_trans)}\n"
             
             
         summary_text += "\n"
@@ -861,18 +844,18 @@ def summarize_clusters(tca, clusters):
     return summary_text
 
 
-def profil_clusters_heatmap(df_clinical, cluster_labels, variables_label=None, titre="Profil des Clusters - Heatmap des représentations"):
+def profil_clusters_heatmap(df_clinical, cluster_labels, variables_label=None, titre="Cluster Profiles - Heatmap of Representations"):
     """
-    Génère une Heatmap montrant la sur/sous-représentation des 
-    caractéristiques cliniques au sein de chaque cluster.
+    Generates a heatmap showing the over- or under-representation of
+    clinical features within each cluster.
 
-    Paramètres:
-    df_clinical : pd.DataFrame
-        DataFrame contenant les variables cliniques (sans la colonne d'identifiant).
-    cluster_labels : array-like
-        Les labels de cluster pour chaque patient.
-    titre : str, optionnel
-        Le titre de la heatmap (défaut : "Profil des Clusters - Heatmap des représentations").
+    Parameters:
+    df_clinical: pd.DataFrame
+        DataFrame containing the clinical variables (excluding the ID column).
+    cluster_labels: array-like
+        The cluster labels for each patient.
+    title: str, optional
+        The title of the heatmap (default: “Cluster Profiles - Representation Heatmap”).
     """
     df = df_clinical.copy()
 
@@ -884,15 +867,14 @@ def profil_clusters_heatmap(df_clinical, cluster_labels, variables_label=None, t
     lignes_ecarts = []
     
     for col in df_clinical.columns:
-        # Répartition de cette variable dans la population globale (en %)
+        # Distribution of this variable in the overall population (in %)
         rep_globale = df[col].value_counts(normalize=True) * 100
         
-        # Répartition dans chaque cluster
+        # Distribution within each cluster
         for cluster in df['Cluster'].unique():
             df_cluster = df[df['Cluster'] == cluster]
             rep_cluster = df_cluster[col].value_counts(normalize=True) * 100
             
-            # Alignement avec l'index global (remplit avec 0% si une modalité est absente du cluster)
             rep_cluster = rep_cluster.reindex(rep_globale.index, fill_value=0)
             
             ecarts = rep_cluster - rep_globale
@@ -906,7 +888,6 @@ def profil_clusters_heatmap(df_clinical, cluster_labels, variables_label=None, t
                 
     df_ecarts = pd.DataFrame(lignes_ecarts)
     
-    # Lignes = Variables, Colonnes = Clusters
     matrice = df_ecarts.pivot(index='Caractéristique', columns='Cluster', values='Ecart_Points')
     
     plt.figure(figsize=(10, 8))
