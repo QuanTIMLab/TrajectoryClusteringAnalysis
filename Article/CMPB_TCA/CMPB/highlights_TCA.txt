@@ -1,0 +1,7 @@
+Highlights
+
+• Unified Python framework for care trajectory clustering.
+• Six dissimilarity measures and three clustering algorithms are available.
+• Temporal phenotypes are extracted using tensor decomposition.
+• Hyperparameters can be tuned for temporal tensor decomposition.
+• Evaluated on clinical, synthetic, and cancer care trajectories.

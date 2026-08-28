@@ -1,0 +1,75 @@
+\begin{thebibliography}{10}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \def\href#1#2{#2} \def\path#1{#1}\fi
+
+\bibitem{denteuling2026clustering}
+N.~G.~P. Den~Teuling, S.~C. Pauws, E.~R. van~den Heuvel, Clustering of
+  longitudinal data: A tutorial on a variety of approaches, Statistical
+  Analysis and Data Mining: An ASA Data Science Journal 19~(1) (2026) e70052.
+\newblock \href {https://doi.org/10.1002/sam.70052}
+  {\path{doi:10.1002/sam.70052}}.
+
+\bibitem{pacca2025sequence}
+L.~Pacca, K.~V. Dang, L.~Koenig, C.~d.~P. Duarte, S.~A. Gaye, A.~Harrati, A.~M.
+  Vable, Using sequence and cluster analysis to characterize variables that
+  unfold over time: implementation and practical considerations for
+  epidemiologists, American Journal of Epidemiology 195~(6) (2026) 1707--1718.
+\newblock \href {https://doi.org/10.1093/aje/kwaf065}
+  {\path{doi:10.1093/aje/kwaf065}}.
+
+\bibitem{traminer}
+A.~Gabadinho, G.~Ritschard, N.~S. M{\"u}ller, M.~Studer, Analyzing and
+  visualizing state sequences in {R} with {TraMineR}, Journal of Statistical
+  Software 40~(4) (2011) 1--37.
+\newblock \href {https://doi.org/10.18637/jss.v040.i04}
+  {\path{doi:10.18637/jss.v040.i04}}.
+
+\bibitem{sebia2024swotted}
+H.~Sebia, T.~Guyet, E.~Audureau, {SWoTTeD}: an extension of tensor
+  decomposition to temporal phenotyping, Machine Learning 113~(9) (2024)
+  5939--5980.
+\newblock \href {https://doi.org/10.1007/s10994-024-06545-8}
+  {\path{doi:10.1007/s10994-024-06545-8}}.
+
+\bibitem{levenshtein1966binary}
+V.~I. Levenshtein, Binary codes capable of correcting deletions, insertions and
+  reversals, Soviet Physics Doklady 10~(8) (1966) 707--710.
+
+\bibitem{andjohn1986optimal}
+A.~A. andJohn Forrest, Optimal matching methods for historical sequences',
+  Journal of interdisciplinary history 16~(3) (1986) 471--494.
+
+\bibitem{Afshar2018}
+A.~Afshar, I.~Perros, E.~E. Papalexakis, E.~Searles, J.~Ho, J.~Sun, {COPA}:
+  Constrained {PARAFAC2} for sparse and large datasets, in: Proceedings of the
+  27th ACM International Conference on Information and Knowledge Management,
+  2018, pp. 793--802.
+\newblock \href {https://doi.org/10.48550/arXiv.1803.04572}
+  {\path{doi:10.48550/arXiv.1803.04572}}.
+
+\bibitem{larmarange_analyseR}
+J.~Larmarange,
+  \href{https://larmarange.github.io/analyse-R/trajectoires-de-soins.html}{Trajectoires
+  de soins : un exemple de données longitudinales - analyse-r}, accessed: 2026
+  (2022).
+\newline\urlprefix\url{https://larmarange.github.io/analyse-R/trajectoires-de-soins.html}
+
+\bibitem{walonoski2020synthea}
+J.~Walonoski, S.~Klaus, E.~Granger, D.~Hall, A.~Gregorowicz, G.~Neyarapally,
+  A.~Watson, J.~Eastman, {Synthea} novel coronavirus ({COVID-19}) model and
+  synthetic data set, Intelligence-Based Medicine 1 (2020) 100007.
+\newblock \href {https://doi.org/10.1016/j.ibmed.2020.100007}
+  {\path{doi:10.1016/j.ibmed.2020.100007}}.
+
+\bibitem{Bouhnike005971}
+{Institut National du Cancer},
+  \href{https://www.cancer.fr/catalogue-des-publications/la-vie-cinq-ans-apres-un-diagnostic-de-cancer-rapport}{La
+  vie cinq ans après un diagnostic de cancer - rapport}, Rapport ETUDVIEK518,
+  Institut National du Cancer (INCa), en partenariat avec l'Inserm, Équipe de
+  recherche UMR 1252-SESSTIM (6 2018).
+\newline\urlprefix\url{https://www.cancer.fr/catalogue-des-publications/la-vie-cinq-ans-apres-un-diagnostic-de-cancer-rapport}
+
+\end{thebibliography}
