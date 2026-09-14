@@ -254,7 +254,7 @@ class TCA:
         """
         return assign_clusters(linkage_matrix, num_clusters)
 
-    def plot_dendrogram(self, linkage_matrix, title='Dendrogram of Treatment Sequences'):
+    def plot_dendrogram(self, linkage_matrix, title='Dendrogram of Treatment Sequences', n_clusters=None):
         """
         Plot the dendrogram for the hierarchical clustering.
 
@@ -262,7 +262,7 @@ class TCA:
             linkage_matrix (np.ndarray): Linkage matrix from hierarchical clustering.
             title (str): The title of the plot.
         """
-        plot_dendrogram(linkage_matrix,title)
+        plot_dendrogram(linkage_matrix,title,n_clusters)
 
     def plot_clustermap(self, data, linkage_matrix,title="Clustermap of individuals"):
         """

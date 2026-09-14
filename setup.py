@@ -34,7 +34,7 @@ def get_version():
 
 # Configuration des arguments de compilation par plateforme
 if os.name == 'nt':  # Windows
-    compile_args = ['/O2']  # Optimisation pour MSVC
+    compile_args = ['-O3', '-ffast-math', '-DMS_WIN64']  # Optimisation pour MSVC
     link_args = []
 else:  # Linux/Mac
     compile_args = ['-O3', '-ffast-math']

@@ -1,0 +1,18 @@
+ \textbf{Background and Objectives:}
+Healthcare trajectory analysis is challenging because healthcare data consist of temporally ordered events that may co-occur across multiple dimensions.
+Existing trajectory analysis approaches provide limited support for a unified programmatic analysis of both unidimensional and multidimensional care trajectories in \proglang{Python}.
+This study presents \pkg{TCA} (Trajectory Clustering Analysis), an open-source \proglang{Python} package for clustering and analyzing unidimensional and multidimensional care trajectories.
+
+\textbf{Methods:}
+For unidimensional trajectories, \pkg{TCA} implements six dissimilarity measures combined with three clustering algorithms.
+For multidimensional trajectories, \pkg{TCA} integrates SWoTTeD (Sliding Window for Temporal Tensor Decomposition), which represents trajectories as a three-dimensional tensor and extracts temporal phenotypes through penalized tensor decomposition.
+
+\textbf{Results:}
+\pkg{TCA} was evaluated on three datasets: a unidimensional clinical sequence dataset comprising 1,317 patients over 18 months; a multidimensional synthetic cohort generated using Synthea, comprising 901 patients, 10 medications, and 179 days; and real-world oncological care trajectories from the VICAN5 cohort, comprising 1,336 patients with colorectal cancer, four treatment types, and 24 months.
+In the unidimensional setting, \pkg{TCA} identified clinically interpretable clusters with distinct care progression profiles.
+In the multidimensional setting, SWoTTeD extracted temporal phenotypes and supported hyperparameter tuning for tensor decomposition.
+
+\textbf{Conclusions:}
+\pkg{TCA} provides an open-source \proglang{Python} framework for the analysis of unidimensional and multidimensional care trajectories.
+By integrating trajectory clustering and temporal tensor decomposition within a single package, \pkg{TCA} facilitates the application of advanced trajectory analysis methods in biomedical research.
+The package is available at \url{https://github.com/QuanTIMLab/TrajectoryClusteringAnalysis}.
