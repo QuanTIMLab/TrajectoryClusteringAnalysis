@@ -1,6 +1,12 @@
+import sys
 from pathlib import Path
 
 import streamlit as st
+
+# Streamlit only puts the script directory on sys.path; the repository root is needed for `app.*` imports.
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+if str(REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY_ROOT))
 
 from app.components.io import external_dataset_options
 
