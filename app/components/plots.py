@@ -91,7 +91,9 @@ def status_percentage_figure(data, index_col, clusters):
 def phenotype_intensity_figure(phenotypes, index_col):
     columns = [column for column in phenotypes.columns if column != index_col]
     figure, axis = plt.subplots(figsize=(9, 4))
-    axis.boxplot([phenotypes[column].dropna().to_numpy() for column in columns], labels=columns)
+    axis.boxplot([phenotypes[column].dropna().to_numpy() for column in columns])
+    axis.set_xticks(range(1, len(columns) + 1))
+    axis.set_xticklabels(columns)
     axis.set(title="Intensité des phénotypes SWoTTeD", ylabel="Intensité normalisée")
     axis.grid(axis="y", alpha=0.25)
     figure.tight_layout()
