@@ -5,7 +5,6 @@ import numpy as np
 import logging
 from sklearn.preprocessing import LabelEncoder
 from trajectoryclusteringanalysis.unidimensional.clustering import *
-from trajectoryclusteringanalysis.multidimensional.analysis import *
 from trajectoryclusteringanalysis.plotting import *
 
 class TCA:
@@ -59,10 +58,12 @@ class TCA:
             # Prepare unidimensional data for TCA
             data_ready_for_TCA = self.data.copy()
             data_ready_for_TCA['Sequence'] = data_ready_for_TCA.drop(self.index_col, axis=1).apply(lambda x: '-'.join(x.astype(str)), axis=1)
-            data_ready_for_TCA = data_ready_for_TCA[['id', 'Sequence']]
+            data_ready_for_TCA = data_ready_for_TCA[[self.index_col, 'Sequence']]
             self.sequences = data_ready_for_TCA['Sequence'].apply(lambda x: np.array([k for k in x.split('-') if k != 'nan'])).to_numpy()
             
         elif self.mode == 'multidimensional':
+            from trajectoryclusteringanalysis.multidimensional.analysis import MultidimensionalAnalyzer
+
             assert isinstance(data, pd.DataFrame), "data must be a pandas DataFrame"
             assert MultidimensionalAnalyzer(self.data, self.index_col, self.time_col, self.event_col).has_time_event_structure(), "data must have a time-event structure with columns for id, time, and event"
             assert self.index_col in self.data.columns, f"{self.index_col} must be a column in the data"
@@ -239,7 +240,7 @@ class TCA:
                   - 'cluster_centers': Coordinates of cluster centers (vectors of state frequencies).
                   - 'inertia': Sum of squared distances of samples to their closest cluster center.
         """
-        return kmeans_on_wide_format(self.data, num_clusters=num_clusters, label_to_encoded=self.label_to_encoded, random_state=random_state,normalize=normalize, **kmeans_kwargs) 
+        return kmeans_on_wide_format(self.data, num_clusters=num_clusters, label_to_encoded=self.label_to_encoded, random_state=random_state, normalize=normalize, index_col=self.index_col, **kmeans_kwargs)
 
     def assign_clusters(self, linkage_matrix, num_clusters):
         """
