@@ -128,14 +128,22 @@ def compute_distance_matrix(data, sequences, label_to_encoded, metric='hamming',
 
     elif metric == 'hamming':
         # Compute Hamming distance
-        distance_matrix = squareform(np.array(pdist(data.replace(label_to_encoded).drop(columns=['id']), metric=metric)))
+        distance_data = data.replace(label_to_encoded)
+        if id in distance_data.columns:
+            distance_data = distance_data.drop(columns=[id])
+        distance_matrix = squareform(np.array(pdist(distance_data, metric=metric)))
 
     elif metric == 'levenshtein':
         # Compute Levenshtein distance
         distance_matrix = np.zeros((len(data), len(data)))
+        token_to_char = {str(state): chr(index + 1) for index, state in enumerate(alphabet)}
+        encoded_sequences = [
+            ''.join(token_to_char[str(state)] for state in sequence)
+            for sequence in sequences
+        ]
         for i in tqdm.tqdm(range(len(sequences))):
             for j in range(i + 1, len(sequences)):
-                seq1, seq2 = sequences[i], sequences[j]                  
+                seq1, seq2 = encoded_sequences[i], encoded_sequences[j]
                 distance = Levenshtein.distance(seq1, seq2)
                 distance_matrix[i, j] = distance
                 distance_matrix[j, i] = distance
@@ -394,7 +402,7 @@ def kmeans_on_frequency(self, num_clusters, random_state=None,normalize=False, *
         return kmeans.labels_ + 1, kmeans.cluster_centers_,kmeans.inertia_
 
 
-def kmeans_on_wide_format(data, num_clusters, label_to_encoded=None, random_state=None, normalize=False,  **kmeans_kwargs):
+def kmeans_on_wide_format(data, num_clusters, label_to_encoded=None, random_state=None, normalize=False, index_col='id', **kmeans_kwargs):
     """
     Performs KMeans clustering directly on wide-format (fixed-column encoded) sequences.
 
@@ -414,7 +422,7 @@ def kmeans_on_wide_format(data, num_clusters, label_to_encoded=None, random_stat
     logging.info(f"Performing KMeans clustering on wide-format data with {num_clusters} clusters.")
 
     # Replace NaN with a special value (e.g., 'MISSING')
-    data_no_nan = data.drop(columns=['id']).fillna('MISSING')
+    data_no_nan = data.drop(columns=[index_col]).fillna('MISSING')
 
     # Optionally, add 'MISSING' to label_to_encoded if not present
     if label_to_encoded is not None and 'MISSING' not in label_to_encoded:
@@ -453,4 +461,3 @@ def kmeans_on_wide_format(data, num_clusters, label_to_encoded=None, random_stat
     logging.info("KMeans on wide format completed.")
 
     return kmeans.labels_ + 1, kmeans.cluster_centers_,kmeans.inertia_
-

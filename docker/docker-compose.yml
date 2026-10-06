@@ -1,0 +1,15 @@
+services:
+  tca-demo:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8501:8501"
+    restart: unless-stopped
+    environment:
+      MPLBACKEND: Agg
+      STREAMLIT_SERVER_HEADLESS: "true"
+      STREAMLIT_SERVER_ADDRESS: 0.0.0.0
+      STREAMLIT_SERVER_PORT: "8501"
+    volumes:
+      - ${TCA_DATA_DIR:-../data}:/app/external-data:ro

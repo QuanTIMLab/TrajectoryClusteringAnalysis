@@ -35,5 +35,32 @@ class TestTCA(unittest.TestCase):
         clusters = self.tca.assign_clusters(linkage_matrix, num_clusters=2)
         self.assertEqual(len(clusters), len(self.df))
 
+    def test_custom_index_column(self):
+        data = self.df.rename(columns={'id': 'person_key'})
+        tca = TCA(
+            data=data,
+            index_col='person_key',
+            alphabet=['D', 'C', 'T', 'S'],
+            states=['D', 'C', 'T', 'S'],
+            mode='unidimensional',
+        )
+
+        distance_matrix = tca.compute_distance_matrix(data, metric='hamming')
+        clusters, _, _ = tca.kmeans_on_wide_format(
+            num_clusters=2,
+            random_state=0,
+            n_init=10,
+        )
+
+        self.assertEqual(tca.sequences.shape[0], len(data))
+        self.assertEqual(distance_matrix.shape, (len(data), len(data)))
+        self.assertEqual(len(clusters), len(data))
+
+    def test_levenshtein_distance_uses_whole_states(self):
+        distance_matrix = self.tca.compute_distance_matrix(self.df, metric='levenshtein')
+
+        self.assertEqual(distance_matrix[0, 1], 2)
+        self.assertEqual(distance_matrix[1, 0], 2)
+
 if __name__ == '__main__':
     unittest.main()
