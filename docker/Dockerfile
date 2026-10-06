@@ -23,6 +23,7 @@ FROM python:3.11-slim AS runtime
 ENV VIRTUAL_ENV=/opt/venv \
     PATH="/opt/venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
     PYTHONDONTWRITEBYTECODE=1 \
     MPLBACKEND=Agg \
     STREAMLIT_SERVER_HEADLESS=true \
