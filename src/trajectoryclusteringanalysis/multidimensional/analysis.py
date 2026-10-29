@@ -9,6 +9,7 @@ from omegaconf import OmegaConf
 from swotted import swottedModule, swottedTrainer
 from swotted.loss_metrics import *
 from swotted.utils import Subset, success_rate
+from swotted.decomposition_contraints import phenotypeSuccession_constraint
 try:
     from lightning.pytorch.callbacks import Callback
     from lightning.pytorch.callbacks import EarlyStopping
@@ -18,6 +19,88 @@ except ImportError:
 
 from trajectoryclusteringanalysis.plotting import *
 
+
+from torch.optim.lr_scheduler import ReduceLROnPlateau, CosineAnnealingLR, ExponentialLR
+
+class LRSchedulerCallback(Callback):
+    """
+    Applies a learning rate schedule during training.
+    Supported modes: 'reduce_on_plateau', 'cosine', 'exponential', 'step'
+    """
+
+    def __init__(
+        self,
+        schedule_type='reduce_on_plateau',
+        # ReduceLROnPlateau
+        rop_factor=0.5,
+        rop_patience=5,
+        rop_min_lr=1e-6,
+        rop_monitor='train_loss_total',
+        # CosineAnnealing
+        cosine_t_max=50,
+        cosine_eta_min=1e-6,
+        # Exponential
+        exp_gamma=0.95,
+        # Step
+        step_size=50,
+        step_gamma=0.1,
+    ):
+        self.schedule_type = schedule_type
+        self.rop_factor = rop_factor
+        self.rop_patience = rop_patience
+        self.rop_min_lr = rop_min_lr
+        self.rop_monitor = rop_monitor
+        self.cosine_t_max = cosine_t_max
+        self.cosine_eta_min = cosine_eta_min
+        self.exp_gamma = exp_gamma
+        self.step_size = step_size
+        self.step_gamma = step_gamma
+        self._scheduler = None
+
+    def on_train_start(self, trainer, pl_module):
+        # Retrieves the optimizer from the Lightning module
+        optimizer = trainer.optimizers[0]
+
+        if self.schedule_type == 'reduce_on_plateau':
+            self._scheduler = ReduceLROnPlateau(
+                optimizer,
+                mode='min',
+                factor=self.rop_factor,
+                patience=self.rop_patience,
+                min_lr=self.rop_min_lr,
+            )
+        elif self.schedule_type == 'cosine':
+            self._scheduler = CosineAnnealingLR(
+                optimizer,
+                T_max=self.cosine_t_max,
+                eta_min=self.cosine_eta_min,
+            )
+        elif self.schedule_type == 'exponential':
+            self._scheduler = ExponentialLR(optimizer, gamma=self.exp_gamma)
+        elif self.schedule_type == 'step':
+            from torch.optim.lr_scheduler import StepLR
+            self._scheduler = StepLR(optimizer, step_size=self.step_size, gamma=self.step_gamma)
+        else:
+            raise ValueError(f"schedule_type inconnu : {self.schedule_type}")
+
+    def on_train_epoch_end(self, trainer, pl_module):
+        if self._scheduler is None:
+            return
+
+        if self.schedule_type == 'reduce_on_plateau':
+            monitored = trainer.callback_metrics.get(self.rop_monitor, None)
+            if monitored is not None:
+                try:
+                    val = float(monitored.detach().cpu().item())
+                except Exception:
+                    val = float(monitored)
+                self._scheduler.step(val)
+        else:
+            self._scheduler.step()
+
+        # Displays the current LR
+        current_lr = trainer.optimizers[0].param_groups[0]['lr']
+        print(f"    lr_scheduler: learning rate = {current_lr:.2e}")
 
 def identity_collate(batch):
     return batch
@@ -41,8 +124,10 @@ class FitMetricCallback(Callback):
         early_stopping_min_delta=1e-4,
         early_stopping_mode='min',
         early_stopping_patience=10,
+        final_fit_max_patients=None,
     ):
         self.analyzer = analyzer
+        self.final_fit_max_patients = final_fit_max_patients
         self.fit_metric_every_n_epochs = int(fit_metric_every_n_epochs)
         self.fit_metric_eval_max_patients = fit_metric_eval_max_patients
         self.restore_best_fit_checkpoint = bool(restore_best_fit_checkpoint)
@@ -90,6 +175,16 @@ class FitMetricCallback(Callback):
         self._fit_eval_indices = torch.linspace(0, n_patients - 1, steps=n_eval).long()
         self._fit_eval_tensor = self.analyzer.X[self._fit_eval_indices]
 
+    def _training_w(self, pl_module):
+        # Per-patient W already being optimized by the trainer (same order as X):
+        # reading them costs nothing, unlike pl_module(x) which re-optimizes W from scratch.
+        wk = getattr(pl_module, 'Wk', None)
+        if wk is None:
+            return None
+        if self._fit_eval_indices is None:
+            return [w.detach() for w in wk]
+        return [wk[i].detach() for i in self._fit_eval_indices.tolist()]
+
     def _compute_fit_metric(self, pl_module, use_full_dataset=False):
         if self.analyzer.X is None or self.analyzer.K is None:
             return None
@@ -97,9 +192,20 @@ class FitMetricCallback(Callback):
         x_target = self.analyzer.X if use_full_dataset else self._fit_eval_tensor
         if x_target is None:
             x_target = self.analyzer.X
+        if use_full_dataset and self.final_fit_max_patients is not None:
+            # Re-optimizing W is the expensive part: evaluate on an evenly spaced subset.
+            n_eval = max(1, min(int(self.final_fit_max_patients), len(x_target)))
+            if n_eval < len(x_target):
+                idx = torch.linspace(0, len(x_target) - 1, steps=n_eval).long()
+                x_target = x_target[idx]
 
         with torch.no_grad():
-            w_epoch = pl_module(x_target)
+            x_target = x_target.to(pl_module.Ph.device)
+            # Final evaluation re-optimizes W against the (restored) best Ph;
+            # monitoring during training reuses the trained W.
+            w_epoch = None if use_full_dataset else self._training_w(pl_module)
+            if w_epoch is None:
+                w_epoch = pl_module(x_target)
             ph_epoch = pl_module.Ph.detach()
 
             x_pred = []
@@ -109,6 +215,32 @@ class FitMetricCallback(Callback):
             x_pred = torch.stack(x_pred)
 
             return success_rate(x_target, x_pred)
+
+    def _compute_regularization_terms(self, pl_module):
+        """
+        Compute ||P||_1 (phenotype sparsity) and S(W) (non-succession)
+        based on the current state of the model.
+        """
+        if not hasattr(pl_module, 'Ph'):
+            return None, None
+
+        with torch.no_grad():
+            Ph = pl_module.Ph.detach()  # shape (R, N, omega)
+            p_l1_norm = Ph.abs().sum().item()
+
+            ns_total = None
+            x_eval = self._fit_eval_tensor if self._fit_eval_tensor is not None else self.analyzer.X
+            if x_eval is not None:
+                w_eval = self._training_w(pl_module)
+                if w_eval is None:
+                    w_eval = pl_module(x_eval.to(Ph.device))
+                twl = getattr(pl_module, 'twl', 1)
+                try:
+                    ns_total = phenotypeSuccession_constraint(w_eval, twl).item()
+                except Exception:
+                    ns_total = None
+
+        return p_l1_norm, ns_total
 
     def on_train_epoch_end(self, trainer, pl_module):
 
@@ -181,6 +313,13 @@ class FitMetricCallback(Callback):
                 self.analyzer.training_history['fit_metric_points_epoch'].append(epoch)
                 self.analyzer.training_history['fit_metric_points_value'].append(fit_metric_value)
 
+            # Termes de régularisation
+            p_l1_norm, ns_value = self._compute_regularization_terms(pl_module)
+            self.analyzer.training_history['p_l1_norm'].append(p_l1_norm)
+            self.analyzer.training_history['non_succession'].append(ns_value)
+        else:
+            p_l1_norm, ns_value = None, None
+
         parts = [f"Epoch {epoch}/{max_epochs} :"]
         if loss_ph_value is not None:
             parts.append(f"train_loss_Ph: {loss_ph_value:.6f}")
@@ -192,6 +331,10 @@ class FitMetricCallback(Callback):
             parts.append(f"duration: {epoch_duration:.2f}s")
         if fit_metric_value is not None:
             parts.append(f"FIT metric: {fit_metric_value:.4f}")
+        if p_l1_norm is not None:
+            parts.append(f"||P||_1: {p_l1_norm:.4f}")
+        if ns_value is not None:
+            parts.append(f"S(X): {ns_value:.4f}")
 
         # Keep the first metric directly after ':' for easier reading.
         out = " - ".join(parts)
@@ -322,7 +465,7 @@ class MultidimensionalAnalyzer:
         """
         unique_individuals = self.data[self.index_col].unique()
         unique_events = np.sort(self.data[self.event_col].unique())
-        unique_time_points = self.data[self.time_col].unique()
+        unique_time_points = np.sort(self.data[self.time_col].unique())
 
         patient_to_index = {patient: idx for idx, patient in enumerate(unique_individuals)}
 
@@ -369,15 +512,23 @@ class MultidimensionalAnalyzer:
         learning_rate=1e-2,
         n_epochs=100,
         fit_metric_every_n_epochs=0,
-        fit_metric_eval_max_patients=None,
+        fit_metric_eval_max_patients=200,
         restore_best_fit_checkpoint=True,
         num_workers=0,
         early_stopping_patience=10,
         early_stopping_min_delta=1e-4,
         early_stopping_monitor='train_loss_total',
+        lr_schedule_type='reduce_on_plateau',
+        lr_rop_factor=0.3,
+        lr_rop_patience=5,
+        lr_rop_min_lr=1e-5,
+        accelerator='cpu',
+        predict_n_epochs=None,
+        final_fit_max_patients=None,
     ):
         """
         Fits the SWoTTeD decomposition model to the tensor.
+
         Parameters:
         - tensor: the input tensor of shape (K, N, T)       
         - rank: the rank of the decomposition (number of phenotypes)
@@ -387,6 +538,11 @@ class MultidimensionalAnalyzer:
         - metric: the metric to use for the reconstruction loss (default: 'Bernoulli')
         - learning_rate: the learning rate for training (default: 1e-2) 
         - n_epochs: the number of epochs for training (default: 100)
+        - predict_n_epochs: epochs used to re-optimize W on new sequences (final FIT, projections);
+          defaults to n_epochs, which can be very slow for large n_epochs
+        - final_fit_max_patients: if set, the final FIT is computed on an evenly spaced subset of patients
+        - accelerator: Lightning accelerator, 'cpu' (default) or 'gpu'/'auto'. Experimental: the
+          SWoTTeD library creates some tensors on CPU, so GPU currently fails with a device mismatch.
 
         Returns:
         - model: the fitted SWoTTeD model
@@ -406,7 +562,7 @@ class MultidimensionalAnalyzer:
 
         #some additional parameters for the projection (decomposition on new sequences)
         params['predict']={}
-        params['predict']['nepochs']=n_epochs
+        params['predict']['nepochs']=predict_n_epochs if predict_n_epochs is not None else n_epochs
         params['predict']['lr']=learning_rate
 
         config=OmegaConf.create(params)
@@ -424,6 +580,8 @@ class MultidimensionalAnalyzer:
             'fit_metric': [],
             'fit_metric_points_epoch': [],
             'fit_metric_points_value': [],
+            'p_l1_norm': [],
+            'non_succession': [],
             'best_fit_metric': None,
             'best_fit_metric_epoch': None,
             'final_fit_metric': None,
@@ -441,7 +599,15 @@ class MultidimensionalAnalyzer:
                 early_stopping_min_delta=early_stopping_min_delta,
                 early_stopping_mode=early_stopping_mode,
                 early_stopping_patience=early_stopping_patience,
-            )
+                final_fit_max_patients=final_fit_max_patients,
+            ),
+            LRSchedulerCallback(
+                schedule_type=lr_schedule_type,
+                rop_factor=lr_rop_factor,       # Divide the LR by 2 when it plateaus
+                rop_patience=lr_rop_patience,      # waits 10 epochs without improvement
+                rop_min_lr=lr_rop_min_lr,      # plancher
+                rop_monitor='train_loss_total',
+            ),
         ]
         if (
             early_stopping_patience is not None
@@ -462,8 +628,8 @@ class MultidimensionalAnalyzer:
         # train the model
         trainer = swottedTrainer(
             max_epochs=n_epochs,
-            accelerator='cpu',
-            devices='auto',
+            accelerator=accelerator,
+            devices=1 if accelerator != 'cpu' else 'auto',
             logger=None,
             enable_progress_bar=True,
             callbacks=callbacks,
@@ -471,7 +637,7 @@ class MultidimensionalAnalyzer:
 
         train_loader = DataLoader(
             Subset(tensor, np.arange(len(self.X))),
-            batch_size=15,
+            batch_size=64,
             num_workers=num_workers,
             shuffle=False,
             collate_fn=identity_collate,
@@ -519,12 +685,10 @@ class MultidimensionalAnalyzer:
             
             print(f"Success rate for the entire dataset: {success_rate(self.X, X_pred):.4f}")
 
-            print(f"success_rate :{success_rate(self.X, X_pred)}")
-
-            plot_discovered_phenotypes(rPh, self.model.rank, labels)
-            plot_discovered_pathways(rW, id, title=f"Discovered Pathways of individual {id}")
-            plot_reconstructed_matrix(X_pred, id, labels, title=f"Reconstructed Matrix of individual {id}")
-            plot_input_matrix(self.X, id, labels, title=f"Input Matrix of individual {id}")
+            plot_discovered_phenotypes(rPh, self.model.rank, labels, time_unit=time_unit)
+            plot_discovered_pathways(rW, id, title=f"Discovered Pathways of individual {id}", time_unit=time_unit)
+            plot_reconstructed_matrix(X_pred, id, labels, title=f"Reconstructed Matrix of individual {id}", time_unit=time_unit)
+            plot_input_matrix(self.X, id, labels, title=f"Input Matrix of individual {id}", time_unit=time_unit)
 
         else:
             raise ValueError("Decomposition has not been performed. Please call fit_swotted_decomposition first.")

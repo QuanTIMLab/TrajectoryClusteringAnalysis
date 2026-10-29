@@ -161,3 +161,4 @@ cython_debug/
 #.idea/
 # Logs
 lightning_logs/
+data/extract_AREM/
